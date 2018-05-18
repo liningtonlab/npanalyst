@@ -99,3 +99,13 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+
+#results folder
+results/
+
+#old stuff
+old_stuff/
+
+#profiles
+.prof
