@@ -18,12 +18,23 @@ from numba import jitclass, jit, float32,float64,int32
 # data = np.random.rand(1000000,4)*10
 
 KEYCOLS = ["PrecMz","PrecZ","RetTime","CCS"]
-DATACOLS = ["PrecMz","PrecZ","CCS","RetTime","ProdMz"]
+DATACOLS = ["PrecMz","PrecZ","CCS","RetTime","ProdMz","Ar1"]#,"PrecIntensity"]
 MZ1DATACOLS = ["PrecMz","PrecZ","CCS","RetTime"]
 MZ2DATACOLS = DATACOLS
-ERRORCOLS = list(chain(*[[f"{dcol}_low",f"{dcol}_high"] for dcol in DATACOLS]))
+
+ERRORCOLS = list(chain(*[[f"{dcol}_low",f"{dcol}_high"] for dcol in DATACOLS])) #insane line to get a list of <val>_low <val>_high names
+ERRORCOLS.sort(key=lambda x: list(x.split("_"))[::-1],reverse=True) #a more insane line to get them in the order <x>_low, <y>_low, <x>_high, <y>_high
+
 ERRORKEYCOLS = [cn for cn in ERRORCOLS if cn.split('_')[0] in KEYCOLS]
-ERRORINFO = [('ppm',10),(None,None),('ppm',10000),('window',0.03),('ppm',50),]
+ERRORINFO = {
+    "PrecMz":('ppm',10),
+    "PrecZ":(None,None),
+    "CCS":('ppm',5000),
+    "RetTime":('window',0.03),
+    "ProdMz":('ppm',50),
+    "PrecIntensity":('window',10),
+    "Ar1":('window',0.33)
+    }
 FLOATPREC = 'float64'
 
 spec = [
@@ -51,7 +62,8 @@ class MZ1Feature(object):
 
         return MZ1Feature(idxs,nev,nv)
 
-def gen_error_cols(df):
+
+def gen_error_cols(df,datacols=DATACOLS):
     """
     Uses the global ERRORINFO and DATACOLS lists to generate
     error windows for each of the DATACOLS. Mutates dataframe inplace for
@@ -61,7 +73,8 @@ def gen_error_cols(df):
         df (pandas.DataFram): input dataframe to calc error windows (modified in place)
     """
 
-    for einfo,dcol in zip(ERRORINFO,DATACOLS):
+    for dcol in datacols:
+        einfo = ERRORINFO[dcol]
         col = df[dcol]
         etype, evalue = einfo
         if etype == 'ppm':
@@ -84,9 +97,8 @@ def get_replicate_files(folder):
             pf = data_path.joinpath(f)
             replicates[sample].append(pf)
     replicates = dict(replicates)
-    for key,val in replicates.items():
-        if len(val) < 2:
-            del replicates[key]
+    todel = [key for key,val in replicates.items() if len(val)<2]
+    for key in todel: del replicates[key]
     return replicates
 
 def load_replicates(sample,files):
@@ -98,30 +110,30 @@ def load_replicates(sample,files):
     df = pd.concat(frames, ignore_index=True)
     return sample,df
 
-def gen_replicate_df(replicates):
-    for sample,files in replicates.items():
-        sample,df = load_replicates(sample,files)
-        yield (sample,df)
-
-def get_intersections(rectangles,show_pbar=False):
+def build_spatial_idx(rectangles):
     p = index.Property()
     p.dimension = rectangles.shape[1] // 2
     # print('building index')
     stream = ((i,tuple(coords),None) for i,coords in enumerate(rectangles))
-    idx = index.Index(stream, properties=p, interleaved=False)
-    intersections = set()
+    idx = index.Index(stream, properties=p)
+    return idx
+
+
+def get_intersections(rectangles,min_intersection=0,show_pbar=False):
+    idx = build_spatial_idx(rectangles)
     if show_pbar:
-        pbar = tqdm(total=rectangles.shape[0])
+        pbar = tqdm(total=rectangles.shape[0],desc="finding intersections")
     
-    # for coords in tqdm(rectangles.tolist(),desc="Finding Overlap"):
+    intersections = set()
     for coords in rectangles:
         inter = tuple(idx.intersection(coords))
-        if len(inter) > 1:
+        if len(inter) >= min_intersection:
             intersections.add(inter)
         if show_pbar:
             pbar.update()
     if show_pbar:
         pbar.close()
+
     intersections = sorted(list(intersections))
     return intersections
 
@@ -158,23 +170,37 @@ def joiner(x):
     else:
         return pd.Series(x.unique()).str.cat(sep=";")
 
-
-def reduce_df(df,replica_idxs,STRCOLS,NUMERICCOLS):
+def reduce_df(df,replica_idxs):
     repdf = df.loc[[x for tup in replica_idxs for x in tup]].copy()
     repdf['group'] = [i for i,tup in enumerate(replica_idxs) for _ in tup]
     fdf = repdf.groupby('group').agg(joiner)
     return fdf
 
+def basket_df(df,basket_idxs):
+    non_keys = [c for c in df.columns if c not in KEYCOLS]
+    df[non_keys] =df[non_keys].astype(str)
+    basket_membership = {idx:i for i,tup in enumerate(basket_idxs) for idx in tup}
+    group_col = []
+    for i in range(df.shape[0]):
+        try:
+            group_col.append(f"b{basket_membership[i]}")
+        except KeyError:
+            group_col.append(f"s{i}")
+    df['group'] = group_col
+    fdf = df.groupby('group').agg(joiner)
+    return fdf
+
+
 def run_folder_rep(folder):
     replicates = get_replicate_files(folder)
-    for sample,df in tqdm(gen_replicate_df(replicates),total=len(replicates)):
-        process(sample,df)
+    for sample,files in tqdm(replicates.items()):
+        process_rep(sample,files)
         
 def prun_folder_rep(folder):
     replicates = get_replicate_files(folder)
-    with tqdm(total=len(replicates)) as pbar:
+    with tqdm(total=len(replicates),desc="Replica Comparison") as pbar:
         with ProcessPoolExecutor(max_workers=15) as executor:
-            futs = [executor.submit(process,sample,files) for sample,files in replicates.items()]
+            futs = [executor.submit(process_rep,sample,files) for sample,files in replicates.items()]
             for fut in as_completed(futs):
                 fut.result()
                 pbar.update()
@@ -182,30 +208,41 @@ def prun_folder_rep(folder):
 def process_rep(sample,files):
     sample,df = load_replicates(sample,files)
     NUMERICCOLS = list(df._get_numeric_data().columns)
-    STRCOLS = [c for c in df.columns if c not in NUMERICCOLS]
-    
-    # STRCOLS = ["Sequence","Mode","MgfFileName"]
-    # NUMERICCOLS = [c for c in df.columns if c not in STRCOLS]
-    
-    # df[NUMERICCOLS] = df[NUMERICCOLS].fillna(0)
     df[NUMERICCOLS] = df[NUMERICCOLS].astype(FLOATPREC)
-
+       
     gen_error_cols(df)
     evals = df[ERRORCOLS].values
-    intersections = get_intersections(evals)
-
+    intersections = get_intersections(evals,min_intersection=1)
     mask = numba_get_replicates(df.fileno.values,intersections)
     replicas = np.asarray(intersections)[mask]
-    fdf = reduce_df(df,replicas,STRCOLS,NUMERICCOLS)
+    fdf = reduce_df(df,replicas)
     fdf.to_csv(f'./results/{sample}_replicated.csv')
     
     return f"{sample} DONE"
 
+COLSTOKEEP = KEYCOLS + ['ProdMz','ProdIntensity','Sample']
+
 def process_basket(folder):
     data_path = Path(folder)
-    sd = os.scandir(data_path)
+    sd = [f for f in os.scandir(data_path) if f.is_file() and f.name.lower().endswith(".csv")]
     frames = []
-    for file in sd:
+    for file in tqdm(sd,desc='loading data'):
+        frames.append(pd.read_csv(file))
+    df = pd.concat(frames,ignore_index=True)
+    df = df[COLSTOKEEP]
+    gen_error_cols(df,KEYCOLS)
+    error_cols= list(chain(*[[f"{dcol}_low",f"{dcol}_high"] for dcol in KEYCOLS]))
+    error_cols.sort(key=lambda x: list(x.split("_"))[::-1],reverse=True)
+    evals = df[error_cols].values
+    intersections = get_intersections(evals,min_intersection=0,show_pbar=True)
+    # embed()
+    bdf = basket_df(df,intersections)
+    bdf.to_csv("Basketed.csv")
+
+
+
+
+    
         
   
 
@@ -214,17 +251,24 @@ def process_basket(folder):
 if __name__ == "__main__":
     import sys
     import warnings
-    script, folder = sys.argv
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-r','--replicate',help='folder to perform replicate analysis')
+    parser.add_argument('-b','--basket',help='folder to perform basketing')
+    args = parser.parse_args()
+
+    if args.replicate:  
+        try: 
+            os.mkdir('results')
+        except FileExistsError:
+            "Warning, contents of results will be overwritten..."
+
+        with warnings.catch_warnings():
+            prun_folder_rep(args.replicate)
     
-    try: 
-        os.mkdir('results')
-    except FileExistsError:
-        "Warning, contents of results will be overwritten..."
+    if args.basket:
 
-
-
-    with warnings.catch_warnings():
-        prun_folder(folder)
+            process_basket(args.basket)
 
 
 # embed()
