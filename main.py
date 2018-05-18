@@ -51,15 +51,6 @@ class MZ1Feature(object):
 
         return MZ1Feature(idxs,nev,nv)
 
-
-def build_map(d,ks):
-    d = d.tolist()
-    dd = defaultdict(list)
-    for v,k in zip(d,ks):
-        dd[k].append(v)
-    return dict(dd)
-
-
 def gen_error_cols(df):
     """
     Uses the global ERRORINFO and DATACOLS lists to generate
@@ -82,67 +73,6 @@ def gen_error_cols(df):
         errors = col.apply(efunc)
         df[f"{dcol}_low"] = df[dcol] - errors
         df[f"{dcol}_high"] = df[dcol] + errors
-
-
-# def get_neigbor_bins(ev,v):
-#     ev = ev.reshape(len(KEYCOLS),2)
-#     floored = np.floor(v.astype(FLOATPREC))
-#     downs = ev[:,0] <= floored
-#     ups = ev[:,0] <= floored
-#     nbins = []
-#     for i,bools in enumerate(zip(downs,ups)):
-#         upbool,downbool = bools
-#         if upbool:
-#             new = floored.copy()
-#             new[i] +=1
-#             new = '_'.join(new.astype(str))
-#             if new in unibins:
-#                 nbins.append(new)
-#         if downbool:
-#             new = floored.copy()
-#             new[i] -=1
-#             new = '_'.join(new.astype(str))
-#             if new in unibins:
-#                 nbins.append(new)
-#     return nbins
-
-
-# def is_match(row1,row2):
-#     ev1 = row1[ERRORCOLS].values.reshape(len(DATACOLS),2)
-#     ev2 = row2[ERRORCOLS].values.reshape(len(DATACOLS),2)
-#     if np.all((ev2[:,0] <= ev1[:,1]) & (ev1[:,1] <= ev2[:,1])):
-#         return True
-#     else:
-#         # print((ev2[:,0] <= ev1[:,1]) & (ev1[:,1] <= ev2[:,1]))
-#         return False
-
-# def combine(row1,row2):
-#     nrow = row1.copy()
-#     nrow[NUMERICCOLS] = (row1[NUMERICCOLS].values + row2[NUMERICCOLS].values) /2
-#     for col in STRCOLS:
-#         nrow[col] = ";".join((row1[col],row2[col]))
-#     return nrow
-
-
-# def match(row,chunk):
-#     for idx,crow in chunk.iterrows():
-#         if is_match(row,crow):
-#             row = combine(row,crow)
-#     if row['count'] > 1:
-#         return row
-
-
-
-
-# def gen_windows(data):
-#     ncols = data.shape[1]
-#     new_dims = list(data.shape) + [2]
-#     output = np.zeros(new_dims)
-#     for i in range(ncols):
-#         output[:,i,0] = data[:,i] - 1
-#         output[:,i,1] = data[:,i] + 1
-#     return output
-
 
 def get_replicate_files(folder):
     data_path = Path(folder)
@@ -173,50 +103,6 @@ def gen_replicate_df(replicates):
         sample,df = load_replicates(sample,files)
         yield (sample,df)
 
-
-        
-# data_path = Path('/home/cpye/pydev/hifan/test_data')
-# sd = os.scandir(data_path)
-# frames = []
-# for i,f in enumerate(sd):
-#     frame = pd.read_csv(data_path.joinpath(f))
-#     frame['fileno']=i
-#     frames.append(frame)
-
-# df = pd.concat(frames, ignore_index=True)
-
-
-# df[DATACOLS] = df[DATACOLS].astype(FLOATPREC)
-
-
-# NUMERICCOLS = list(df._get_numeric_data().columns)
-# STRCOLS = [c for c in df.columns if c not in NUMERICCOLS]
-
-# data = df[DATACOLS].values
-
-# tofloor = df[KEYCOLS]
-# tofloor['PrecMz'] *10
-# floored = np.floor(tofloor[KEYCOLS].values).astype(int).astype(str)
-# keys = ['_'.join(f) for f in floored]
-# unibins = set(keys)
-# df['sequence'] = keys
-# df['count'] = 1
-# gen_error_cols(df)
-
-
-# df = df.loc[:1000]
-# idxs = df.index.values
-# evs = df[ERRORCOLS].values.reshape((idxs.shape[0],len(DATACOLS),2))
-# vs = df[DATACOLS].values
-# numerics = df[NUMERICCOLS].values
-# strs = df[STRCOLS].values
-
-# feats = [MZ1Feature(np.array([idx],dtype='int32'),ev.reshape((len(DATACOLS),2)),v) for idx,ev,v in zip(idxs,evs,vs)]
-
-# evals = df[ERRORCOLS].values
-
-
-
 def get_intersections(rectangles,show_pbar=False):
     p = index.Property()
     p.dimension = rectangles.shape[1] // 2
@@ -238,11 +124,6 @@ def get_intersections(rectangles,show_pbar=False):
         pbar.close()
     intersections = sorted(list(intersections))
     return intersections
-
-
-
-
-# intersections = get_intersections(evals)
 
 
 @jit(cache=True)
@@ -270,43 +151,19 @@ def numba_get_replicates(filecol,intersections,minfiles=2):
             mask[i] = 1
     return mask.astype('bool')
 
-def avg_numrows(ary,idxs):
-    return numba_take2d(ary,idxs).mean(axis=0)
-
-def append_strings(array):
-    strings = []
-    for col in array.T:
-        col = list(set(col))
-        strings.append(';'.join(col))
-    return strings
 
 def joiner(x):
     if str(x.dtype) in {'float64','int64'}:
         return x.mean()
     else:
         return pd.Series(x.unique()).str.cat(sep=";")
-        # return x.str.cat(sep=';')
+
 
 def reduce_df(df,replica_idxs,STRCOLS,NUMERICCOLS):
     repdf = df.loc[[x for tup in replica_idxs for x in tup]].copy()
     repdf['group'] = [i for i,tup in enumerate(replica_idxs) for _ in tup]
-    # repdf[NUMERICCOLS] = repdf[NUMERICCOLS].astype(FLOATPREC)
-    # numcols = []
-    # strcols = []
-    # for idxs in replica_idxs:
-    #     numcols.append(
-    #         repdf[NUMERICCOLS].loc[list(idxs)].values.mean(axis=0)
-    #     )
-    #     strcols.append(
-    #         append_strings(repdf[STRCOLS].loc[list(idxs)].values)
-    #     )
-    # ndf = pd.DataFrame(numcols,columns=NUMERICCOLS)
-    # sdf = pd.DataFrame(strcols,columns=STRCOLS)
-    # fdf = ndf.merge(sdf,left_index=True,right_index=True)
     fdf = repdf.groupby('group').agg(joiner)
     return fdf
-
-
 
 def run_folder_rep(folder):
     replicates = get_replicate_files(folder)
@@ -321,7 +178,6 @@ def prun_folder_rep(folder):
             for fut in as_completed(futs):
                 fut.result()
                 pbar.update()
-
 
 def process_rep(sample,files):
     sample,df = load_replicates(sample,files)
@@ -345,14 +201,13 @@ def process_rep(sample,files):
     
     return f"{sample} DONE"
 
-
 def process_basket(folder):
     data_path = Path(folder)
     sd = os.scandir(data_path)
     frames = []
     for file in sd:
         
-    
+  
 
 
 
