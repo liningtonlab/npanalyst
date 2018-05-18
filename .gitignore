@@ -108,4 +108,4 @@ results/
 old_stuff/
 
 #profiles
-.prof
+*.prof
