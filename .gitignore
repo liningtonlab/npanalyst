@@ -100,6 +100,8 @@ ENV/
 # mypy
 .mypy_cache/
 
+# Replicated (output) folder
+Replicated/
 
 #results folder
 results/
