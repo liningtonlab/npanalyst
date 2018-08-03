@@ -6,7 +6,7 @@ from functools import partial
 
 import os
 import json
-
+import gc
 
 from concurrent.futures import ProcessPoolExecutor,as_completed
 
@@ -15,6 +15,9 @@ import configparser
 from tqdm import tqdm
 from collections import defaultdict
 from itertools import chain
+
+from numba import jit
+
 # data = np.random.rand(1000000,4)*10
 
 # KEYCOLS = ["PrecMz","PrecZ","RetTime"]
@@ -25,7 +28,7 @@ ERRORCOLS = ERRORCOLS + [f"{dcol}_high" for dcol in DATACOLS]
 ERRORINFO = [('ppm',10),(None,None),('ppm',10000),('window',0.1),('ppm',50),]
 DATACOLS = DATACOLS + ['PrecIntensity','ProdIntensity','Ar1','Ar3']
 FLOATPREC = 'float64'
-FILENAMECOL = "MgfFileName"
+# FILENAMECOL = "MgfFileName"
 
 
 
@@ -104,6 +107,7 @@ def build_rtree(df):
     idx = index.Index(rgen,properties=p)
     return idx
 
+
 def gen_con_comps(rtree,rects,pbar=False):
     """
     Generate connected components subgraphs for a graph where nodes are hyperrectangles
@@ -139,7 +143,8 @@ def gen_con_comps(rtree,rects,pbar=False):
                         seen.add(n)
             yield c
 
-def _combine_rows(df,cc,calc_basket_info=True):
+
+def _combine_rows(df,cc,FILENAMECOL,calc_basket_info=True):
     cc_df = df.iloc[list(cc)]
     uni_files = set(chain(*[fnames.split("|") for fnames in cc_df[FILENAMECOL]]))
     avgd = list(cc_df[DATACOLS].mean())
@@ -150,7 +155,7 @@ def _combine_rows(df,cc,calc_basket_info=True):
         avgd.append(json.dumps(basket_info))
     return avgd
 
-def proc_con_comps(ccs,df,min_reps=2,calc_basket_info=True):
+def proc_con_comps(ccs,df,FILENAMECOL,min_reps=2,calc_basket_info=True):
     """
     Takes the connected components from the overlapping hyperrectangles and averages (mean)
     the data values from which the error was generated. Unique filenames are concatenated with a 
@@ -172,12 +177,9 @@ def proc_con_comps(ccs,df,min_reps=2,calc_basket_info=True):
     for cc in ccs:
         if len(cc) > 1:
             cc_df = df.iloc[list(cc)]
-            try:
-                uni_files = set(cc_df[FILENAMECOL])
-            except KeyError as e:
-                uni_files= set(cc_df["Sample"])
+            uni_files = set(cc_df[FILENAMECOL])
             if len(uni_files) >= min_reps:
-                avgd = _combine_rows(df,cc,calc_basket_info)
+                avgd = _combine_rows(df,cc,FILENAMECOL,calc_basket_info)
                 data.append(avgd)
     if calc_basket_info:
         ndf = pd.DataFrame(data,columns=DATACOLS+[FILENAMECOL]+['BasketInfo'])
@@ -185,7 +187,7 @@ def proc_con_comps(ccs,df,min_reps=2,calc_basket_info=True):
         ndf = pd.DataFrame(data,columns=DATACOLS+[FILENAMECOL])
     return ndf
 
-def proc_con_comps_basket(ccs,df,calc_basket_info=True):
+def proc_con_comps_basket(ccs,df,FILENAMECOL,calc_basket_info=True):
     """
     Takes the connected components from the overlapping hyperrectangles and averages (mean)
     the data values from which the error was generated. Unique filenames are concatenated with a 
@@ -202,7 +204,7 @@ def proc_con_comps_basket(ccs,df,calc_basket_info=True):
         pd.DataFrame: new dataframe with data cols and file name col.
     """
 
-    data = [_combine_rows(df,cc,calc_basket_info) for cc in ccs]
+    data = [_combine_rows(df,cc,FILENAMECOL,calc_basket_info) for cc in ccs]
 
     if calc_basket_info:
         ndf = pd.DataFrame(data,columns=DATACOLS+[FILENAMECOL]+['BasketInfo'])
@@ -210,7 +212,7 @@ def proc_con_comps_basket(ccs,df,calc_basket_info=True):
         ndf = pd.DataFrame(data,columns=DATACOLS+[FILENAMECOL])
     return ndf
 
-def _proc_one(sample,df_paths,calc_basket_info=False):
+def _proc_one(sample,df_paths,FILENAMECOL,datadir,calc_basket_info=False):
     """
     Process one replica sample. The replicated file is saved as ./Replicated/<sample>_Replicated.csv
     
@@ -226,11 +228,12 @@ def _proc_one(sample,df_paths,calc_basket_info=False):
     gen_error_cols(df)
     rtree = build_rtree(df)
     con_comps = gen_con_comps(rtree,get_rects(df))
-    ndf = proc_con_comps(con_comps,df,calc_basket_info)
-    ndf.to_csv(os.path.join("Replicated",f"{sample}_Replicated.csv"))
+    ndf = proc_con_comps(con_comps,df,FILENAMECOL,calc_basket_info)
+    ndf.to_csv(datadir.joinpath("Replicated").joinpath(f"{sample}_Replicated.csv"))
+    gc.collect() #wierd attempt to solve rtre index memory leak...
     return "DONE"
 
-def proc_folder(datadir,calc_basket_info,max_workers):
+def proc_folder(datadir,FILENAMECOL,calc_basket_info,max_workers):
     """process a folder of sample data replicates. output files will be saved in ./Replacted
     
     Args:
@@ -238,18 +241,18 @@ def proc_folder(datadir,calc_basket_info,max_workers):
     """
 
     try:
-        os.mkdir('Replicated')
+        os.mkdir(datadir.joinpath('Replicated'))
     except OSError:
         pass
     paths = list(gen_rep_df_paths(datadir))
     for sample,df in tqdm(paths,desc='proc_folder'):
-        _proc_one(sample,df,calc_basket_info)
+        _proc_one(sample,df,FILENAMECOL,datadir,calc_basket_info)
 
 def _update(pbar,future):
     '''callback func for future object to update progress bar'''
     pbar.update()
  
-def mp_proc_folder(datadir,calc_basket_info=False,max_workers=0):
+def mp_proc_folder(datadir,FILENAMECOL,calc_basket_info=False,max_workers=0):
     """
     multi proccesor version of proc_folder. by default will use cpu_count - 2 workers.  
     
@@ -263,7 +266,7 @@ def mp_proc_folder(datadir,calc_basket_info=False,max_workers=0):
 
 
     try:
-        os.mkdir('Replicated')
+        os.mkdir(datadir.joinpath('Replicated'))
     except OSError:
         pass
 
@@ -279,7 +282,7 @@ def mp_proc_folder(datadir,calc_basket_info=False,max_workers=0):
         while samples_left:
                         
             for sample,paths in paths_iter:
-                fut = ex.submit(_proc_one,sample,paths,calc_basket_info)
+                fut = ex.submit(_proc_one,sample,paths,FILENAMECOL,datadir,calc_basket_info)
                 fut.add_done_callback(partial(_update,pbar))
                 futs[fut] = sample
                 if len(futs) > max_workers:
@@ -305,9 +308,9 @@ def make_repdf(datadir):
     sd = os.scandir(datadir)
     csvs = [f.name for f in sd if f.name.lower().endswith('replicated.csv')]
     dfs = [pd.read_csv(os.path.join(datadir,f)) for f in csvs]
-    return pd.concat(dfs)
+    return pd.concat(dfs,sort=False)
 
-def basket(datadir):
+def basket(datadir,FILENAMECOL):
     """
     Basket all the replicates in a directory in to a single file called Baskted.csv in datadir
     Unique file names are kept and deliminated with a '|'   
@@ -318,12 +321,88 @@ def basket(datadir):
 
     print('Loading Rep Files')
     df = make_repdf(datadir)
+    orig_len = df.shape[0]
+    # need to handle multiple file name cols from legacy/mixed input files
+    df[FILENAMECOL] = np.where(df[FILENAMECOL].isnull(), df["Sample"], df[FILENAMECOL])
+    df.dropna(subset=[FILENAMECOL],inplace=True)
+    print(f"Dropped {orig_len-df.shape[0]} rows missing values in {FILENAMECOL}")
     gen_error_cols(df)
     print("Making Rtree Index")
     rtree = build_rtree(df)
     print('Generating Baskets')
     con_comps = gen_con_comps(rtree,get_rects(df),pbar=True)
-    ndf = proc_con_comps_basket(con_comps,df)
+    ndf = proc_con_comps_basket(con_comps,df,FILENAMECOL)
+    ndf.to_csv(os.path.join(datadir,"Basketed_LooseRT_RogerOnly.csv"))
+
+def _basket_chunk(chunk,FILENAMECOL):
+    rtree = build_rtree(chunk)
+    con_comps = gen_con_comps(rtree,get_rects(chunk),pbar=False)
+    ndf = proc_con_comps_basket(con_comps,chunk,FILENAMECOL)
+    gc.collect()
+    return ndf
+
+def mp_basket(datadir,FILENAMECOL,max_workers):
+    """
+    Basket all the replicates in a directory in to a single file called Baskted.csv in datadir
+    Unique file names are kept and deliminated with a '|'   
+    
+    Args:
+        datadir (str): the directory of replicated files. 
+    """
+
+
+
+    print('Loading Rep Files')
+    df = make_repdf(datadir)
+    orig_len = df.shape[0]
+    # need to handle multiple file name cols from legacy/mixed input files
+    df[FILENAMECOL] = np.where(df[FILENAMECOL].isnull(), df["Sample"], df[FILENAMECOL])
+    df.dropna(subset=[FILENAMECOL],inplace=True)
+    print(f"Dropped {orig_len-df.shape[0]} rows missing values in {FILENAMECOL}")
+    gen_error_cols(df)
+    print(f"Before PreProccessing: {len(df)} \n")
+    if max_workers == 0:
+        max_workers = os.cpu_count() - 2
+    with ProcessPoolExecutor(max_workers) as ex:
+        n = len(df)
+        chunksize = int(1e5)
+        # chunksize = n // max_workers
+        futs = []
+        pbar = tqdm(desc="BasketPreProc",total=n//chunksize)
+        chunks = np.array_split(df,n//chunksize)
+        # chunks = [pd.DataFrame(df.iloc[i:i+n]) for i in range(0,n,chunksize)]
+        del df
+        gc.collect()
+        chunks_left = len(chunks)
+        chunks = iter(chunks)
+        futs = {}
+        cn = 0 
+        pdf = None
+        while chunks_left:
+            for chunk in chunks:
+                fut = ex.submit(_basket_chunk,chunk,FILENAMECOL)
+                fut.add_done_callback(partial(_update,pbar))
+                futs[fut] = cn
+                cn+=1
+                if len(futs) > max_workers:
+                    break
+
+            for fut in as_completed(futs):
+                if pdf is None:
+                    pdf = fut.result()
+                else:
+                    pdf.append(fut.result())
+                del futs[fut]
+                chunks_left -=1
+                break
+
+    gen_error_cols(pdf)
+    print(f"After PreProc: {len(pdf)}")
+    print("Making Rtree Index")
+    rtree = build_rtree(pdf)
+    print('Generating Baskets')
+    con_comps = gen_con_comps(rtree,get_rects(pdf),pbar=True)
+    ndf = proc_con_comps_basket(con_comps,pdf,FILENAMECOL)
     ndf.to_csv(os.path.join(datadir,"Basketed_LooseRT_RogerOnly.csv"))
     
 def filename2sample(filename, fn_delim='_', sampleidx=1):
@@ -354,129 +433,4 @@ def cluster_score(fpd,samples):
     fps = get_fps(fpd,samples)
     cubed = pdist(np.vstack(fps),metric='correlation')**3
     return cubed.mean()
-    
-
-# def mp_pairwise_score():
-    # pass
-
-
-# if __name__ == "__main__":
-#     import argparse
-
-#     parser = argparse.ArgumentParser()
-#     parser.add_argument('path',help='path to input for either task')
-#     parser.add_argument('task',help='task to perform.',choices=['replicate','basket','both'])
-#     parser.add_argument('-w','--workers',help="number of parallel workers to spin up",type=int,default=0)
-#     parser.add_argument('--basket_info',help='Flag to save basket info as a json object in resulting files.',action='store_true')
-#     args = parser.parse_args()
-
-#     if args.task in ['replicate','both']:
-#         data_path = Path(args.path)
-#         mp_proc_folder(data_path,max_workers=args.workers,calc_basket_info=args.basket_info)
-
-#     elif args.task in ['basket','both']:
-#         if args.task == 'both':
-#             data_path = 'Replicated'
-#         else:
-#             data_path = Path(args.path)
-#         basket(data_path)
-    
-
-
-# '/home/cpye/pydev/hifan/test_data/RL_002_WPD_CSV'
-
-# print("Processing Roger Replicates")
-
-
-# print("Processing John Replicates")
-# data_path = Path('/home/cpye/pydev/hifan/test_data/HIFAN_JM_001_CSV_WPD25_5')
-# mp_proc_folder(data_path)
-
-# print("Basketing")
-# data_path = Path('/home/cpye/pydev/hifan/metabolate/Replicated')
-# basket(data_path)
-
-
-
-
-
-
-#############################
-# OLD STUFF PROBABLY BROKEN #
-#############################
-
-
-# def get_neigbor_bins(ev,v):
-#     ev = ev.reshape(len(KEYCOLS),2)
-#     floored = np.floor(v.astype(FLOATPREC))
-#     downs = ev[:,0] <= floored
-#     ups = ev[:,0] <= floored
-#     nbins = []
-#     for i,bools in enumerate(zip(downs,ups)):
-#         upbool,downbool = bools
-#         if upbool:
-#             new = floored.copy()
-#             new[i] +=1
-#             new = '_'.join(new.astype(str))
-#             if new in unibins:
-#                 nbins.append(new)
-#         if downbool:
-#             new = floored.copy()
-#             new[i] -=1
-#             new = '_'.join(new.astype(str))
-#             if new in unibins:
-#                 nbins.append(new)
-#     return nbins
-
-
-
-# def match(row,chunk):
-#     ev = row[ERRORCOLS].values
-#     v = row[DATACOLS]
-#     i  = 1
-#     while  np.all(v < ev[:,1]):
-#         cev = chunk.loc[i][ERRORCOLS]
-#         if np.all((v>cev[:,0]) & (v<cev[:,1])):
-        
-
-    
-    
-
-
-
-
-# sd = os.scandir(data_path)
-# frames = [pd.read_csv(data_path.joinpath(f)) for f in sd]
-# df = pd.concat(frames, ignore_index=True)
-
-# df[DATACOLS] = df[DATACOLS].astype(FLOATPREC)
-
-# data = df[DATACOLS].values
-
-# def build_map(d,ks):
-#     d = d.tolist()
-#     dd = defaultdict(list)
-#     for v,k in zip(d,ks):
-#         dd[k].append(v)
-#     return dict(dd)
-
-# floored = np.floor(df[KEYCOLS].values).astype(int).astype(str)
-# keys = ['_'.join(f) for f in floored]
-# unibins = set(keys)
-# df['sequence'] = keys
-# kd = build_map(data,keys)
-
-
-
-# def gen_windows(data):
-#     ncols = data.shape[1]
-#     new_dims = list(data.shape) + [2]
-#     output = np.zeros(new_dims)
-#     for i in range(ncols):
-#         output[:,i,0] = data[:,i] - 1
-#         output[:,i,1] = data[:,i] + 1
-#     return output
-
-
-
-        
+         
