@@ -341,19 +341,8 @@ def _basket_chunk(chunk,FILENAMECOL):
     gc.collect()
     return ndf
 
-def mp_basket(datadir,FILENAMECOL,max_workers):
-    """
-    Basket all the replicates in a directory in to a single file called Baskted.csv in datadir
-    Unique file names are kept and deliminated with a '|'   
-    
-    Args:
-        datadir (str): the directory of replicated files. 
-    """
-
-
-
-    print('Loading Rep Files')
-    df = make_repdf(datadir)
+def _split_basket(df,FILENAMECOL,max_workers):
+    df.sort_values(["RetTime","PrecMz"],inplace=True)
     orig_len = df.shape[0]
     # need to handle multiple file name cols from legacy/mixed input files
     df[FILENAMECOL] = np.where(df[FILENAMECOL].isnull(), df["Sample"], df[FILENAMECOL])
@@ -365,7 +354,7 @@ def mp_basket(datadir,FILENAMECOL,max_workers):
         max_workers = os.cpu_count() - 2
     with ProcessPoolExecutor(max_workers) as ex:
         n = len(df)
-        chunksize = int(1e5)
+        chunksize = int(1e5) #fixed size for chunk
         # chunksize = n // max_workers
         futs = []
         pbar = tqdm(desc="BasketPreProc",total=n//chunksize)
@@ -386,16 +375,38 @@ def mp_basket(datadir,FILENAMECOL,max_workers):
                 cn+=1
                 if len(futs) > max_workers:
                     break
-
             for fut in as_completed(futs):
                 if pdf is None:
                     pdf = fut.result()
                 else:
-                    pdf.append(fut.result())
+                    pdf = pdf.append(fut.result())
                 del futs[fut]
                 chunks_left -=1
                 break
+    return pdf
 
+
+def mp_basket(datadir,FILENAMECOL,max_workers):
+    """
+    Basket all the replicates in a directory in to a single file called Baskted.csv in datadir
+    Unique file names are kept and deliminated with a '|'   
+    
+    Args:
+        datadir (str): the directory of replicated files. 
+    """
+
+
+
+    print('Loading Rep Files')
+    df = make_repdf(datadir)
+    orig_len = df.shape[0]
+    pdf = _split_basket(df,FILENAMECOL,max_workers)
+    new_len = pdf.shape[0]
+    i = 0 
+    while (i < 3) & ((new_len/new_len)< 0.25):
+        pdf = _split_basket(df,FILENAMECOL,max_workers)
+        new_len = pdf.shape[0]
+        i +=1
     gen_error_cols(pdf)
     print(f"After PreProc: {len(pdf)}")
     print("Making Rtree Index")
