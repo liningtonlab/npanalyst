@@ -29,15 +29,28 @@ class Rectangle(object):
             return False
 
 class RectNode(Rectangle):
-    def __init__(self,mins,maxes,children,is_leaf=False):
+    def __init__(self,mins,maxes,children,dim):
         super().__init__(self,mins,maxes)
         self.children = children
+        self.is_leaf = False if dim > 0 else True
+    
     @classmethod
-    def from_rect(cls,rect,is_leaf=False):
-        return cls(rect.mins,rect.maxes,children=[],is_leaf=is_leaf)
-    def split(self):
-        '''split yourself in half, returning two nodes with the children in each'''
-        pass
+    def from_rect(cls,rect,dim):
+        return cls(rect.mins,rect.maxes,children=[],dim=dim)
+    @classmethod
+    def from_children(cls,children,dim):
+        child_mins = np.min([c.mins for c in children],axis=0)
+        child_maxes = np.min([c.maxes for c in children],axis=0)
+        return cls(child_mins,child_maxes,children=children,dim=dim)
+    @property
+    def MBR(self):
+        child_mins = np.min([c.mins for c in self.children],axis=0)
+        child_maxes = np.min([c.maxes for c in self.children],axis=0)
+        return Rectangle(mins=child_maxes,maxes=child_maxes)
+    
+    # def split_dim(self,dim):
+    #     '''split yourself in half, returning two nodes with the children in each'''
+    #     x = x[x[:,dim].argsort()]
 
 class RTree(object):
     def __init__(self,rects,M=100):
@@ -45,12 +58,13 @@ class RTree(object):
         self.centers = np.asarray([r.center for r in self.rects])
         self.mins = np.asarray([r.mins for r in self.rects])
         self.maxes = np.asarray([r.maxes for r in self.rects])
-        self.K = self.rects[0].dims
+        self.K = self.rects[0].dims-1
         self.N = len(self.mins)
         self.M = M
         self.min_bounds = self.mins.min(axis=0)
         self.max_bounds = self.mins.max(axis=0)
         self.idx = self._construct()
+    
     
     def _construct(self):
         pass
@@ -62,31 +76,50 @@ class RTree(object):
         pass
     
     def _STR(self):
+        def _gen_slabs(x,slabn,k):
+            x = x[np.argsort([y.center[k] for y in x])]
+            j = 0
+            for i in range(0,x.size,slabn):
+                if j+i < x.size:
+                    yield k,x[j:j+i]
+                    j +=i
+                else:
+                    yield k,x[j:]
         k = self.K
         P = math.ceil(self.N/self.M)
         slabn = self.M * math.ceil(P**((k-1)/k))
         stack = []
-        def _gen_slabs(x,slabn,k):
-            x = x[x[:,k].argsort()]
-            j = 0
-            for i in range(x.size,slabn):
-                if j+i < x.size:
-                    yield x[j:j+i]
-                    j +=i
-                else:
-                    yield x[j:]
         top_slabs = _gen_slabs(self.rects,slabn,k)
-        satack = [RectNode]
-        while k !=0 :
-            s = math.ceil(P**(1/k))
-            slabn = self.M * math.ceil(P**((k-1)/k))
-            
-            
+        stack = list(top_slabs)
+        leaves = []
+        while stack:
+            old_k,slab =  stack.pop()
+            if k >1:
+                k = old_k-1
+                s = math.ceil(P**(1/k))
+                slabn = self.M * math.ceil(P**((k-1)/k))     
+                stack.extend(list(_gen_slabs(slab,slabn,k)))
+            else:
+                j = 0
+                for i in range(0,len(slab),self.M):
+                    try:
+                        leaf = RectNode.from_children(slab[j:j+i],dim=0)
+                        j+=i
+                    except IndexError:
+                        leaf = RectNode.from_children(slab[j:],dim=0)
+                    leaves.append(leaf)
+        self.leaves = leaves
 
-            while stack:
-                node = stack.pop()
 
+def gen_synth_rects(n=1000,dim=4):
+    data = np.random.rand(n,dim)
+    dmins = data -0.1
+    dmaxes = data + 0.1
+    for mins,maxes in zip(dmins,dmaxes):
+        yield Rectangle(mins,maxes)
 
-
-
-
+def test_build():
+    rects = np.asarray(list(gen_synth_rects()))
+    rtree = RTree(rects)
+    rtree._STR()
+    return rtree
