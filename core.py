@@ -437,11 +437,44 @@ def get_fps(fpd,samples):
             pass
     if not to_cat:
         raise KeyError("No Fingerprints found...")
-    return to_cat
+    return np.asarray(to_cat)
 
 from scipy.spatial.distance import pdist
 def cluster_score(fpd,samples):
+    '''this is wrong... fixit..'''
     fps = get_fps(fpd,samples)
+    if fps.shape[0] == 1:
+        return 1
     cubed = pdist(np.vstack(fps),metric='correlation')**3
-    return cubed.mean()
+    score = cubed.mean()
+    # if np.isnan(cubed):
+    #     print(fps)
+    #     raise 
+    return score
          
+def load_basket_data(bpath:str, samplecol="Sample",mzcol="PrecMz",rtcol="RetTime", ccscol="CCS", intcol="PrecIntensity") -> list:
+    df = pd.read_csv(bpath)
+    ms1df = pd.DataFrame(list(set(df[[rtcol,mzcol,ccscol,intcol,samplecol]].itertuples(index=False))))
+    baskets = []
+    for rowt in ms1df.itertuples(index=False):
+        rt,mz,ccs,inti,samplestr = rowt
+        samples = filenames2samples(samplestr)
+        bd = {'mz':mz,'rt':rt,'ccs':ccs,'inti':inti,'samples':samples}
+        baskets.append(bd)
+    return baskets
+    
+
+def load_activity_data(apath: str, name_col='SWID') -> dict:
+    df = pd.read_csv(apath)
+    df[name_col] = df[name_col].apply(lambda x:x.split('-')[0])
+    actd = {}
+    for row in df.itertuples(index=False):
+        actd[row[0]] = np.asarray(row[1:])
+    return actd
+
+
+
+    
+
+def score_baskets(basketd,activityd):
+    pass

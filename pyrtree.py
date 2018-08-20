@@ -30,7 +30,7 @@ class Rectangle(object):
 
 class RectNode(Rectangle):
     def __init__(self,mins,maxes,children,dim):
-        super().__init__(self,mins,maxes)
+        super().__init__(mins,maxes )
         self.children = children
         self.is_leaf = False if dim > 0 else True
     
@@ -92,22 +92,27 @@ class RTree(object):
         top_slabs = _gen_slabs(self.rects,slabn,k)
         stack = list(top_slabs)
         leaves = []
+        nodes = []
         while stack:
             old_k,slab =  stack.pop()
             if k >1:
                 k = old_k-1
                 s = math.ceil(P**(1/k))
-                slabn = self.M * math.ceil(P**((k-1)/k))     
-                stack.extend(list(_gen_slabs(slab,slabn,k)))
+                slabn = self.M * math.ceil(P**((k-1)/k))
+                slabs = list(_gen_slabs(slab,slabn,k))
+                stack.extend(slabs)
+                nodes 
             else:
                 j = 0
                 for i in range(0,len(slab),self.M):
                     try:
-                        leaf = RectNode.from_children(slab[j:j+i],dim=0)
+                        children = slab[j:j+i]
                         j+=i
                     except IndexError:
-                        leaf = RectNode.from_children(slab[j:],dim=0)
-                    leaves.append(leaf)
+                        children = slab[j:]
+                    if children.size > 0:
+                        leaf = RectNode.from_children(children,dim=0)
+                        leaves.append(leaf)
         self.leaves = leaves
 
 
