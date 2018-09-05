@@ -26,6 +26,8 @@ import math
 import statistics
 
 
+
+#partially finished classes, not used currently
 class Interval(object):
     __slots__ = ('low','high','center')
     def __init__(self,low,high,center=None):
@@ -77,59 +79,35 @@ class PrecIon(object):
 
 
 
-# data = np.random.rand(1000000,4)*10
 
-# KEYCOLS = ["PrecMz","PrecZ","RetTime"]
-# ERRORKEYCOLS = [cn for cn in ERRORCOLS if cn.split('_')[0] in KEYCOLS]
-# DATACOLS = ["PrecMz","PrecZ","CCS","RetTime",'Ar1',"ProdMz",'PrecIntensity']
-# QUERYCOLS = ["PrecMz","PrecZ","CCS","RetTime",'Ar1',"ProdMz"]
-
-# MS1COLS = ["PrecMz","PrecZ","CCS","RetTime",]#'PrecIntensity']
-# MS2COLS = ["ProdMz",'ProdIntensity','Ar1','Ar3']
-
-FLOATPREC = 'float64'
 def _make_error_col_names(qcols):
+    '''helper func to make error column names of the form
+    <col_name>_low ... <col_name>_high
+    
+    Args:
+        qcols (iterable): an iterable of column names used for matching
+    
+    Returns:
+        list: list of error col names in non-interleaved order
+    '''
     error_cols = [f"{dcol}_low" for dcol in qcols]
     error_cols = error_cols + [f"{dcol}_high" for dcol in qcols]
     return error_cols
 
-# ERRORCOLS = _make_error_col_names(QUERYCOLS)
-# MS2ERRORCOLS = _make_error_col_names(MS2COLS)
-# MS1ERRORCOLS = _make_error_col_names(MS1COLS)
-
-# # Cam Tolerances
-# # ERRORINFO = {
-# #     "PrecMz":('ppm',25),
-# #     "PrecZ":(None,None),
-# #     "CCS":('ppm',10000),
-# #     "RetTime":('window',0.1),
-# #     "PrecIntensity":('factor',10),
-# #     "Ar1":('window',0.33),
-# #     "ProdMz":('ppm',50)
-# #     }
-
-# # Kenji Tolerances
-# ERRORINFO = {
-#     "PrecMz":('ppm',25),
-#     "PrecZ":(None,None),
-#     "CCS":('window',1),
-#     "RetTime":('window',0.03),
-#     # "PrecIntensity":('window',10),
-#     "Ar1":('window',0.33),
-#     "ProdMz":('ppm',25)
-#     }
-
-# DATACOLS = DATACOLS + ['PrecIntensity','ProdIntensity','Ar1','Ar3']
-# DATACOLS = DATACOLS + ['ProdIntensity','Ar1','Ar3']
 
 
-
-# FILENAMECOL = "MgfFileName"
-
-def _load_config():
+def _load_config(config_path=None):
+    '''loads the config_path config file and stores a bunch of values as globals
+        config_path (str, optional): Defaults to 'defualt.cfg'. 
+            path to the config file, default can be overridden. 
+    '''    
     config = configparser.ConfigParser()
     config.optionxform = str #make sure things don't get lowercased
-    config.read('default.cfg')
+    if config_path is None:
+        config.read('default.cfg')
+    else:
+        config.read(config_path)
+
     global MS1COLS
     MS1COLS = config['MSFileInfo']['MS1Cols'].split(',')
     global MS1COLSTOMATCH
@@ -156,7 +134,7 @@ def _load_config():
     global MS2ERRORCOLS
     MS2ERRORCOLS = _make_error_col_names(MS2COLSTOMATCH)
 
-_load_config()
+_load_config() #pull config info into global namespace
 
 
 def gen_rep_df_paths(datadir):
@@ -180,12 +158,17 @@ def gen_rep_df_paths(datadir):
 
 def gen_error_cols(df,qcols=MS1COLSTOMATCH):
     """
-    Uses the global ERRORINFO and DATACOLS lists to generate
-    error windows for each of the DATACOLS. Mutates dataframe inplace for
-    some memory conservation.
+    Uses the global ERRORINFO dict to generate
+    error windows for each of the qcols. 
+    Mutates dataframe inplace for some memory conservation.
+    possible error types are:
+    * ppm - parts per million
+    * perc - percentage
+    * factor - a multiplier (ie 10 = 10x)
+    * window - a standard fixed error window
     
     Args:
-        df (pandas.DataFram): input dataframe to calc error windows (modified in place)
+        df (pandas.DataFrame): input dataframe to calc error windows (modified in place)
     """
 
     for dcol in qcols:
@@ -211,25 +194,25 @@ def get_rects(df,errorcols=MS1ERRORCOLS):
     get the hyperrectangles defined by the error funcs. assumes error cols are present in df.
     
     Args:
+        errorcols (iterable): the error cols to make rectangles from
         df (pd.DataFrame): datafame with error cols in format <datacol>_low and <datacol>_high
     
     Returns:
         np.array: array of hyperrectangles in format [[x_low,y_low...x_high,y_high]]
     """
-
-    # order = [f"{dcol}_low" for dcol in DATACOLS] + [f"{dcol}_high" for dcol in DATACOLS]
     order = errorcols
     return df[order].values
 
 def build_rtree(df,errorcols=MS1ERRORCOLS):
     """
     build an rtree index from a dataframe for fast range queries.
+    dataframe needs to have error cols pre-calced
     
     Args:
         df (pd.DataFrame): dataframe with error cols
     
     Returns:
-        rtree.Index: a rtree index built from df data
+        rtree.Index: a rtree index built from df rectangles
     """
 
     dims = len(errorcols) // 2 
@@ -239,7 +222,6 @@ def build_rtree(df,errorcols=MS1ERRORCOLS):
     rgen = ((i,r,None) for i,r in enumerate(get_rects(df,errorcols)))
     idx = index.Index(rgen,properties=p)
     return idx
-
 
 def gen_con_comps(rtree,rects,pbar=False):
     """
@@ -273,8 +255,18 @@ def gen_con_comps(rtree,rects,pbar=False):
                     seen.add(n)
             yield c
 
-
 def reduce_to_ms1(df,FILENAMECOL):
+    '''takes a dataframe w/ ms2 data in "tidy dataformat" and
+    reduces it down to a ms1 df with a ms2df object stored in MS2Info
+    
+    Args:
+        df (pd.DataFrame): ms2 dataframe in tidy (rectangluar) format
+        FILENAMECOL (str): filename column (needed for de-replication)
+    
+    Returns:
+        df: a ms1df which has the ms2 data in MS2Info column
+    '''
+
     gb = df.groupby(MS1COLS+[FILENAMECOL])
     ms1_data = []
     for gbi,ms2df in gb:
@@ -289,9 +281,19 @@ def reduce_to_ms1(df,FILENAMECOL):
 
     return ms1df
     
-    
-
 def _average_data_rows(cc_df,datacols,calc_basket_info=False):
+    '''average (mean) the datacols values. optionally calculates the bounds
+    of each resulting basket. basket_info will be serialized as json.
+    
+    Args:
+        cc_df (pd.DataFrame): connected component dataframe
+        datacols (iterable): the columns whose data should be averaged
+        calc_basket_info (bool, optional): Defaults to False. flag to compute bounds of basket parameters
+    
+    Returns:
+        list: row of averaged values (+ optional basket_info json)
+    '''
+
     avgd = list(cc_df[list(datacols)].mean())
     if calc_basket_info:
         basket_info = {cn:[float(cc_df[cn].min()),float(cc_df[cn].max())] for cn in datacols}
@@ -299,18 +301,19 @@ def _average_data_rows(cc_df,datacols,calc_basket_info=False):
         avgd.append(json.dumps(basket_info))
     return avgd
 
-def _combine_rows(cc_df,uni_files,datacols,calc_basket_info=False):
-    avgd = list(cc_df[datacols].mean())
-    avgd.append('|'.join(uni_files))
-    if calc_basket_info:
-        basket_info = {cn:[float(cc_df[cn].min()),float(cc_df[cn].max())] for cn in datacols}
-        basket_info['n'] = len(cc_df)
-        avgd.append(json.dumps(basket_info))
-    return avgd
-
-
-
 def combine_ms2(cc_df,min_reps=2):
+    '''combine the ms2 data for a given connected component graph of ms1 ions.
+    this is done the same way as the ms1 matching (rtree index) but uses the columns
+    defined in global MS2COLSTOMATCH
+    
+    Args:
+        cc_df (pd.DataFrame): conncected component dataframe 
+        min_reps (int, optional): Defaults to 2. minimum number of replicates required for ms2 ion to be included   
+    
+    Returns:
+        pd.DataFrame: combined ms2 dataframe
+    '''
+
     # ms2dfs = [pd.read_json(ms2df,orient='split') for ms2df in cc_df['MS2Info']]
     # ms2dfs = [pd.read_json(ms2df) for ms2df in cc_df['MS2Info']]
     ms2dfs = cc_df['MS2Info'].values.tolist()
@@ -342,83 +345,26 @@ def combine_ms2(cc_df,min_reps=2):
     # return avg_ms2.to_json(orient='split',index=False) #note that to read back to df orient='split' must be set in pd.read_json()
     return avg_ms2
 
+def _combine_rows(cc_df,uni_files,min_reps,ms2,calc_basket_info=False):
+    '''combine ms1 rows and optionally ms2 information in conncected component dataframe
+    
+    Args:
+        cc_df (pd.DataFrame): conncected component dataframe
+        uni_files (set): uniqe filenames from cc_df
+        min_reps (int): minumum number of replicates (number of uniqe files) that must be in connected component
+        ms2 (bool): whether or not to combine ms2 data
+        calc_basket_info (bool, optional): Defaults to False. whether or not to calculate basket info (spans)
+    
+    Returns:
+        list: averaged values from rows of cc_df and optionally ms2 info and/or basket info
+    '''
 
-
-# def combine_ms2(cc_df,min_reps=2):
-#     # ms2dfs = [pd.read_json(ms2df,orient='split') for ms2df in cc_df['MS2Info']]
-
-#     ms2dfs = cc_df['MS2Info'].values.tolist()
-
-#     ms2df = pd.concat(ms2dfs,sort=True)
-#     if ms2df.shape[0] > 1:
-#         gen_error_cols(ms2df,MS2COLSTOMATCH)
-#         rects = get_rects(ms2df,MS2ERRORCOLS)
-#         rtree = build_rtree(ms2df,MS2ERRORCOLS)
-#         ccs = gen_con_comps(rtree,rects)
-#         data = []
-#         file_col = []
-#         for cc in ccs:
-#             if len(cc) > 1:
-#                 cc_df = ms2df.iloc[list(cc)]
-#                 uni_files = set(cc_df[FILENAMECOL].values)
-#                 if len(uni_files) >= min_reps:
-#                     data.append(_average_data_rows(cc_df,MS2COLS))
-#                     file_col.append('|'.join(uni_files))
-#             #     else:
-#             #         data.append([None]*len(MS2COLS))
-#             # else:
-#             #     data.append([None]*len(MS2COLS))
-                    
-#         avg_ms2 = pd.DataFrame(data,columns=MS2COLS)
-#         avg_ms2[FILENAMECOL] = file_col
-#     else:
-#         avg_ms2 = ms2df
-#     # return avg_ms2.to_json(orient='split',index=False) #note that to read back to df orient='split' must be set in pd.read_json()
-#     return avg_ms2.to_json() 
-
-def _combine_rows_ms1(cc_df,uni_files,min_reps,ms2,calc_basket_info=False):
     ms1vals = _average_data_rows(cc_df,MS1COLS,calc_basket_info=calc_basket_info)
     if ms2:
         ms2vals = combine_ms2(cc_df,min_reps)
         return ms1vals + [ms2vals]
     else:
         return ms1vals
-
-# def proc_con_comps(ccs,df,FILENAMECOL,min_reps=2,calc_basket_info=False):
-#     """
-#     Takes the connected components from the overlapping hyperrectangles and averages (mean)
-#     the data values from which the error was generated. Unique filenames are concatenated with a 
-#     '|' delimiter. Only subgraphs with multiple nodes are used and further filtered for only those 
-#     which come from at least `min_reps` unique files.
-    
-    
-#     Args:
-#         ccs (set): connected component subgraph dataframe indices
-#         df (pd.DataFrame): the dataframe which the connected component subgraphs were calculated from
-#         min_reps (int, optional): Defaults to 2. Minimum number of files needed in subgraph to be used
-#         calc_basket_info(bool, optional): Defaults to True. Whether or not to include json basket info. 
-    
-#     Returns:
-#         pd.DataFrame: newdata frame with data cols and file name col.
-#     """
-
-#     data = []
-#     for cc in ccs:
-#         if len(cc) > 1:
-#             cc_df = df.iloc[list(cc)]
-#             uni_files = set(cc_df[FILENAMECOL].values)
-  
-#             if len(uni_files) >= min_reps:
-#                 avgd = _combine_rows(cc_df,uni_files=uni_files,calc_basket_info=calc_basket_info)
-#                 data.append(avgd)
-#             else:
-#                 continue
-#     if calc_basket_info:
-#         ndf = pd.DataFrame(data,columns=DATACOLS+[FILENAMECOL]+['BasketInfo'])
-#     else:
-#         ndf = pd.DataFrame(data,columns=DATACOLS+[FILENAMECOL])
-#     return ndf
-
 
 def proc_con_comps(ccs,df,FILENAMECOL,datacols,min_reps=2,calc_basket_info=False,ms2=True):
     """
@@ -431,8 +377,11 @@ def proc_con_comps(ccs,df,FILENAMECOL,datacols,min_reps=2,calc_basket_info=False
     Args:
         ccs (set): connected component subgraph dataframe indices
         df (pd.DataFrame): the dataframe which the connected component subgraphs were calculated from
+        FILENAMECOL (str): filename column to be used for min_reps
+        datacols (iterable): column names to be averaged in connected components
         min_reps (int, optional): Defaults to 2. Minimum number of files needed in subgraph to be used
-        calc_basket_info(bool, optional): Defaults to True. Whether or not to include json basket info. 
+        calc_basket_info(bool, optional): Defaults to False. Whether or not to include json basket info. 
+        ms2(bool, optional): Defaults to True. Wether or not to average MS2 data 
     
     Returns:
         pd.DataFrame: newdata frame with data cols and file name col.
@@ -446,7 +395,7 @@ def proc_con_comps(ccs,df,FILENAMECOL,datacols,min_reps=2,calc_basket_info=False
         uni_files = set(cc_df[FILENAMECOL].values)
         if len(uni_files) >= min_reps:
             file_col.append('|'.join(uni_files))
-            avgd = _combine_rows_ms1(cc_df,uni_files,calc_basket_info=calc_basket_info,min_reps=min_reps,ms2=ms2)
+            avgd = _combine_rows(cc_df,uni_files,calc_basket_info=calc_basket_info,min_reps=min_reps,ms2=ms2)
             data.append(avgd)
         else:
             continue
@@ -461,94 +410,7 @@ def proc_con_comps(ccs,df,FILENAMECOL,datacols,min_reps=2,calc_basket_info=False
 
     return ndf
 
-def proc_con_comps_ms1(ccs,df,FILENAMECOL,min_reps=2,calc_basket_info=False):
-    """
-    Takes the connected components from the overlapping hyperrectangles and averages (mean)
-    the data values from which the error was generated. Unique filenames are concatenated with a 
-    '|' delimiter. Only subgraphs with multiple nodes are used and further filtered for only those 
-    which come from at least `min_reps` unique files.
-    
-    
-    Args:
-        ccs (set): connected component subgraph dataframe indices
-        df (pd.DataFrame): the dataframe which the connected component subgraphs were calculated from
-        min_reps (int, optional): Defaults to 2. Minimum number of files needed in subgraph to be used
-        calc_basket_info(bool, optional): Defaults to True. Whether or not to include json basket info. 
-    
-    Returns:
-        pd.DataFrame: newdata frame with data cols and file name col.
-    """
-
-    data = []
-    for cc in ccs:
-        if len(cc) > 1:
-            cc_df = df.iloc[list(cc)]
-            # cc_df.drop(columns=('MS2Info'),inplace=True)
-  
-            uni_files = set(cc_df[FILENAMECOL].values)
-            if len(uni_files) >= min_reps:
-                avgd = _combine_rows_ms1(cc_df,uni_files=uni_files,calc_basket_info=calc_basket_info)
-                data.append(avgd)
-            else:
-                continue
-    if calc_basket_info:
-        ndf = pd.DataFrame(data,columns=MS1COLS+[FILENAMECOL,"MS2Info",'BasketInfo'])
-    else:
-        ndf = pd.DataFrame(data,columns=MS1COLS+[FILENAMECOL,"MS2Info"])
-    return ndf
-
-def proc_con_comps_basket(ccs,df,FILENAMECOL,calc_basket_info=True):
-    """
-    Takes the connected components from the overlapping hyperrectangles and averages (mean)
-    the data values from which the error was generated. Unique filenames are concatenated with a 
-    '|' delimiter. This is used for basketing accross multiple, pre-replicated files. Single node
-    subgraphs are allowed.
-    
-    
-    Args:
-        ccs (set): connected component subgraph dataframe indices
-        df (pd.DataFrame): the dataframe which the connected component subgraphs were calculated from
-        calc_basket_info(bool, optional): Defaults to True. Whether or not to include json basket info. 
-    
-    Returns:
-        pd.DataFrame: new dataframe with data cols and file name col.
-    """
-
-    data = []
-    for cc in ccs:
-        cc_df = df.iloc[list(ccs)]
-        uni_files = set(chain(*[fnames.split("|") for fnames in cc_df[FILENAMECOL]]))
-        data.append(_combine_rows(cc_df,uni_files=uni_files,calc_basket_info=calc_basket_info))
-    if calc_basket_info:
-        ndf = pd.DataFrame(data,columns=DATACOLS+[FILENAMECOL]+['BasketInfo'])
-    else:
-        ndf = pd.DataFrame(data,columns=DATACOLS+[FILENAMECOL])
-    return ndf
-
 def _proc_one(sample,df_paths,FILENAMECOL,datadir,calc_basket_info=False):
-    """
-    Process one replica sample. The replicated file is saved as ./Replicated/<sample>_Replicated.csv
-    
-    Args:
-        sample (str): sample name
-        df_paths (list): list of paths to replica files to be loaded
-    
-    Returns:
-        str: "DONE" when completed
-    """
-    dfs = [pd.read_csv(p) for p in df_paths]
-    df = pd.concat(dfs,sort=True)
-    df.reset_index(inplace=True)
-    gen_error_cols(df)
-    rtree = build_rtree(df)
-    con_comps = gen_con_comps(rtree,get_rects(df))
-    ndf = proc_con_comps(con_comps,df,FILENAMECOL,calc_basket_info=calc_basket_info)
-    ndf.to_csv(datadir.joinpath("Replicated").joinpath(f"{sample}_Replicated.csv"))
-    gc.collect() #wierd attempt to solve rtree index memory leak...
-    return "DONE"
-
-
-def _proc_one_ms1(sample,df_paths,FILENAMECOL,datadir,calc_basket_info=False):
     """
     Process one replica sample. The replicated file is saved as ./Replicated/<sample>_Replicated.csv
     
@@ -588,7 +450,7 @@ def proc_folder(datadir,FILENAMECOL,calc_basket_info,max_workers):
         pass
     paths = list(gen_rep_df_paths(datadir))
     for sample,df in tqdm(paths,desc='proc_folder'):
-        _proc_one_ms1(sample,df,FILENAMECOL,datadir,calc_basket_info)
+        _proc_one(sample,df,FILENAMECOL,datadir,calc_basket_info)
 
 def _update(pbar,future):
     '''callback func for future object to update progress bar'''
@@ -625,7 +487,7 @@ def mp_proc_folder(datadir,FILENAMECOL,calc_basket_info=False,max_workers=0):
                         
             for sample,paths in paths_iter:
                 # fut = ex.submit(_proc_one,sample,paths,FILENAMECOL,datadir,calc_basket_info)
-                fut = ex.submit(_proc_one_ms1,sample,paths,FILENAMECOL,datadir,calc_basket_info)
+                fut = ex.submit(_proc_one,sample,paths,FILENAMECOL,datadir,calc_basket_info)
                 fut.add_done_callback(partial(_update,pbar))
                 futs[fut] = sample
                 if len(futs) > max_workers:
@@ -654,9 +516,10 @@ def make_repdf(datadir):
     return pd.concat(dfs,sort=False)
 
 def _read_json(ms2json,i):
+    '''helper func that can be serialized for multiproc json de-serialization'''
     return i,pd.read_json(ms2json)
 
-def basket(datadir,FILENAMECOL,ms2=False):
+def basket(datadir,FILENAMECOL,ms2=False,calc_basket_info=False):
     """
     Basket all the replicates in a directory in to a single file called Baskted.csv in datadir
     Unique file names are kept and deliminated with a '|'   
@@ -668,7 +531,7 @@ def basket(datadir,FILENAMECOL,ms2=False):
     print('Loading Rep Files')
     df = make_repdf(datadir)
     orig_len = df.shape[0]
-    if ms2:
+    if ms2: #de-serialize the json df's w/ multiproc 
         with ProcessPoolExecutor() as ex:
             futs = [ex.submit(_read_json,ms2json,i)for i,ms2json in enumerate(df['MS2Info'])]
         ms2dfs = []
@@ -686,90 +549,11 @@ def basket(datadir,FILENAMECOL,ms2=False):
     rtree = build_rtree(df)
     print('Generating Baskets')
     con_comps = gen_con_comps(rtree,get_rects(df),pbar=True)
-    ndf = proc_con_comps(con_comps,df,FILENAMECOL,MS1COLS,min_reps=1,calc_basket_info=False,ms2=ms2)
+    ndf = proc_con_comps(con_comps,df,FILENAMECOL,MS1COLS,min_reps=1,calc_basket_info=calc_basket_info,ms2=ms2)
     # ndf['MS2Info'] = [ms2df.to_json(orient='split',index=False) for ms2df in ndf['MS2Info']]
     ndf['freq'] = [len(s.split('|')) for s in ndf[FILENAMECOL]]
     ndf.to_csv(os.path.join(datadir,"Basketed.csv"))
-
-def _basket_chunk(chunk,FILENAMECOL):
-    rtree = build_rtree(chunk)
-    con_comps = gen_con_comps(rtree,get_rects(chunk),pbar=False)
-    ndf = proc_con_comps(con_comps,chunk,FILENAMECOL,MS1COLS,min_reps=1,calc_basket_info=False)
-    gc.collect()
-    return ndf
-
-def _split_basket(df,FILENAMECOL,max_workers):
-    df.sort_values(["RetTime","PrecMz"],inplace=True)
-    orig_len = df.shape[0]
-    # need to handle multiple file name cols from legacy/mixed input files
-    df[FILENAMECOL] = np.where(df[FILENAMECOL].isnull(), df["Sample"], df[FILENAMECOL])
-    df.dropna(subset=[FILENAMECOL],inplace=True)
-    print(f"Dropped {orig_len-df.shape[0]} rows missing values in {FILENAMECOL}")
-    gen_error_cols(df)
-    print(f"Before PreProccessing: {len(df)} \n")
-    if max_workers == 0:
-        max_workers = os.cpu_count() - 2
-    with ProcessPoolExecutor(max_workers) as ex:
-        n = len(df)
-        # chunksize = int(1e5) #fixed size for chunk
-        chunksize = n // max_workers
-        futs = []
-        pbar = tqdm(desc="BasketPreProc",total=n//chunksize)
-        chunks = np.array_split(df,n//chunksize)
-        # chunks = [pd.DataFrame(df.iloc[i:i+n]) for i in range(0,n,chunksize)]
-        del df
-        gc.collect()
-        chunks_left = len(chunks)
-        chunks = iter(chunks)
-        futs = {}
-        cn = 0 
-        pdf = None
-        while chunks_left:
-            for chunk in chunks:
-                fut = ex.submit(_basket_chunk,chunk,FILENAMECOL)
-                fut.add_done_callback(partial(_update,pbar))
-                futs[fut] = cn
-                cn+=1
-                if len(futs) > max_workers:
-                    break
-            for fut in as_completed(futs):
-                if pdf is None:
-                    pdf = fut.result()
-                else:
-                    pdf = pdf.append(fut.result())
-                del futs[fut]
-                chunks_left -=1
-                break
-    return pdf
-
-def mp_basket(datadir,FILENAMECOL,max_workers):
-    """
-    Basket all the replicates in a directory in to a single file called Baskted.csv in datadir
-    Unique file names are kept and deliminated with a '|'   
-    
-    Args:
-        datadir (str): the directory of replicated files. 
-    """
-
-    print('Loading Rep Files')
-    df = make_repdf(datadir)
-    orig_len = df.shape[0]
-    pdf = _split_basket(df,FILENAMECOL,max_workers)
-    new_len = pdf.shape[0]
-    i = 0 
-    while (i < 3) & ((new_len/new_len)< 0.25):
-        pdf = _split_basket(df,FILENAMECOL,max_workers)
-        new_len = pdf.shape[0]
-        i +=1
-    gen_error_cols(pdf)
-    print(f"After PreProc: {len(pdf)}")
-    print("Making Rtree Index")
-    rtree = build_rtree(pdf)
-    print('Generating Baskets')
-    con_comps = gen_con_comps(rtree,get_rects(pdf),pbar=True)
-    ndf = proc_con_comps_basket(con_comps,pdf,FILENAMECOL)
-    ndf.to_csv(os.path.join(datadir,"Basketed_LooseRT_RogerOnly.csv"))
-    
+ 
 def filename2sample(filename, fn_delim='_', sampleidx=1):
     sample = filename.split(fn_delim)[sampleidx]
     return sample
