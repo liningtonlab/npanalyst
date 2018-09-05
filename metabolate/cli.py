@@ -6,7 +6,7 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('path',help='path to input for either task or basketed data for activity mapping')
-    parser.add_argument('task',help='task to perform.',choices=['replicate','basket','both'])
+    parser.add_argument('task',help='task to perform.',choices=['replicate','basket','both','activity'])
     parser.add_argument('-w','--workers',help="number of parallel workers to spin up",type=int,default=0)
     parser.add_argument('-f','--filename_col',help='column name for the filename',default='Sample')
     parser.add_argument('--basket_info',help='Flag to save basket info as a json object in resulting files.',action='store_true')
@@ -14,8 +14,8 @@ def main():
     parser.add_argument('--activity_data',help='path to activity data or folder containing multiple activity files')
     args = parser.parse_args()
 
+    data_path = Path(args.path)
     if args.task in ['replicate','both']:
-        data_path = Path(args.path)
         mp_proc_folder(data_path,FILENAMECOL=args.filename_col,max_workers=args.workers,calc_basket_info=args.basket_info)
 
     if args.task in ['basket','both']:
@@ -28,9 +28,8 @@ def main():
     if args.activity_data and args.task not in ('both','basket'):
         print('path argument must be path to basketed data file')
     
-    if args.activity_data:
-        pass
-        '''do activity related funcs and make outputs'''
+    if args.activity_data and args.task == 'activity':
+        load_and_generate_act_outputs(data_path,args.activity_data)
 
 if __name__ == "__main__":
     main()

@@ -19,7 +19,7 @@ from scipy.spatial.distance import pdist
 from tqdm import tqdm
 
 # from numba import jit
-# from IPython import embed
+from IPython import embed
 
 
 
@@ -100,7 +100,8 @@ def _load_config(config_path=None):
     config = configparser.ConfigParser()
     config.optionxform = str #make sure things don't get lowercased
     if config_path is None:
-        config.read('default.cfg')
+        p = Path(__file__).parent.parent.joinpath('default.cfg')
+        config.read(str(p))
     else:
         config.read(config_path)
 
@@ -558,8 +559,8 @@ def filenames2samples(filenames, delim='|', fn_delim='_', sampleidx=1):
     samples = {filename.split(fn_delim)[sampleidx] for filename in filenames.split(delim)}
     return samples
 
-def synth_fp(fpd,samples):
-    to_cat = get_fps(fpd,samples)
+def synth_fp(actd,samples):
+    to_cat = get_fps(actd,samples)
     return np.vstack(to_cat).mean(axis=0)
     
 def get_fps(fpd,samples):
@@ -597,12 +598,28 @@ def load_basket_data(bpath:str, samplecol="Sample",mzcol="PrecMz",rtcol="RetTime
     return baskets
     
 
-def load_activity_data(apath: str, name_col='SWID') -> dict:
-    df = pd.read_csv(apath)
+def load_activity_data(apath: str) -> dict:
+    p = Path(apath)
+    if p.is_dir():
+        filenames = [sd.name for sd in os.scandir(p) if sd.name.lower().endswith('csv')]
+        dfs = {}
+        for fname in filenames:
+            df = pd.read_csv(p.joinpath(fname),index_col=0)
+
+            df.fillna(value=0, inplace=True)
+            name = os.path.splitext(fname)[0]
+            dfs[name]=df
+
+
+    if p.is_file():
+        name = os.path.splitext(p.name)[0]
+        dfs[name] = pd.read_csv(apath)
     # df[name_col] = df[name_col].apply(lambda x:x.split('-')[0])
-    actd = {}
-    for row in df.itertuples(index=False):
-        actd[row[0]] = np.asarray(row[1:])
+    actd = defaultdict(dict)
+    for name,df in dfs.items():
+        for row in df.itertuples():
+            actd[name][row[0]] = np.asarray(row[1:])
+    actd = dict(actd) #convert to normal dict
     return actd
 
 
@@ -615,15 +632,19 @@ def get_config(cpath:str):
     
 Scoret = namedtuple('Scoret', 'activity cluster')
 def score_baskets(baskets,actd):
-    scores = {}
+    scores = defaultdict(dict)
     for i,basket in tqdm(enumerate(baskets)):
         samples = basket['samples']
-        try:
-            sfp = synth_fp(actd,samples)
-            act_score = np.sum(sfp**2)
-            scores[i] = Scoret(act_score,cluster_score(actd,samples))
-        except KeyError:
-            pass
+        for actname,fpd in actd.items():
+            try:
+                sfp = synth_fp(fpd,samples)
+                act_score = np.sum(sfp**2)
+                scores[actname][i] = Scoret(act_score,cluster_score(fpd,samples))
+            except KeyError:
+                pass
+                # embed()
+                # raise
+    scores = dict(scores)
     return scores
 
 
@@ -633,8 +654,13 @@ def load_default_basket_and_activity():
     actd = load_activity_data(config['ActivityFileInfo']['path'])
     return baskets,actd
 
-def make_bokeh_input():
-    baskets,actd = load_default_basket_and_activity()
+def load_default_basket_and_activity(basket_path,act_path):
+    baskets = load_basket_data(basket_path)
+    actd = load_activity_data(act_path)
+    return baskets,actd
+
+def make_bokeh_input(baskets,actd):
+    # baskets,actd = load_default_basket_and_activity()
     scores = score_baskets(baskets,actd)
     data = []
     for i,basket in enumerate(baskets):
@@ -642,18 +668,24 @@ def make_bokeh_input():
         freq = len(basket['samples'])
         samplelist = json.dumps(list(basket['samples']))
         try:
-            cpact = scores[i].activity
-            cpclust = scores[i].cluster
+            cpact = scores['CPActivity'][i].activity
+            cpclust = scores['CPActivity'][i].cluster
         except KeyError:
             cpact,cpclust = None,None
-        row = (bid,freq,basket['mz'],basket['rt'],basket['ccs'],samplelist,cpact,cpclust,cpact,cpclust,cpclust)
+        try:
+            fusact = scores['FusionActivity'][i].activity
+            fusclust = scores['FusionActivity'][i].cluster
+        except KeyError:
+            fusact,fusclust = None,None
+        
+        row = (bid,freq,basket['mz'],basket['rt'],basket['ccs'],samplelist,cpact,cpclust,fusact,fusclust,cpclust)
         data.append(row)
     columns = ('BasketID','Frequency','PrecMz','RetTime','CCS','SampleList','CP_ACTIVITY','CP_CLUSTER_SCORE','FUSION_ACTIVITY','FUSION_CLUSTER_SCORE','SNF_CLUSTER_SCORE')
     df = pd.DataFrame(data,columns=columns)
-    return df
+    df.to_excel("BokehInput.xlsx")
 
-def make_cytoscape_input(act_thresh=5,clust_thresh=10):
-    baskets,actd = load_default_basket_and_activity()
+def make_cytoscape_input(baskets,actd,act_thresh=5,clust_thresh=10):
+    # baskets,actd = load_default_basket_and_activity()
     scores = score_baskets(baskets,actd)
     edges = []
     basket_info = []
@@ -661,8 +693,8 @@ def make_cytoscape_input(act_thresh=5,clust_thresh=10):
     samples = set()
     for i,basket in enumerate(baskets):
         bid = f"Basket_{i}"
-        if i in scores:
-            score = scores[i]
+        if i in scores['CPActivity']:
+            score = scores['CPActivity'][i]
             if score.activity > act_thresh and score.cluster < clust_thresh:
                 samples.update(basket['samples'])
                 for samp in basket['samples']:
@@ -683,4 +715,9 @@ def make_cytoscape_input(act_thresh=5,clust_thresh=10):
             print(','.join(map(str,b)),file=fout)
         for samp in samples:
             print(f'{samp},,,,,,{samp}',file=fout)
-        
+
+def load_and_generate_act_outputs(basket_path,act_path):
+    baskets = load_basket_data(basket_path)
+    actd = load_activity_data(act_path)
+    make_bokeh_input(baskets,actd)
+    make_cytoscape_input(baskets,actd)
