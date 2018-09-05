@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 from rtree import index
+import configparser
+
 
 from functools import partial
 
@@ -13,23 +15,148 @@ from concurrent.futures import ProcessPoolExecutor,as_completed
 from pathlib import Path
 import configparser
 from tqdm import tqdm
-from collections import defaultdict
+from collections import defaultdict,namedtuple
 from itertools import chain
 
 from numba import jit
+
+from IPython import embed
+
+import math
+import statistics
+
+
+class Interval(object):
+    __slots__ = ('low','high','center')
+    def __init__(self,low,high,center=None):
+        self.low = low
+        self.high = high
+        if center:
+            self.center = center
+        else:
+            self.center = statistics.mean((low,high))
+
+    def __eq__(self,other):
+        if other.low <= self.high or other.high >= self.low:
+            return True
+        return False
+
+    def __lt__(self,other):
+        if self.high < other.low:
+            return True
+        return False
+
+    def __gt__(self,other):
+        if other.high < self.low:
+            return True
+        return False
+    
+    def __hash__(self):
+        return hash((self.low,self.high))
+
+    def  __repr__(self):
+        return f"<{self.__class__.__name__}(low={self.low},high={self.high}) at {id(self)}>"
+    
+    def __str__(self):
+        return f"{self.low}<>{self.high}"
+
+
+
+class PrecIon(object):
+    __slots__ = ('rt','z','mz','ccs','ms2','info')
+    def __init__(self,rt,z,mz,ccs,ms2):
+        self.rt = rt
+        self.z = z
+        self.mz = mz
+        self.ccs = ccs
+        self.ms2 = ms2
+    
+
+    def merge(self,other):
+        pass
+
+
 
 # data = np.random.rand(1000000,4)*10
 
 # KEYCOLS = ["PrecMz","PrecZ","RetTime"]
 # ERRORKEYCOLS = [cn for cn in ERRORCOLS if cn.split('_')[0] in KEYCOLS]
-DATACOLS = ["PrecMz","PrecZ","CCS","RetTime","ProdMz"]
-ERRORCOLS = [f"{dcol}_low" for dcol in DATACOLS]
-ERRORCOLS = ERRORCOLS + [f"{dcol}_high" for dcol in DATACOLS]
-ERRORINFO = [('ppm',10),(None,None),('ppm',10000),('window',0.1),('ppm',50),]
-DATACOLS = DATACOLS + ['PrecIntensity','ProdIntensity','Ar1','Ar3']
+# DATACOLS = ["PrecMz","PrecZ","CCS","RetTime",'Ar1',"ProdMz",'PrecIntensity']
+# QUERYCOLS = ["PrecMz","PrecZ","CCS","RetTime",'Ar1',"ProdMz"]
+
+# MS1COLS = ["PrecMz","PrecZ","CCS","RetTime",]#'PrecIntensity']
+# MS2COLS = ["ProdMz",'ProdIntensity','Ar1','Ar3']
+
 FLOATPREC = 'float64'
+def _make_error_col_names(qcols):
+    error_cols = [f"{dcol}_low" for dcol in qcols]
+    error_cols = error_cols + [f"{dcol}_high" for dcol in qcols]
+    return error_cols
+
+# ERRORCOLS = _make_error_col_names(QUERYCOLS)
+# MS2ERRORCOLS = _make_error_col_names(MS2COLS)
+# MS1ERRORCOLS = _make_error_col_names(MS1COLS)
+
+# # Cam Tolerances
+# # ERRORINFO = {
+# #     "PrecMz":('ppm',25),
+# #     "PrecZ":(None,None),
+# #     "CCS":('ppm',10000),
+# #     "RetTime":('window',0.1),
+# #     "PrecIntensity":('factor',10),
+# #     "Ar1":('window',0.33),
+# #     "ProdMz":('ppm',50)
+# #     }
+
+# # Kenji Tolerances
+# ERRORINFO = {
+#     "PrecMz":('ppm',25),
+#     "PrecZ":(None,None),
+#     "CCS":('window',1),
+#     "RetTime":('window',0.03),
+#     # "PrecIntensity":('window',10),
+#     "Ar1":('window',0.33),
+#     "ProdMz":('ppm',25)
+#     }
+
+# DATACOLS = DATACOLS + ['PrecIntensity','ProdIntensity','Ar1','Ar3']
+# DATACOLS = DATACOLS + ['ProdIntensity','Ar1','Ar3']
+
+
+
 # FILENAMECOL = "MgfFileName"
 
+def _load_config():
+    config = configparser.ConfigParser()
+    config.optionxform = str #make sure things don't get lowercased
+    config.read('default.cfg')
+    global MS1COLS
+    MS1COLS = config['MSFileInfo']['MS1Cols'].split(',')
+    global MS1COLSTOMATCH
+    MS1COLSTOMATCH = config['MSFileInfo']['MS1ColsToMatch'].split(',')
+    global MS2COLS
+    MS2COLS = config['MSFileInfo']['MS2Cols'].split(',')
+    global MS2COLSTOMATCH
+    MS2COLSTOMATCH = config['MSFileInfo']['MS2ColsToMatch'].split(',')
+    global ERRORINFO
+    ERRORINFO = {}
+    for name,tup in config['Tolerances'].items():
+        etype,ev = tup.split(',')
+        if etype == 'None':
+            etype = None
+        if ev == 'None':
+            ev = None
+        else:
+            ev = float(ev)
+        ERRORINFO[name] = (etype,ev)
+    global FILENAMECOL
+    FILENAMECOL = config['MSFileInfo']['FileNameCol']
+    global MS1ERRORCOLS
+    MS1ERRORCOLS = _make_error_col_names(MS1COLSTOMATCH)
+    global MS2ERRORCOLS
+    MS2ERRORCOLS = _make_error_col_names(MS2COLSTOMATCH)
+
+_load_config()
 
 
 def gen_rep_df_paths(datadir):
@@ -51,7 +178,7 @@ def gen_rep_df_paths(datadir):
             paths = [os.path.join(datadir,f) for f in files]
             yield (sample, paths)
 
-def gen_error_cols(df):
+def gen_error_cols(df,qcols=MS1COLSTOMATCH):
     """
     Uses the global ERRORINFO and DATACOLS lists to generate
     error windows for each of the DATACOLS. Mutates dataframe inplace for
@@ -61,20 +188,25 @@ def gen_error_cols(df):
         df (pandas.DataFram): input dataframe to calc error windows (modified in place)
     """
 
-    for einfo,dcol in zip(ERRORINFO,DATACOLS):
+    for dcol in qcols:
+        einfo = ERRORINFO[dcol]
         col = df[dcol]
         etype, evalue = einfo
         if etype == 'ppm':
             efunc = lambda x:x*(evalue*1e-6)
-        elif etype == 'window':
+        if etype == 'perc':
+            efunc = lambda x:x*(evalue/100)
+        if etype == 'factor':
+            efunc = lambda x:x*evalue
+        if etype == 'window':
             efunc = lambda x:evalue
-        elif etype is None:
+        if etype is None:
             efunc = lambda x:0
         errors = col.apply(efunc)
         df[f"{dcol}_low"] = df[dcol] - errors
         df[f"{dcol}_high"] = df[dcol] + errors
 
-def get_rects(df):
+def get_rects(df,errorcols=MS1ERRORCOLS):
     """
     get the hyperrectangles defined by the error funcs. assumes error cols are present in df.
     
@@ -86,10 +218,10 @@ def get_rects(df):
     """
 
     # order = [f"{dcol}_low" for dcol in DATACOLS] + [f"{dcol}_high" for dcol in DATACOLS]
-    order = ERRORCOLS
+    order = errorcols
     return df[order].values
 
-def build_rtree(df):
+def build_rtree(df,errorcols=MS1ERRORCOLS):
     """
     build an rtree index from a dataframe for fast range queries.
     
@@ -100,10 +232,11 @@ def build_rtree(df):
         rtree.Index: a rtree index built from df data
     """
 
-    dims = len(ERRORCOLS) // 2 
+    dims = len(errorcols) // 2 
     p = index.Property()
     p.dimension = dims
-    rgen = ((i,r,None) for i,r in enumerate(get_rects(df)))
+    p.interleaved = False
+    rgen = ((i,r,None) for i,r in enumerate(get_rects(df,errorcols)))
     idx = index.Index(rgen,properties=p)
     return idx
 
@@ -134,28 +267,201 @@ def gen_con_comps(rtree,rects,pbar=False):
             while search_idxs:
                 search = search_idxs.pop()
                 neighbors = set(rtree.intersection(rects[search]))
-                if neighbors.issubset(seen):
-                    break
-                else:
-                    for n in neighbors - seen: #set math
-                        c.add(n)
-                        search_idxs.append(n)
-                        seen.add(n)
+                for n in neighbors - seen: #set math
+                    c.add(n)
+                    search_idxs.append(n)
+                    seen.add(n)
             yield c
 
 
-def _combine_rows(df,cc,FILENAMECOL,calc_basket_info=True):
-    cc_df = df.iloc[list(cc)]
-    uni_files = set(chain(*[fnames.split("|") for fnames in cc_df[FILENAMECOL]]))
-    avgd = list(cc_df[DATACOLS].mean())
-    avgd.append('|'.join(uni_files))
+def reduce_to_ms1(df,FILENAMECOL):
+    gb = df.groupby(MS1COLS+[FILENAMECOL])
+    ms1_data = []
+    for gbi,ms2df in gb:
+        fname = gbi[-1]
+        ms2df = ms2df.copy()
+        ms2df[FILENAMECOL] = [fname]*len(ms2df)
+        # ms1_data.append(list(gbi)+[ms2df.to_json(orient='split',index=False)])
+        # ms1_data.append(list(gbi)+[ms2df.to_json()])
+        ms1_data.append(list(gbi)+[ms2df])
+    cols = MS1COLS+[FILENAMECOL,'MS2Info']
+    ms1df = pd.DataFrame(ms1_data,columns=cols)
+
+    return ms1df
+    
+    
+
+def _average_data_rows(cc_df,datacols,calc_basket_info=False):
+    avgd = list(cc_df[list(datacols)].mean())
     if calc_basket_info:
-        basket_info = {cn:[float(cc_df[cn].min()),float(cc_df[cn].max())] for cn in DATACOLS}
+        basket_info = {cn:[float(cc_df[cn].min()),float(cc_df[cn].max())] for cn in datacols}
         basket_info['n'] = len(cc_df)
         avgd.append(json.dumps(basket_info))
     return avgd
 
-def proc_con_comps(ccs,df,FILENAMECOL,min_reps=2,calc_basket_info=True):
+def _combine_rows(cc_df,uni_files,datacols,calc_basket_info=False):
+    avgd = list(cc_df[datacols].mean())
+    avgd.append('|'.join(uni_files))
+    if calc_basket_info:
+        basket_info = {cn:[float(cc_df[cn].min()),float(cc_df[cn].max())] for cn in datacols}
+        basket_info['n'] = len(cc_df)
+        avgd.append(json.dumps(basket_info))
+    return avgd
+
+
+
+def combine_ms2(cc_df,min_reps=2):
+    # ms2dfs = [pd.read_json(ms2df,orient='split') for ms2df in cc_df['MS2Info']]
+    # ms2dfs = [pd.read_json(ms2df) for ms2df in cc_df['MS2Info']]
+    ms2dfs = cc_df['MS2Info'].values.tolist()
+    ms2df = pd.concat(ms2dfs,sort=True)
+    # print(ms2df.columns)
+    if ms2df.shape[0] > 1:
+        gen_error_cols(ms2df,MS2COLSTOMATCH)
+        rects = get_rects(ms2df,MS2ERRORCOLS)
+        rtree = build_rtree(ms2df,MS2ERRORCOLS)
+        ccs = gen_con_comps(rtree,rects)
+        data = []
+        file_col = []
+        for cc in ccs:
+            if len(cc) > 1:
+                cc_df = ms2df.iloc[list(cc)]
+                uni_files = set(cc_df[FILENAMECOL].values)
+                if len(uni_files) >= min_reps:
+                    data.append(_average_data_rows(cc_df,MS2COLS))
+                    file_col.append('|'.join(uni_files))
+            #     else:
+            #         data.append([None]*len(MS2COLS))
+            # else:
+            #     data.append([None]*len(MS2COLS))
+                    
+        avg_ms2 = pd.DataFrame(data,columns=MS2COLS)
+        avg_ms2[FILENAMECOL] = file_col
+    else:
+        avg_ms2 = ms2df
+    # return avg_ms2.to_json(orient='split',index=False) #note that to read back to df orient='split' must be set in pd.read_json()
+    return avg_ms2
+
+
+
+# def combine_ms2(cc_df,min_reps=2):
+#     # ms2dfs = [pd.read_json(ms2df,orient='split') for ms2df in cc_df['MS2Info']]
+
+#     ms2dfs = cc_df['MS2Info'].values.tolist()
+
+#     ms2df = pd.concat(ms2dfs,sort=True)
+#     if ms2df.shape[0] > 1:
+#         gen_error_cols(ms2df,MS2COLSTOMATCH)
+#         rects = get_rects(ms2df,MS2ERRORCOLS)
+#         rtree = build_rtree(ms2df,MS2ERRORCOLS)
+#         ccs = gen_con_comps(rtree,rects)
+#         data = []
+#         file_col = []
+#         for cc in ccs:
+#             if len(cc) > 1:
+#                 cc_df = ms2df.iloc[list(cc)]
+#                 uni_files = set(cc_df[FILENAMECOL].values)
+#                 if len(uni_files) >= min_reps:
+#                     data.append(_average_data_rows(cc_df,MS2COLS))
+#                     file_col.append('|'.join(uni_files))
+#             #     else:
+#             #         data.append([None]*len(MS2COLS))
+#             # else:
+#             #     data.append([None]*len(MS2COLS))
+                    
+#         avg_ms2 = pd.DataFrame(data,columns=MS2COLS)
+#         avg_ms2[FILENAMECOL] = file_col
+#     else:
+#         avg_ms2 = ms2df
+#     # return avg_ms2.to_json(orient='split',index=False) #note that to read back to df orient='split' must be set in pd.read_json()
+#     return avg_ms2.to_json() 
+
+def _combine_rows_ms1(cc_df,uni_files,min_reps,ms2,calc_basket_info=False):
+    ms1vals = _average_data_rows(cc_df,MS1COLS,calc_basket_info=calc_basket_info)
+    if ms2:
+        ms2vals = combine_ms2(cc_df,min_reps)
+        return ms1vals + [ms2vals]
+    else:
+        return ms1vals
+
+# def proc_con_comps(ccs,df,FILENAMECOL,min_reps=2,calc_basket_info=False):
+#     """
+#     Takes the connected components from the overlapping hyperrectangles and averages (mean)
+#     the data values from which the error was generated. Unique filenames are concatenated with a 
+#     '|' delimiter. Only subgraphs with multiple nodes are used and further filtered for only those 
+#     which come from at least `min_reps` unique files.
+    
+    
+#     Args:
+#         ccs (set): connected component subgraph dataframe indices
+#         df (pd.DataFrame): the dataframe which the connected component subgraphs were calculated from
+#         min_reps (int, optional): Defaults to 2. Minimum number of files needed in subgraph to be used
+#         calc_basket_info(bool, optional): Defaults to True. Whether or not to include json basket info. 
+    
+#     Returns:
+#         pd.DataFrame: newdata frame with data cols and file name col.
+#     """
+
+#     data = []
+#     for cc in ccs:
+#         if len(cc) > 1:
+#             cc_df = df.iloc[list(cc)]
+#             uni_files = set(cc_df[FILENAMECOL].values)
+  
+#             if len(uni_files) >= min_reps:
+#                 avgd = _combine_rows(cc_df,uni_files=uni_files,calc_basket_info=calc_basket_info)
+#                 data.append(avgd)
+#             else:
+#                 continue
+#     if calc_basket_info:
+#         ndf = pd.DataFrame(data,columns=DATACOLS+[FILENAMECOL]+['BasketInfo'])
+#     else:
+#         ndf = pd.DataFrame(data,columns=DATACOLS+[FILENAMECOL])
+#     return ndf
+
+
+def proc_con_comps(ccs,df,FILENAMECOL,datacols,min_reps=2,calc_basket_info=False,ms2=True):
+    """
+    Takes the connected components from the overlapping hyperrectangles and averages (mean)
+    the data values from which the error was generated. Unique filenames are concatenated with a 
+    '|' delimiter. Only subgraphs with multiple nodes are used and further filtered for only those 
+    which come from at least `min_reps` unique files.
+    
+    
+    Args:
+        ccs (set): connected component subgraph dataframe indices
+        df (pd.DataFrame): the dataframe which the connected component subgraphs were calculated from
+        min_reps (int, optional): Defaults to 2. Minimum number of files needed in subgraph to be used
+        calc_basket_info(bool, optional): Defaults to True. Whether or not to include json basket info. 
+    
+    Returns:
+        pd.DataFrame: newdata frame with data cols and file name col.
+    """
+
+    data = []
+    file_col = []
+    for cc in ccs:
+        # if len(cc) > 1:
+        cc_df = df.iloc[list(cc)]
+        uni_files = set(cc_df[FILENAMECOL].values)
+        if len(uni_files) >= min_reps:
+            file_col.append('|'.join(uni_files))
+            avgd = _combine_rows_ms1(cc_df,uni_files,calc_basket_info=calc_basket_info,min_reps=min_reps,ms2=ms2)
+            data.append(avgd)
+        else:
+            continue
+    cols = datacols[:]
+    if calc_basket_info:
+        cols += ['BasketInfo']
+        if ms2:
+            cols += ['MS2Info']
+    
+    ndf = pd.DataFrame(data,columns=cols)
+    ndf[FILENAMECOL] = file_col
+
+    return ndf
+
+def proc_con_comps_ms1(ccs,df,FILENAMECOL,min_reps=2,calc_basket_info=False):
     """
     Takes the connected components from the overlapping hyperrectangles and averages (mean)
     the data values from which the error was generated. Unique filenames are concatenated with a 
@@ -177,14 +483,18 @@ def proc_con_comps(ccs,df,FILENAMECOL,min_reps=2,calc_basket_info=True):
     for cc in ccs:
         if len(cc) > 1:
             cc_df = df.iloc[list(cc)]
-            uni_files = set(cc_df[FILENAMECOL])
+            # cc_df.drop(columns=('MS2Info'),inplace=True)
+  
+            uni_files = set(cc_df[FILENAMECOL].values)
             if len(uni_files) >= min_reps:
-                avgd = _combine_rows(df,cc,FILENAMECOL,calc_basket_info)
+                avgd = _combine_rows_ms1(cc_df,uni_files=uni_files,calc_basket_info=calc_basket_info)
                 data.append(avgd)
+            else:
+                continue
     if calc_basket_info:
-        ndf = pd.DataFrame(data,columns=DATACOLS+[FILENAMECOL]+['BasketInfo'])
+        ndf = pd.DataFrame(data,columns=MS1COLS+[FILENAMECOL,"MS2Info",'BasketInfo'])
     else:
-        ndf = pd.DataFrame(data,columns=DATACOLS+[FILENAMECOL])
+        ndf = pd.DataFrame(data,columns=MS1COLS+[FILENAMECOL,"MS2Info"])
     return ndf
 
 def proc_con_comps_basket(ccs,df,FILENAMECOL,calc_basket_info=True):
@@ -204,8 +514,11 @@ def proc_con_comps_basket(ccs,df,FILENAMECOL,calc_basket_info=True):
         pd.DataFrame: new dataframe with data cols and file name col.
     """
 
-    data = [_combine_rows(df,cc,FILENAMECOL,calc_basket_info) for cc in ccs]
-
+    data = []
+    for cc in ccs:
+        cc_df = df.iloc[list(ccs)]
+        uni_files = set(chain(*[fnames.split("|") for fnames in cc_df[FILENAMECOL]]))
+        data.append(_combine_rows(cc_df,uni_files=uni_files,calc_basket_info=calc_basket_info))
     if calc_basket_info:
         ndf = pd.DataFrame(data,columns=DATACOLS+[FILENAMECOL]+['BasketInfo'])
     else:
@@ -225,12 +538,41 @@ def _proc_one(sample,df_paths,FILENAMECOL,datadir,calc_basket_info=False):
     """
     dfs = [pd.read_csv(p) for p in df_paths]
     df = pd.concat(dfs,sort=True)
+    df.reset_index(inplace=True)
     gen_error_cols(df)
     rtree = build_rtree(df)
     con_comps = gen_con_comps(rtree,get_rects(df))
-    ndf = proc_con_comps(con_comps,df,FILENAMECOL,calc_basket_info)
+    ndf = proc_con_comps(con_comps,df,FILENAMECOL,calc_basket_info=calc_basket_info)
     ndf.to_csv(datadir.joinpath("Replicated").joinpath(f"{sample}_Replicated.csv"))
-    gc.collect() #wierd attempt to solve rtre index memory leak...
+    gc.collect() #wierd attempt to solve rtree index memory leak...
+    return "DONE"
+
+
+def _proc_one_ms1(sample,df_paths,FILENAMECOL,datadir,calc_basket_info=False):
+    """
+    Process one replica sample. The replicated file is saved as ./Replicated/<sample>_Replicated.csv
+    
+    Args:
+        sample (str): sample name
+        df_paths (list): list of paths to replica files to be loaded
+    
+    Returns:
+        str: "DONE" when completed
+    """
+
+
+    dfs = [reduce_to_ms1(pd.read_csv(p),FILENAMECOL) for p in df_paths]
+    df = pd.concat(dfs,sort=True)
+    df.reset_index(inplace=True)
+    gen_error_cols(df,MS1COLSTOMATCH)
+    rtree = build_rtree(df,MS1ERRORCOLS)
+    con_comps = gen_con_comps(rtree,get_rects(df,MS1ERRORCOLS))
+    ndf = proc_con_comps(con_comps,df,FILENAMECOL,MS1COLS,calc_basket_info=calc_basket_info)
+    ndf['MS2Info'] = [ms2df.to_json() for ms2df in ndf['MS2Info']]
+
+    
+    ndf.to_csv(datadir.joinpath("Replicated").joinpath(f"{sample}_Replicated.csv"))
+    gc.collect() # attempt to fix rtree index memory leak...
     return "DONE"
 
 def proc_folder(datadir,FILENAMECOL,calc_basket_info,max_workers):
@@ -246,7 +588,7 @@ def proc_folder(datadir,FILENAMECOL,calc_basket_info,max_workers):
         pass
     paths = list(gen_rep_df_paths(datadir))
     for sample,df in tqdm(paths,desc='proc_folder'):
-        _proc_one(sample,df,FILENAMECOL,datadir,calc_basket_info)
+        _proc_one_ms1(sample,df,FILENAMECOL,datadir,calc_basket_info)
 
 def _update(pbar,future):
     '''callback func for future object to update progress bar'''
@@ -282,7 +624,8 @@ def mp_proc_folder(datadir,FILENAMECOL,calc_basket_info=False,max_workers=0):
         while samples_left:
                         
             for sample,paths in paths_iter:
-                fut = ex.submit(_proc_one,sample,paths,FILENAMECOL,datadir,calc_basket_info)
+                # fut = ex.submit(_proc_one,sample,paths,FILENAMECOL,datadir,calc_basket_info)
+                fut = ex.submit(_proc_one_ms1,sample,paths,FILENAMECOL,datadir,calc_basket_info)
                 fut.add_done_callback(partial(_update,pbar))
                 futs[fut] = sample
                 if len(futs) > max_workers:
@@ -310,7 +653,10 @@ def make_repdf(datadir):
     dfs = [pd.read_csv(os.path.join(datadir,f)) for f in csvs]
     return pd.concat(dfs,sort=False)
 
-def basket(datadir,FILENAMECOL):
+def _read_json(ms2json,i):
+    return i,pd.read_json(ms2json)
+
+def basket(datadir,FILENAMECOL,ms2=False):
     """
     Basket all the replicates in a directory in to a single file called Baskted.csv in datadir
     Unique file names are kept and deliminated with a '|'   
@@ -322,6 +668,15 @@ def basket(datadir,FILENAMECOL):
     print('Loading Rep Files')
     df = make_repdf(datadir)
     orig_len = df.shape[0]
+    if ms2:
+        with ProcessPoolExecutor() as ex:
+            futs = [ex.submit(_read_json,ms2json,i)for i,ms2json in enumerate(df['MS2Info'])]
+        ms2dfs = []
+        for f in tqdm(as_completed(futs),total=orig_len):
+            ms2dfs.append(f.result())
+        ms2dfs.sort(key = lambda x:x[0])
+        df['MS2Info'] = [x[1] for x in ms2dfs]
+
     # need to handle multiple file name cols from legacy/mixed input files
     df[FILENAMECOL] = np.where(df[FILENAMECOL].isnull(), df["Sample"], df[FILENAMECOL])
     df.dropna(subset=[FILENAMECOL],inplace=True)
@@ -331,13 +686,15 @@ def basket(datadir,FILENAMECOL):
     rtree = build_rtree(df)
     print('Generating Baskets')
     con_comps = gen_con_comps(rtree,get_rects(df),pbar=True)
-    ndf = proc_con_comps_basket(con_comps,df,FILENAMECOL)
-    ndf.to_csv(os.path.join(datadir,"Basketed_LooseRT_RogerOnly.csv"))
+    ndf = proc_con_comps(con_comps,df,FILENAMECOL,MS1COLS,min_reps=1,calc_basket_info=False,ms2=ms2)
+    # ndf['MS2Info'] = [ms2df.to_json(orient='split',index=False) for ms2df in ndf['MS2Info']]
+    ndf['freq'] = [len(s.split('|')) for s in ndf[FILENAMECOL]]
+    ndf.to_csv(os.path.join(datadir,"Basketed.csv"))
 
 def _basket_chunk(chunk,FILENAMECOL):
     rtree = build_rtree(chunk)
     con_comps = gen_con_comps(rtree,get_rects(chunk),pbar=False)
-    ndf = proc_con_comps_basket(con_comps,chunk,FILENAMECOL)
+    ndf = proc_con_comps(con_comps,chunk,FILENAMECOL,MS1COLS,min_reps=1,calc_basket_info=False)
     gc.collect()
     return ndf
 
@@ -354,8 +711,8 @@ def _split_basket(df,FILENAMECOL,max_workers):
         max_workers = os.cpu_count() - 2
     with ProcessPoolExecutor(max_workers) as ex:
         n = len(df)
-        chunksize = int(1e5) #fixed size for chunk
-        # chunksize = n // max_workers
+        # chunksize = int(1e5) #fixed size for chunk
+        chunksize = n // max_workers
         futs = []
         pbar = tqdm(desc="BasketPreProc",total=n//chunksize)
         chunks = np.array_split(df,n//chunksize)
@@ -385,7 +742,6 @@ def _split_basket(df,FILENAMECOL,max_workers):
                 break
     return pdf
 
-
 def mp_basket(datadir,FILENAMECOL,max_workers):
     """
     Basket all the replicates in a directory in to a single file called Baskted.csv in datadir
@@ -394,8 +750,6 @@ def mp_basket(datadir,FILENAMECOL,max_workers):
     Args:
         datadir (str): the directory of replicated files. 
     """
-
-
 
     print('Loading Rep Files')
     df = make_repdf(datadir)
@@ -440,12 +794,11 @@ def get_fps(fpd,samples):
     return np.asarray(to_cat)
 
 from scipy.spatial.distance import pdist
-def cluster_score(fpd,samples):
-    '''this is wrong... fixit..'''
+def cluster_score(fpd,samples,metric='euclidean'):
     fps = get_fps(fpd,samples)
     if fps.shape[0] == 1:
-        return 1
-    cubed = pdist(np.vstack(fps),metric='correlation')**3
+        return 0
+    cubed = pdist(np.vstack(fps),metric=metric)**3
     score = cubed.mean()
     # if np.isnan(cubed):
     #     print(fps)
@@ -466,7 +819,7 @@ def load_basket_data(bpath:str, samplecol="Sample",mzcol="PrecMz",rtcol="RetTime
 
 def load_activity_data(apath: str, name_col='SWID') -> dict:
     df = pd.read_csv(apath)
-    df[name_col] = df[name_col].apply(lambda x:x.split('-')[0])
+    # df[name_col] = df[name_col].apply(lambda x:x.split('-')[0])
     actd = {}
     for row in df.itertuples(index=False):
         actd[row[0]] = np.asarray(row[1:])
@@ -474,7 +827,80 @@ def load_activity_data(apath: str, name_col='SWID') -> dict:
 
 
 
+def get_config(cpath:str):
+    config = configparser.ConfigParser()
+    with open(cpath) as fin:
+        config.read_file(fin)
+    return config
     
+Scoret = namedtuple('Scoret', 'activity cluster')
+def score_baskets(baskets,actd):
+    scores = {}
+    for i,basket in tqdm(enumerate(baskets)):
+        samples = basket['samples']
+        try:
+            sfp = synth_fp(actd,samples)
+            act_score = np.sum(sfp**2)
+            scores[i] = Scoret(act_score,cluster_score(actd,samples))
+        except KeyError:
+            pass
+    return scores
 
-def score_baskets(basketd,activityd):
-    pass
+
+def load_default_basket_and_activity():
+    config = get_config('default.cfg')
+    baskets = load_basket_data(config['BasketInfo']['path'],samplecol=config['BasketInfo']['samplecol'])
+    actd = load_activity_data(config['ActivityFileInfo']['path'])
+    return baskets,actd
+
+def make_bokeh_input():
+    baskets,actd = load_default_basket_and_activity()
+    scores = score_baskets(baskets,actd)
+    data = []
+    for i,basket in enumerate(baskets):
+        bid = f"Basket_{i}"
+        freq = len(basket['samples'])
+        samplelist = json.dumps(list(basket['samples']))
+        try:
+            cpact = scores[i].activity
+            cpclust = scores[i].cluster
+        except KeyError:
+            cpact,cpclust = None,None
+        row = (bid,freq,basket['mz'],basket['rt'],basket['ccs'],samplelist,cpact,cpclust,cpact,cpclust,cpclust)
+        data.append(row)
+    columns = ('BasketID','Frequency','PrecMz','RetTime','CCS','SampleList','CP_ACTIVITY','CP_CLUSTER_SCORE','FUSION_ACTIVITY','FUSION_CLUSTER_SCORE','SNF_CLUSTER_SCORE')
+    df = pd.DataFrame(data,columns=columns)
+    return df
+
+def make_cytoscape_input(act_thresh=5,clust_thresh=10):
+    baskets,actd = load_default_basket_and_activity()
+    scores = score_baskets(baskets,actd)
+    edges = []
+    basket_info = []
+    _basket_keys= ['mz','rt','ccs','inti']
+    samples = set()
+    for i,basket in enumerate(baskets):
+        bid = f"Basket_{i}"
+        if i in scores:
+            score = scores[i]
+            if score.activity > act_thresh and score.cluster < clust_thresh:
+                samples.update(basket['samples'])
+                for samp in basket['samples']:
+                    edges.append((bid,samp))
+        basket_info.append(
+            [bid]+ 
+            [basket[k] for k in _basket_keys]+ 
+            [len(basket['samples'])]+ 
+            [f"{basket['mz']:.4f}"])
+
+    with open('EdgeList.txt','w') as fout:
+        print('Source\tTarget\tScore',file=fout)
+        for e in edges:
+            print(f'{e[0]}\t{e[1]}\t1',file=fout)
+    with open('Atributes.csv','w') as fout:
+        print('bid,mz,rt,ccs,inti,freq,combo_name',file=fout)
+        for b in basket_info:
+            print(','.join(map(str,b)),file=fout)
+        for samp in samples:
+            print(f'{samp},,,,,,{samp}',file=fout)
+        

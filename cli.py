@@ -9,6 +9,7 @@ if __name__ == "__main__":
     parser.add_argument('-w','--workers',help="number of parallel workers to spin up",type=int,default=0)
     parser.add_argument('--basket_info',help='Flag to save basket info as a json object in resulting files.',action='store_true')
     parser.add_argument('-f','--filename_col',help='column name for the filename',default='Sample')
+    parser.add_argument('--ms2',action='store_true')
     args = parser.parse_args()
 
     if args.task in ['replicate','both']:
@@ -23,5 +24,8 @@ if __name__ == "__main__":
             data_path = data_path.joinpath('Replicated')
         else:
             data_path = Path(args.path)
-        mp_basket(data_path,args.filename_col,args.workers)
+        if args.workers == 1:
+            basket(data_path,args.filename_col,ms2=args.ms2)
+        else:
+            mp_basket(data_path,args.filename_col,args.workers)
     
