@@ -1,29 +1,25 @@
-import pandas as pd
-import numpy as np
-from rtree import index
 import configparser
-
-
-from functools import partial
-
 import os
 import json
 import gc
-
-from concurrent.futures import ProcessPoolExecutor,as_completed
-
-from pathlib import Path
-import configparser
-from tqdm import tqdm
-from collections import defaultdict,namedtuple
-from itertools import chain
-
-from numba import jit
-
-from IPython import embed
-
 import math
 import statistics
+
+from collections import defaultdict,namedtuple
+from concurrent.futures import ProcessPoolExecutor,as_completed
+from functools import partial
+from itertools import chain
+from pathlib import Path
+
+
+import numpy as np
+import pandas as pd
+from rtree import index
+from scipy.spatial.distance import pdist
+from tqdm import tqdm
+
+# from numba import jit
+# from IPython import embed
 
 
 
@@ -402,8 +398,8 @@ def proc_con_comps(ccs,df,FILENAMECOL,datacols,min_reps=2,calc_basket_info=False
     cols = datacols[:]
     if calc_basket_info:
         cols += ['BasketInfo']
-        if ms2:
-            cols += ['MS2Info']
+    if ms2:
+        cols += ['MS2Info']
     
     ndf = pd.DataFrame(data,columns=cols)
     ndf[FILENAMECOL] = file_col
@@ -577,7 +573,7 @@ def get_fps(fpd,samples):
         raise KeyError("No Fingerprints found...")
     return np.asarray(to_cat)
 
-from scipy.spatial.distance import pdist
+
 def cluster_score(fpd,samples,metric='euclidean'):
     fps = get_fps(fpd,samples)
     if fps.shape[0] == 1:

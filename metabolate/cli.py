@@ -1,6 +1,7 @@
-from core import *
+from .core import *
 
-if __name__ == "__main__":
+
+def main():
     import argparse
 
     parser = argparse.ArgumentParser()
@@ -15,10 +16,7 @@ if __name__ == "__main__":
 
     if args.task in ['replicate','both']:
         data_path = Path(args.path)
-        if args.workers == 1:
-            proc_folder(data_path,FILENAMECOL=args.filename_col,max_workers=args.workers,calc_basket_info=args.basket_info)
-        else:
-            mp_proc_folder(data_path,FILENAMECOL=args.filename_col,max_workers=args.workers,calc_basket_info=args.basket_info)
+        mp_proc_folder(data_path,FILENAMECOL=args.filename_col,max_workers=args.workers,calc_basket_info=args.basket_info)
 
     if args.task in ['basket','both']:
         if args.task == 'both':
@@ -34,5 +32,5 @@ if __name__ == "__main__":
         pass
         '''do activity related funcs and make outputs'''
 
-
-    
+if __name__ == "__main__":
+    main()
