@@ -100,7 +100,7 @@ def _load_config(config_path=None):
     config = configparser.ConfigParser()
     config.optionxform = str #make sure things don't get lowercased
     if config_path is None:
-        p = Path(__file__).parent.parent.joinpath('default.cfg')
+        p = Path(__file__).resolve().parent.parent.joinpath('default.cfg')
         config.read(str(p))
     else:
         config.read(config_path)
