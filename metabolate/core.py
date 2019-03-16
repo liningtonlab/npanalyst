@@ -4,6 +4,7 @@ import json
 import gc
 import math
 import statistics
+from pathlib import Path
 
 from collections import defaultdict,namedtuple
 from concurrent.futures import ProcessPoolExecutor,as_completed
@@ -21,6 +22,7 @@ from tqdm import tqdm
 # from numba import jit
 from IPython import embed
 
+import pymzml
 
 
 #partially finished classes, not used currently
@@ -91,7 +93,6 @@ def _make_error_col_names(qcols):
     return error_cols
 
 
-
 def _load_config(config_path=None):
     '''loads the config_path config file and stores a bunch of values as globals
         config_path (str, optional): Defaults to 'defualt.cfg'. 
@@ -134,6 +135,63 @@ def _load_config(config_path=None):
 _load_config() #pull config info into global namespace
 
 
+def _run2df(mzrun):
+    data = []
+    specl = [s for s in mzrun if s]
+    for spec in specl:
+        
+        temp = []
+        scantime = spec.scan_time[0]
+        mslevel = spec.ms_level
+        if mslevel ==1: # MS
+            try:
+                specdata = spec.peaks("centroided").tolist()
+
+            except AttributeError:
+                specdata = []
+
+            if spec['MS:1000130'] is not None:
+                mode = '+' 
+            elif spec['MS:1000129'] is not None:
+                mode = '-'
+        # note the following won't work with current builds of pymzml
+        # either need to include hacked version as sub module of this or fix the package
+        elif mslevel == 0: # UV
+            continue
+            # not dealing w/ UV for now
+            # specdataL = spec.peaks("raw").tolist()
+            # mode = None
+
+
+        else:
+            continue 
+            # raise NotImplementedError("Only MS1 mzML data supported for now...")
+
+        for mz,inte in specdata:
+            data.append(
+                [
+                    mz,
+                    inte,
+                    scantime,
+                    mslevel,
+                    mode,
+                ]
+            )
+    df = pd.DataFrame(data,columns=['mz','intensity','RetTime','mslevel','mode'])
+    return df
+
+
+def mzml_to_df(mzml_path):
+    run = pymzml.run.Reader(mzml_path)
+    df = _run2df(run)
+    fname = Path(mzml_path).stem
+    df['filename'] = fname
+    return df
+
+
+
+    
+
 def gen_rep_df_paths(datadir):
     """
     generator func which yields concatenated replica file dataframes
@@ -141,9 +199,9 @@ def gen_rep_df_paths(datadir):
     Args:
         datadir (str): data directory path
     """
-
+    extensions = ['mzml','csv']
     sd = os.scandir(datadir)
-    csvs = [f.name for f in sd if f.name.lower().endswith('.csv')]
+    csvs = [f.name for f in sd if f.name.lower().split('.')[-1] in extensions]
     repd = defaultdict(list)
     for fname in csvs:
         repd[fname.split("_")[1]].append(fname) #parse rule.. probably needs to be more flexible
@@ -419,10 +477,13 @@ def _proc_one(sample,df_paths,FILENAMECOL,datadir,calc_basket_info=False):
         str: "DONE" when completed
     """
 
+    if df_paths[0].lower().endswith("csv"):
+        dfs = [reduce_to_ms1(pd.read_csv(p),FILENAMECOL) for p in df_paths]
+    else: #mzML data
+        dfs = [mzml_to_df(p) for p in df_paths]
 
-    dfs = [reduce_to_ms1(pd.read_csv(p),FILENAMECOL) for p in df_paths]
     df = pd.concat(dfs,sort=True)
-    df.reset_index(inplace=True)
+    df = df.reset_index()
     gen_error_cols(df,MS1COLSTOMATCH)
     rtree = build_rtree(df,MS1ERRORCOLS)
     con_comps = gen_con_comps(rtree,get_rects(df,MS1ERRORCOLS))
@@ -573,7 +634,6 @@ def get_fps(fpd,samples):
     if not to_cat:
         raise KeyError("No Fingerprints found...")
     return np.asarray(to_cat)
-
 
 def cluster_score(fpd,samples,metric='euclidean'):
     fps = get_fps(fpd,samples)
