@@ -25,58 +25,6 @@ from IPython import embed
 import pymzml
 
 
-#partially finished classes, not used currently
-class Interval(object):
-    __slots__ = ('low','high','center')
-    def __init__(self,low,high,center=None):
-        self.low = low
-        self.high = high
-        if center:
-            self.center = center
-        else:
-            self.center = statistics.mean((low,high))
-
-    def __eq__(self,other):
-        if other.low <= self.high or other.high >= self.low:
-            return True
-        return False
-
-    def __lt__(self,other):
-        if self.high < other.low:
-            return True
-        return False
-
-    def __gt__(self,other):
-        if other.high < self.low:
-            return True
-        return False
-    
-    def __hash__(self):
-        return hash((self.low,self.high))
-
-    def  __repr__(self):
-        return f"<{self.__class__.__name__}(low={self.low},high={self.high}) at {id(self)}>"
-    
-    def __str__(self):
-        return f"{self.low}<>{self.high}"
-
-
-
-class PrecIon(object):
-    __slots__ = ('rt','z','mz','ccs','ms2','info')
-    def __init__(self,rt,z,mz,ccs,ms2):
-        self.rt = rt
-        self.z = z
-        self.mz = mz
-        self.ccs = ccs
-        self.ms2 = ms2
-    
-
-    def merge(self,other):
-        pass
-
-
-
 
 def _make_error_col_names(qcols):
     '''helper func to make error column names of the form
