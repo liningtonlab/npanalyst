@@ -10,7 +10,7 @@ def main():
     parser.add_argument('-w','--workers',help="number of parallel workers to spin up",type=int,default=0)
     parser.add_argument('-f','--filename_col',help='column name for the filename',default='Sample')
     parser.add_argument('--basket_info',help='Flag to save basket info as a json object in resulting files.',action='store_true')
-    parser.add_argument('--ms2',help='flag match ms2 ions during basketing Note: Will drastically increase time required',action='store_true')
+    parser.add_argument('--ms2',help='match ms2 ions during basketing Note: Will drastically increase time required',action='store_true')
     parser.add_argument('--activity_data',help='path to activity data or folder containing multiple activity files')
     args = parser.parse_args()
 
