@@ -41,7 +41,7 @@ def _make_error_col_names(qcols):
     return error_cols
 
 
-def _load_config(config_path=None):
+def load_config(config_path=None):
     '''loads the config_path config file and stores a bunch of values as globals
         config_path (str, optional): Defaults to 'defualt.cfg'. 
             path to the config file, default can be overridden. 
@@ -63,12 +63,17 @@ def _load_config(config_path=None):
     MS1COLSTOMATCH = config['MSFileInfo']['MS1ColsToMatch'].split(',')
     configd['MS1COLSTOMATCH'] = MS1COLSTOMATCH
     # global MS2COLS
-    MS2COLS = config['MSFileInfo']['MS2Cols'].split(',')
-    configd['MS2COLS'] = MS2COLS
-    # global MS2COLSTOMATCH
-    MS2COLSTOMATCH = config['MSFileInfo']['MS2ColsToMatch'].split(',')
-    configd['MS2COLSTOMATCH'] = MS2COLSTOMATCH
-    # global ERRORINFO
+    try:
+        MS2COLS = config['MSFileInfo']['MS2Cols'].split(',')
+        configd['MS2COLS'] = MS2COLS
+        # global MS2COLSTOMATCH
+        MS2COLSTOMATCH = config['MSFileInfo']['MS2ColsToMatch'].split(',')
+        configd['MS2COLSTOMATCH'] = MS2COLSTOMATCH
+        # global ERRORINFO
+        MS2ERRORCOLS = _make_error_col_names(MS2COLSTOMATCH)
+        configd["MS2ERRORCOLS"] = MS2ERRORCOLS
+    except KeyError:
+        pass
     ERRORINFO = {}
     for name,tup in config['Tolerances'].items():
         etype,ev = tup.split(',')
@@ -87,15 +92,12 @@ def _load_config(config_path=None):
     MS1ERRORCOLS = _make_error_col_names(MS1COLSTOMATCH)
     configd["MS1ERRORCOLS"] = MS1ERRORCOLS
     # global MS2ERRORCOLS
-    MS2ERRORCOLS = _make_error_col_names(MS2COLSTOMATCH)
-    configd["MS2ERRORCOLS"] = MS2ERRORCOLS
+
     configd['CalcBasketInfo'] = config['BasketInfo']['CalcBasketInfo'].lower() == 'true'
-    configd['MINREPS'] = config['ReplicateInfo']['RequiredReplicates']
     configd['BasketMSLevel'] = int(config['BasketInfo']['BasketMSLevel'])
+    configd['MINREPS'] = int(config['ReplicateInfo']['RequiredReplicates'])
+    configd['MSLEVEL'] = int(config['MSFileInfo']['MSLevel'])
     return configd
-
-_load_config() #pull config info into global namespace
-
 
 def _run2df(mzrun):
     data = []
@@ -106,8 +108,13 @@ def _run2df(mzrun):
         scantime = spec.scan_time[0]
         mslevel = spec.ms_level
         if mslevel ==1: # MS
+            lower_scan_limit = spec["MS:1000501"]
+            upper_scan_limit = spec["MS:1000500"]
+
             try:
-                specdata = spec.peaks("centroided").tolist()
+                mzi = spec.peaks("centroided")
+                mzi = mzi[(mzi[:,0]>lower_scan_limit) &(mzi[:,0]<upper_scan_limit)]
+                specdata = mzi.tolist()
 
             except AttributeError:
                 specdata = []
@@ -147,7 +154,7 @@ def mzml_to_df(mzml_path):
     run = pymzml.run.Reader(mzml_path)
     df = _run2df(run)
     fname = Path(mzml_path).stem
-    df['filename'] = fname
+    df['Sample'] = fname
     return df
 
 
@@ -166,7 +173,7 @@ def gen_rep_df_paths(datadir):
     csvs = [f.name for f in sd if f.name.lower().split('.')[-1] in extensions]
     repd = defaultdict(list)
     for fname in csvs:
-        repd[fname.split("_")[1]].append(fname) #parse rule.. probably needs to be more flexible
+        repd[fname.split("_")[0]].append(fname) #parse rule.. probably needs to be more flexible
 
     for sample,files in repd.items():
         if len(files) > 1:
@@ -231,13 +238,14 @@ def build_rtree(df,errorcols):
     Returns:
         rtree.Index: a rtree index built from df rectangles
     """
-
+    # embed()
     dims = len(errorcols) // 2 
     p = index.Property()
     p.dimension = dims
     p.interleaved = False
     rgen = ((i,r,None) for i,r in enumerate(get_rects(df,errorcols)))
     idx = index.Index(rgen,properties=p)
+    # embed()
     return idx
 
 def gen_con_comps(rtree,rects,pbar=False):
@@ -251,6 +259,7 @@ def gen_con_comps(rtree,rects,pbar=False):
         rects (iterable): array like object of rectangles used to build the rtree
         pbar (bool, optional): Defaults to False. Whether or not to display a progress bar
     """  
+    
     seen = set()
     if pbar:
         to_it = tqdm(range(len(rects)))
@@ -385,7 +394,7 @@ def _combine_rows(cc_df,uni_files,configd,ms2):
     calc_basket_info = configd['CalcBasketInfo']
     ms1vals = _average_data_rows(cc_df,configd['MS1COLS'],calc_basket_info=calc_basket_info)
 
-    if ms2:
+    if ms2 and configd['MSLEVEL'] ==2:
         ms2vals = combine_ms2(cc_df,configd)
         return ms1vals + [ms2vals]
     else:
@@ -431,7 +440,7 @@ def proc_con_comps(ccs,df,configd,min_reps,ms2=True):
     cols = datacols[:]
     if calc_basket_info:
         cols += ['BasketInfo']
-    if ms2:
+    if ms2 & configd['MSLEVEL'] == 2:
         cols += ['MS2Info']
     
     ndf = pd.DataFrame(data,columns=cols)
@@ -439,7 +448,7 @@ def proc_con_comps(ccs,df,configd,min_reps,ms2=True):
 
     return ndf
 
-def _proc_one(sample,df_paths,configd,datadir,calc_basket_info=False):
+def _proc_one(sample,df_paths,configd,datadir):
     """
     Process one replica sample. The replicated file is saved as ./Replicated/<sample>_Replicated.csv
     
@@ -455,6 +464,7 @@ def _proc_one(sample,df_paths,configd,datadir,calc_basket_info=False):
     MS1COLSTOMATCH = configd["MS1COLSTOMATCH"]
     MS1ERRORCOLS = configd["MS1ERRORCOLS"]
     ERRORINFO = configd['ERRORINFO']
+    calc_basket_info = configd['CalcBasketInfo']
 
     if df_paths[0].lower().endswith("csv"):
         dfs = [reduce_to_ms1(pd.read_csv(p),FILENAMECOL) for p in df_paths]
@@ -467,14 +477,15 @@ def _proc_one(sample,df_paths,configd,datadir,calc_basket_info=False):
     rtree = build_rtree(df,MS1ERRORCOLS)
     con_comps = gen_con_comps(rtree,get_rects(df,MS1ERRORCOLS))
     ndf = proc_con_comps(con_comps,df,configd,configd['MINREPS'])
-    ndf['MS2Info'] = [ms2df.to_json() for ms2df in ndf['MS2Info']]
+    if configd['MSLEVEL'] == 2:
+        ndf['MS2Info'] = [ms2df.to_json() for ms2df in ndf['MS2Info']]
 
     
     ndf.to_csv(datadir.joinpath("Replicated").joinpath(f"{sample}_Replicated.csv"))
     gc.collect() # attempt to fix rtree index memory leak...
     return "DONE"
 
-def proc_folder(datadir,FILENAMECOL,calc_basket_info,max_workers):
+def proc_folder(datadir,configd,max_workers):
     """process a folder of sample data replicates. output files will be saved in ./Replacted
     
     Args:
@@ -487,13 +498,13 @@ def proc_folder(datadir,FILENAMECOL,calc_basket_info,max_workers):
         pass
     paths = list(gen_rep_df_paths(datadir))
     for sample,df in tqdm(paths,desc='proc_folder'):
-        _proc_one(sample,df,FILENAMECOL,datadir,calc_basket_info)
+        _proc_one(sample,df,configd,datadir)
 
 def _update(pbar,future):
     '''callback func for future object to update progress bar'''
     pbar.update()
  
-def mp_proc_folder(datadir,configd,calc_basket_info=False,max_workers=0):
+def mp_proc_folder(datadir,configd,max_workers=0):
     """
     multi proccesor version of proc_folder. by default will use cpu_count - 2 workers.  
     
@@ -524,7 +535,7 @@ def mp_proc_folder(datadir,configd,calc_basket_info=False,max_workers=0):
                         
             for sample,paths in paths_iter:
                 # fut = ex.submit(_proc_one,sample,paths,FILENAMECOL,datadir,calc_basket_info)
-                fut = ex.submit(_proc_one,sample,paths,configd,datadir,calc_basket_info)
+                fut = ex.submit(_proc_one,sample,paths,configd,datadir)
                 fut.add_done_callback(partial(_update,pbar))
                 futs[fut] = sample
                 if len(futs) > max_workers:
@@ -587,7 +598,7 @@ def basket(datadir,configd):
     df[FILENAMECOL] = np.where(df[FILENAMECOL].isnull(), df["Sample"], df[FILENAMECOL])
     df.dropna(subset=[FILENAMECOL],inplace=True)
     print(f"Dropped {orig_len-df.shape[0]} rows missing values in {FILENAMECOL}")
-    gen_error_cols(df,MS1COLS,ERRORINFO)
+    gen_error_cols(df,configd['MS1COLSTOMATCH'],ERRORINFO)
     print("Making Rtree Index")
     rtree = build_rtree(df,MS1ERRORCOLS)
     print('Generating Baskets')
@@ -596,7 +607,13 @@ def basket(datadir,configd):
     # ndf['MS2Info'] = [ms2df.to_json(orient='split',index=False) for ms2df in ndf['MS2Info']]
     ndf['freq'] = [len(s.split('|')) for s in ndf[FILENAMECOL]]
     ndf.to_csv(os.path.join(datadir,"Basketed.csv"))
- 
+
+
+######################
+#  Actiivity Mapping #
+######################
+
+
 def filename2sample(filename, fn_delim='_', sampleidx=1):
     sample = filename.split(fn_delim)[sampleidx]
     return sample
