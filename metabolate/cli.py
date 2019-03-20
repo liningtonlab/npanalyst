@@ -29,7 +29,7 @@ def main():
         mp_proc_folder(data_path, configd, max_workers=args.workers)
 
     if args.task in ['basket','both','full_pipeline']:
-        if args.task == 'both':
+        if args.task in ['both','full_pipeline']:
             data_path = data_path.joinpath('Replicated')
         else:
             data_path = Path(args.path)
