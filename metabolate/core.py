@@ -618,7 +618,7 @@ def filename2sample(filename, fn_delim='_', sampleidx=1):
     sample = filename.split(fn_delim)[sampleidx]
     return sample
 
-def filenames2samples(filenames, delim='|', fn_delim='_', sampleidx=1):
+def filenames2samples(filenames, delim='|', fn_delim='_', sampleidx=0):
     samples = {filename.split(fn_delim)[sampleidx] for filename in filenames.split(delim)}
     return samples
 
@@ -648,38 +648,39 @@ def cluster_score(fpd,samples,metric='euclidean'):
     #     raise 
     return score
          
-def load_basket_data(bpath:str, samplecol="Sample",mzcol="PrecMz",rtcol="RetTime", ccscol="CCS", intcol="PrecIntensity") -> list:
-    df = pd.read_csv(bpath)
-    ms1df = pd.DataFrame(list(set(df[[rtcol,mzcol,ccscol,intcol,samplecol]].itertuples(index=False))))
+def load_basket_data(bpath:Path, configd) -> list:
+    if not isinstance(bpath,Path):
+        bpath = Path(bpath)
+    df = pd.read_csv(bpath.resolve())
+    MS1COLS = configd['MS1COLS']
+    FILENAMECOL = configd["FILENAMECOL"]
+    cols_to_keep = MS1COLS + [FILENAMECOL]
+    ms1df = pd.DataFrame(list(set(df[cols_to_keep].itertuples(index=False))))
     baskets = []
-    for rowt in ms1df.itertuples(index=False):
-        rt,mz,ccs,inti,samplestr = rowt
-        samples = filenames2samples(samplestr)
-        bd = {'mz':mz,'rt':rt,'ccs':ccs,'inti':inti,'samples':samples}
+    for bd in ms1df.to_dict('records'):
+        bd['samples'] = filenames2samples(bd[FILENAMECOL])
         baskets.append(bd)
     return baskets
     
 
 def load_activity_data(apath: str) -> dict:
-    p = Path(apath)
+    if not isinstance(apath,Path):
+        p = Path(apath)
+    dfs = {}
     if p.is_dir():
         filenames = [sd.name for sd in os.scandir(p) if sd.name.lower().endswith('csv')]
-        dfs = {}
         for fname in filenames:
             df = pd.read_csv(p.joinpath(fname),index_col=0)
-
             df.fillna(value=0, inplace=True)
             name = os.path.splitext(fname)[0]
             dfs[name]=df
-
-
     if p.is_file():
         name = os.path.splitext(p.name)[0]
         dfs[name] = pd.read_csv(apath)
     # df[name_col] = df[name_col].apply(lambda x:x.split('-')[0])
     actd = defaultdict(dict)
     for name,df in dfs.items():
-        for row in df.itertuples():
+        for row in df.itertuples(index=False):
             actd[name][row[0]] = np.asarray(row[1:])
     actd = dict(actd) #convert to normal dict
     return actd
@@ -695,7 +696,7 @@ def get_config(cpath:str):
 Scoret = namedtuple('Scoret', 'activity cluster')
 def score_baskets(baskets,actd):
     scores = defaultdict(dict)
-    for i,basket in tqdm(enumerate(baskets)):
+    for i,basket in tqdm(enumerate(baskets),desc='Scoring Baskets'):
         samples = basket['samples']
         for actname,fpd in actd.items():
             try:
@@ -710,16 +711,6 @@ def score_baskets(baskets,actd):
     return scores
 
 
-def load_default_basket_and_activity():
-    config = get_config('default.cfg')
-    baskets = load_basket_data(config['BasketInfo']['path'],samplecol=config['BasketInfo']['samplecol'])
-    actd = load_activity_data(config['ActivityFileInfo']['path'])
-    return baskets,actd
-
-def load_default_basket_and_activity(basket_path,act_path):
-    baskets = load_basket_data(basket_path)
-    actd = load_activity_data(act_path)
-    return baskets,actd
 
 def make_bokeh_input(baskets,actd):
     # baskets,actd = load_default_basket_and_activity()
@@ -751,7 +742,7 @@ def make_cytoscape_input(baskets,actd,act_thresh=5,clust_thresh=10):
     scores = score_baskets(baskets,actd)
     edges = []
     basket_info = []
-    _basket_keys= ['mz','rt','ccs','inti']
+    _basket_keys= ['mz','rt','ccs','intensity']
     samples = set()
     for i,basket in enumerate(baskets):
         bid = f"Basket_{i}"
@@ -772,14 +763,16 @@ def make_cytoscape_input(baskets,actd,act_thresh=5,clust_thresh=10):
         for e in edges:
             print(f'{e[0]}\t{e[1]}\t1',file=fout)
     with open('Atributes.csv','w') as fout:
-        print('bid,mz,rt,ccs,inti,freq,combo_name',file=fout)
+        print('bid,mz,rt,ccs,intensity,freq,combo_name',file=fout)
         for b in basket_info:
             print(','.join(map(str,b)),file=fout)
         for samp in samples:
             print(f'{samp},,,,,,{samp}',file=fout)
 
-def load_and_generate_act_outputs(basket_path,act_path):
-    baskets = load_basket_data(basket_path)
+def load_and_generate_act_outputs(basket_path, act_path, configd):
+    baskets = load_basket_data(basket_path,configd)
     actd = load_activity_data(act_path)
-    make_bokeh_input(baskets,actd)
-    make_cytoscape_input(baskets,actd)
+    embed()
+    print(score_baskets(baskets,actd))
+    # make_bokeh_input(baskets,actd)
+    # make_cytoscape_input(baskets,actd)

@@ -39,7 +39,13 @@ def main():
         print('path argument must be path to basketed data file')
     
     if args.activity_data and args.task in ['activity','full_pipeline']:
-        load_and_generate_act_outputs(data_path, args.activity_data)
+        if args.task == 'full_pipeline':
+            basket_path = Path(args.path) \
+                .joinpath("Replicated") \
+                .joinpath("Basketed.csv")
+        else:
+            basket_path = Path(args.path)
+        load_and_generate_act_outputs(basket_path, args.activity_data, configd )
 
 if __name__ == "__main__":
     main()
