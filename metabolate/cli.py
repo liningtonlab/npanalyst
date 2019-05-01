@@ -7,6 +7,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('task', help='task to perform.', choices=['replicate','basket','both','activity','full_pipeline'])
     parser.add_argument('path', help='path to input for either task or basketed data for activity mapping')
+    parser.add_argument('-o', '--output', help="Output directory", default=".")
     parser.add_argument('-w', '--workers', help="number of parallel workers to spin up",
                         type=int, default=0)
     parser.add_argument('-f', '--filename_col', help='column name for the filename',
@@ -22,6 +23,12 @@ def main():
     args = parser.parse_args()
 
     setup_logging(args.verbose)
+
+    # Check required fields are satisfied based on arguments
+    if args.task in ('full_pipeline', 'activity') and not args.activity_data:
+        parser.error('Activity data is missing')
+    if args.task == 'activity' and 'Basketed.csv' not in args.path:
+        parser.error('Path argument must be to basketed data file')
 
     if args.config:
         configd = load_config(args.config)
@@ -42,10 +49,9 @@ def main():
             data_path = Path(args.path)
         basket(data_path, configd)
 
-    if args.activity_data and args.task not in ('both','basket'):
-        print('path argument must be path to basketed data file')
 
     if args.activity_data and args.task in ['activity','full_pipeline']:
+        configd['outputdir'] = Path(args.output).resolve()
         if args.task == 'full_pipeline':
             basket_path = Path(args.path) \
                 .joinpath("Replicated") \

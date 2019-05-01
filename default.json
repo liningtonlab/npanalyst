@@ -1,0 +1,33 @@
+{
+    "MSFileInfo": {
+        "FileNameCol": "Sample",
+        "MS1Cols": "PrecMz,RetTime,PrecIntensity",
+        "MS1ColsToMatch": "PrecMz,RetTime",
+        "MS2Cols": "ProdMz,ProdIntensity,Ar1,Ar3",
+        "MS2ColsToMatch": "ProdMz,Ar1",
+        "MSLevel": 1
+    },
+    "Tolerances": {
+        "PrecMz": "ppm,30",
+        "RetTime": "window,0.03",
+        "PrecZ": "None,None",
+        "CCS": "window,1",
+        "Ar1": "window,0.33",
+        "ProdMz": "ppm,25"
+    },
+    "ReplicateInfo": {
+        "RequiredReplicates": 2
+    },
+    "BasketInfo": {
+        "ColumnsToFeature": "PrecMz,RetTime,PrecIntensity",
+        "BasketMSLevel": 1,
+        "CalcBasketInfo": false,
+        "RequiredReplicates": 1
+    },
+    "ActivityFileInfo": {
+        "NameColumn": 0
+    },
+    "BokehInfo": {
+        "ColumnMap": null
+    }
+}

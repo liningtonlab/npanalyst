@@ -1,5 +1,5 @@
 # Example file outputs
-ExampleFiles/
+ExampleFiles*/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

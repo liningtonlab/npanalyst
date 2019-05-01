@@ -1,4 +1,3 @@
-import configparser
 import os
 import json
 import gc
@@ -11,17 +10,14 @@ from functools import partial
 # from itertools import chain
 # import math
 # import statistics
+# import configparser
 
 import numpy as np
 import pandas as pd
 from rtree import index
-from scipy.spatial.distance import pdist
 from tqdm import tqdm
-
-# from numba import jit
-# from IPython import embed
-
 import pymzml
+import networkx as nx
 
 
 def setup_logging(verbose=False):
@@ -51,36 +47,35 @@ def _make_error_col_names(qcols):
 
 def load_config(config_path=None):
     '''loads the config_path config file and stores a bunch of values as globals
-        config_path (str, optional): Defaults to 'defualt.cfg'.
+        config_path (str, optional): Defaults to 'default.cfg'.
             path to the config file, default can be overridden.
     '''
-    config = configparser.ConfigParser()
-    config.optionxform = str #make sure things don't get lowercased
     if config_path is None:
-        p = Path(__file__).resolve().parent.parent.joinpath('default.cfg')
-        config.read(str(p))
-    else:
-        config.read(config_path)
+        config_path = Path(__file__).resolve().parent.parent.joinpath('default.json')
+
+    try:
+        with open(config_path) as f:
+            config = json.load(f)
+    except OSError as e:
+        logging.error(e)
+        raise e
 
     configd = {}
-    # global MS1COLS
     MS1COLS = config['MSFileInfo']['MS1Cols'].split(',')
     configd['MS1COLS'] = MS1COLS
-    # global MS1COLSTOMATCH
     MS1COLSTOMATCH = config['MSFileInfo']['MS1ColsToMatch'].split(',')
     configd['MS1COLSTOMATCH'] = MS1COLSTOMATCH
-    # global MS2COLS
+
     try:
         MS2COLS = config['MSFileInfo']['MS2Cols'].split(',')
         configd['MS2COLS'] = MS2COLS
-        # global MS2COLSTOMATCH
         MS2COLSTOMATCH = config['MSFileInfo']['MS2ColsToMatch'].split(',')
         configd['MS2COLSTOMATCH'] = MS2COLSTOMATCH
-        # global ERRORINFO
         MS2ERRORCOLS = _make_error_col_names(MS2COLSTOMATCH)
         configd["MS2ERRORCOLS"] = MS2ERRORCOLS
     except KeyError:
         pass
+
     ERRORINFO = {}
     for name,tup in config['Tolerances'].items():
         etype,ev = tup.split(',')
@@ -92,15 +87,12 @@ def load_config(config_path=None):
             ev = float(ev)
         ERRORINFO[name] = (etype,ev)
     configd['ERRORINFO'] = ERRORINFO
-    # global FILENAMECOL
     FILENAMECOL = config['MSFileInfo']['FileNameCol']
     configd['FILENAMECOL'] = FILENAMECOL
-    # global MS1ERRORCOLS
     MS1ERRORCOLS = _make_error_col_names(MS1COLSTOMATCH)
     configd["MS1ERRORCOLS"] = MS1ERRORCOLS
-    # global MS2ERRORCOLS
 
-    configd['CalcBasketInfo'] = config['BasketInfo']['CalcBasketInfo'].lower() == 'true'
+    configd['CalcBasketInfo'] = config['BasketInfo']['CalcBasketInfo']
     configd['BasketMSLevel'] = int(config['BasketInfo']['BasketMSLevel'])
     configd['MINREPS'] = int(config['ReplicateInfo']['RequiredReplicates'])
     configd['MSLEVEL'] = int(config['MSFileInfo']['MSLevel'])
@@ -169,7 +161,7 @@ def mzml_to_df(mzml_path):
     df = _run2df(run)
     fname = Path(mzml_path).stem
     df['Sample'] = fname
-    logging.debug(f'Loaded Sample: {fname}')
+    logging.debug('Loaded Sample: %s', fname)
     return df
 
 
@@ -183,6 +175,7 @@ def gen_rep_df_paths(datadir):
     extensions = ['mzml','csv'] #allow mzml or csv, if files are mixed this will cause issues
     sd = os.scandir(datadir)
     csvs = [f.name for f in sd if f.name.lower().split('.')[-1] in extensions]
+    logging.debug(csvs)
     repd = defaultdict(list)
     for fname in csvs:
         repd[fname.split("_")[0]].append(fname) #parse rule.. probably needs to be more flexible
@@ -209,7 +202,6 @@ def gen_error_cols(df,qcols,ERRORINFO):
     """
 
     for dcol in qcols:
-#         print(dcol)
         einfo = ERRORINFO[dcol]
         col = df[dcol]
         etype, evalue = einfo
@@ -254,14 +246,12 @@ def build_rtree(df,errorcols):
     Returns:
         rtree.Index: a rtree index built from df rectangles
     """
-    # embed()
     dims = len(errorcols) // 2
     p = index.Property()
     p.dimension = dims
     p.interleaved = False
     rgen = ((i,r,None) for i,r in enumerate(get_rects(df,errorcols)))
     idx = index.Index(rgen,properties=p)
-    # embed()
     return idx
 
 
@@ -388,7 +378,7 @@ def combine_ms2(cc_df, configd, ):
         for cc in ccs:
             if len(cc) > 1:
                 cc_df = ms2df.iloc[list(cc)]
-                # uni_files = set(cc_df[FILENAMECOL].values)
+                uni_files = set(cc_df[FILENAMECOL].values)
                 if len(uni_files) >= MINREPS:
                     data.append(_average_data_rows(cc_df,MS2COLS))
                     file_col.append('|'.join(uni_files))
@@ -405,12 +395,12 @@ def combine_ms2(cc_df, configd, ):
     return avg_ms2
 
 
-def _combine_rows(cc_df,uni_files,configd,ms2):
-    '''combine ms1 rows and optionally ms2 information in conncected component dataframe
+def _combine_rows(cc_df,configd,ms2):
+    '''combine ms1 rows and optionally ms2 information in conncected component
+    dataframe
 
     Args:
         cc_df (pd.DataFrame): conncected component dataframe
-        uni_files (set): uniqe filenames from cc_df
         min_reps (int): minumum number of replicates (number of uniqe files) that must be in connected component
         ms2 (bool): whether or not to combine ms2 data
         calc_basket_info (bool, optional): Defaults to False. whether or not to calculate basket info (spans)
@@ -428,7 +418,7 @@ def _combine_rows(cc_df,uni_files,configd,ms2):
         return ms1vals
 
 
-def proc_con_comps(ccs,df,configd,min_reps,ms2=True):
+def proc_con_comps(ccs,df,configd,min_reps,ms2=False):
     """
     Takes the connected components from the overlapping hyperrectangles and averages (mean)
     the data values from which the error was generated. Unique filenames are concatenated with a
@@ -439,11 +429,8 @@ def proc_con_comps(ccs,df,configd,min_reps,ms2=True):
     Args:
         ccs (set): connected component subgraph dataframe indices
         df (pd.DataFrame): the dataframe which the connected component subgraphs were calculated from
-        FILENAMECOL (str): filename column to be used for min_reps
-        datacols (iterable): column names to be averaged in connected components
-        min_reps (int, optional): Defaults to 2. Minimum number of files needed in subgraph to be used
-        calc_basket_info(bool, optional): Defaults to False. Whether or not to include json basket info.
-        ms2(bool, optional): Defaults to True. Wether or not to average MS2 data
+        min_reps (int): Minimum number of files needed in subgraph to be used
+        ms2(bool, optional): Defaults to False. Whether or not to average MS2 data
 
     Returns:
         pd.DataFrame: newdata frame with data cols and file name col.
@@ -460,7 +447,7 @@ def proc_con_comps(ccs,df,configd,min_reps,ms2=True):
         uni_files = set(cc_df[FILENAMECOL].values)
         if len(uni_files) >= min_reps:
             file_col.append('|'.join(uni_files))
-            avgd = _combine_rows(cc_df,uni_files,configd,ms2=ms2)
+            avgd = _combine_rows(cc_df,configd,ms2=ms2)
             data.append(avgd)
         else:
             continue
@@ -492,7 +479,7 @@ def _proc_one(sample,df_paths,configd,datadir):
     MS1COLSTOMATCH = configd["MS1COLSTOMATCH"]
     MS1ERRORCOLS = configd["MS1ERRORCOLS"]
     ERRORINFO = configd['ERRORINFO']
-    calc_basket_info = configd['CalcBasketInfo']
+    # calc_basket_info = configd['CalcBasketInfo']
 
     logging.debug(df_paths)
     logging.debug(";".join(map(str, [MS1ERRORCOLS, ERRORINFO])))
@@ -500,7 +487,7 @@ def _proc_one(sample,df_paths,configd,datadir):
     if df_paths[0].lower().endswith("csv"):
         dfs = [reduce_to_ms1(pd.read_csv(p),FILENAMECOL) for p in df_paths]
     else: #mzML data
-        dfs = [mzml_to_df(p) for p in df_paths] #asumes only MS1 data is present
+        dfs = [mzml_to_df(p) for p in df_paths] #assumes only MS1 data is present
 
     df = pd.concat(dfs,sort=True)
     df = df.reset_index()
@@ -516,7 +503,7 @@ def _proc_one(sample,df_paths,configd,datadir):
     return "DONE"
 
 
-def proc_folder(datadir,configd,max_workers):
+def proc_folder(datadir,configd):
     """process a folder of sample data replicates. output files will be saved in ./Replacted
 
     Args:
@@ -558,7 +545,6 @@ def mp_proc_folder(datadir,configd,max_workers=0):
 
     if max_workers == 0:
         max_workers = os.cpu_count()
-#         max_workers = 1
 
     paths = list(gen_rep_df_paths(datadir))
     pbar = tqdm(desc='proc_folder',total=len(paths))
@@ -577,7 +563,8 @@ def mp_proc_folder(datadir,configd,max_workers=0):
                     break
 
             for fut in as_completed(futs):
-                _ = fut.result()
+                res = fut.result()
+                logging.debug(res)
                 del futs[fut]
                 samples_left -= 1
                 break
@@ -661,8 +648,8 @@ def filenames2samples(filenames, delim='|', fn_delim='_', sampleidx=0):
     return samples
 
 
-def synth_fp(actd,samples):
-    to_cat = get_fps(actd,samples)
+def synth_fp(act_df, samples):
+    to_cat = get_fps(act_df, samples)
     return np.vstack(to_cat).mean(axis=0)
 
 
@@ -670,7 +657,7 @@ def get_fps(fpd,samples):
     to_cat = []
     for samp in samples:
         try:
-            to_cat.append(fpd[samp])
+            to_cat.append(fpd.loc[samp].values)
         except KeyError as e:
             logging.warning(e)
     if not to_cat:
@@ -678,15 +665,19 @@ def get_fps(fpd,samples):
     return np.asarray(to_cat)
 
 
-def cluster_score(fpd,samples,metric='euclidean'):
-    fps = get_fps(fpd,samples)
-    if fps.shape[0] == 1:
+def cluster_score(fpd, samples):
+    """
+    Cluster score is the average of the off diagonal elements of the Pearson
+    correlation matrix of all the fingerprints for the extracts a feature
+    appears in.
+    """
+    fps = get_fps(fpd, samples) # Get matrix of fingerprints
+    j = fps.shape[0]
+    if j == 1:
         return 0
-    cubed = pdist(np.vstack(fps),metric=metric)**3
-    score = cubed.mean()
-    # if np.isnan(cubed):
-    #     print(fps)
-    #     raise
+    # Easy pairwise correlation in pandas
+    corr = pd.DataFrame(fps).corr('pearson').values
+    score = np.sum(corr[np.triu_indices_from(corr, k=1)])/(j**2*j/2)
     return score
 
 
@@ -705,54 +696,52 @@ def load_basket_data(bpath:Path, configd) -> list:
     return baskets
 
 
-def load_activity_data(apath: str) -> dict:
+def load_activity_data(apath: str, samplecol: int=0) -> pd.DataFrame:
+    """
+    Take activity file path and make dataframe with loaded data
+    Add filename as column for future grouping
+    """
     p = apath if isinstance(apath, Path) else Path(apath)
-    dfs = {}
+    dfs = []
     if p.is_dir():
         filenames = [sd.name for sd in os.scandir(p) if sd.name.lower().endswith('csv')]
         for fname in filenames:
-            df = pd.read_csv(p.joinpath(fname),index_col=0)
-            df.fillna(value=0, inplace=True)
+            df = pd.read_csv(p.joinpath(fname)).fillna(value=0)
             name = os.path.splitext(fname)[0]
-            dfs[name]=df
+            df['filename'] = name
+            dfs.append(df)
     if p.is_file():
         name = os.path.splitext(p.name)[0]
-        dfs[name] = pd.read_csv(apath)
-    # df[name_col] = df[name_col].apply(lambda x:x.split('-')[0])
-    actd = defaultdict(dict)
-    for name,df in dfs.items():
-        for row in df.itertuples(index=False):
-            actd[name][row[0]] = np.asarray(row[1:])
-    actd = dict(actd) #convert to normal dict
-    return actd
+        df = pd.read_csv(apath).fillna(value=0)
+        df['filename'] = name
+        dfs.append(df)
 
+    big_df = pd.concat(dfs)
+    big_df.set_index(big_df.columns[samplecol], inplace=True)
+    return big_df
 
-def get_config(cpath:str):
-    config = configparser.ConfigParser()
-    with open(cpath) as fin:
-        config.read_file(fin)
-    return config
-
-
-SCORET = namedtuple('Scoret', 'activity cluster')
-def score_baskets(baskets, actd):
+SCORET = namedtuple('Score', 'activity cluster')
+def score_baskets(baskets, act_df):
     scores = defaultdict(dict)
-    for i, basket in tqdm(enumerate(baskets),desc='Scoring Baskets'):
-        samples = basket['samples']
-        for actname,fpd in actd.items():
+    grouped = act_df.groupby('filename')
+    # for i, bask in tqdm(enumerate(baskets),desc='Scoring Baskets'):
+    for i, bask in enumerate(baskets):
+        samples = bask['samples']
+        for actname, fpd in grouped:
+            num_fpd = fpd[[c for c in fpd.columns if c != 'filename']]
             try:
-                sfp = synth_fp(fpd,samples)
+                sfp = synth_fp(num_fpd,samples)
                 act_score = np.sum(sfp**2)
-                scores[actname][i] = SCORET(act_score,cluster_score(fpd,samples))
+                clust_score = cluster_score(num_fpd, samples)
+                scores[actname][i] = SCORET(act_score,clust_score)
             except KeyError as e:
                 logging.warning(e)
 
     scores = dict(scores)
-    print(scores)
     return scores
 
 
-def make_bokeh_input(baskets, scored):
+def make_bokeh_input(baskets, scored, output):
     '''produce output CSV consistent with bokeh server input
 
     Args:
@@ -762,63 +751,74 @@ def make_bokeh_input(baskets, scored):
     logging.debug('Writing Bokeh output...')
     scores = scored.get('Activity')
     data = []
-    for i, basket in enumerate(baskets):
+    for i, bask in enumerate(baskets):
         bid = f"Basket_{i}"
-        freq = len(basket['samples'])
-        samplelist = "['{0}']".format("', '".join(basket['samples']))
+        freq = len(bask['samples'])
+        samplelist = "['{0}']".format("', '".join(bask['samples']))
         try:
             act = scores[i].activity
             clust = scores[i].cluster
         except KeyError:
             act,clust = None,None
 
-        row = (bid,freq,basket['PrecMz'],basket['RetTime'],samplelist,act,clust)
+        row = (bid,freq,bask['PrecMz'],bask['RetTime'],samplelist,act,clust)
         data.append(row)
     columns = ('BasketID','Frequency','PrecMz','RetTime','SampleList',
                'ACTIVITY_SCORE','CLUSTER_SCORE')
     df = pd.DataFrame(data,columns=columns)
     # df.to_excel("HIFAN.xlsx")
-    df.to_csv("HIFAN.csv", index=False, quoting=1, doublequote=False, escapechar=" ")
+    outfile = output.joinpath("HIFAN.csv").as_posix()
+    df.to_csv(outfile, index=False, quoting=1, doublequote=False, escapechar=" ")
 
 
-def make_cytoscape_input(baskets,actd,scores,act_thresh=5,clust_thresh=10):
-    # baskets,actd = load_default_basket_and_activity()
-    # scores = score_baskets(baskets,actd)
-    # print(scores)
+_BASKET_KEYS= ['PrecMz','RetTime','PrecIntensity']
+BINFO = namedtuple('Basket', ['id', 'freq', *[k for k in _BASKET_KEYS],
+                              'activity_score', 'cluster_score'])
+def make_cytoscape_input(baskets,scored,output,act_thresh=2,clust_thresh=2):
+    logging.debug("Writing Cytoscape output...")
+    scores = scored.get('Activity')
     edges = []
     basket_info = []
-    _basket_keys= ['mz','rt','ccs','intensity']
     samples = set()
-    for i, basket in enumerate(baskets):
+    for i, bask in enumerate(baskets):
         bid = f"Basket_{i}"
-        if i in scores['CPActivity']:
-            score = scores['CPActivity'][i]
-            if score.activity > act_thresh and score.cluster < clust_thresh:
-                samples.update(basket['samples'])
-                for samp in basket['samples']:
-                    edges.append((bid,samp))
-        basket_info.append(
-            [bid]+
-            [basket[k] for k in _basket_keys]+
-            [len(basket['samples'])]+
-            [f"{basket['mz']:.4f}"])
+        try:
+            score = scores[i]
+        except IndexError as e:
+            # logging.warning(e)
+            score = SCORET(0, 0)
+        if score.activity > act_thresh and score.cluster > clust_thresh:
+            samples.update(bask['samples'])
+            for samp in bask['samples']:
+                edges.append((bid,samp))
+            basket_info.append(
+                BINFO(bid, len(bask['samples']), *[round(bask[k], 4) for k in
+                                                     _BASKET_KEYS],
+                      round(score.activity, 2), round(score.cluster, 2)
+                     )
+            )
 
-    with open('EdgeList.txt','w') as fout:
-        print('Source\tTarget\tScore',file=fout)
-        for e in edges:
-            print(f'{e[0]}\t{e[1]}\t1',file=fout)
-    with open('Attributes.csv','w') as fout:
-        print('bid,mz,rt,ccs,intensity,freq,combo_name',file=fout)
-        for b in basket_info:
-            print(','.join(map(str,b)),file=fout)
-        for samp in samples:
-            print(f'{samp},,,,,,{samp}',file=fout)
+    # Construct graph and write outputs
+    G = nx.Graph()
+    for samp in samples:
+        G.add_node(samp, type_="sample")
+    for b in basket_info:
+        G.add_node(b.id, **b._asdict(), type_="basket")
+    for e in edges:
+        G.add_edge(*e)
+
+    logging.debug(nx.info(G))
+    outfile_gml = output.joinpath("HIFAN.graphml").as_posix()
+    outfile_cyjs = output.joinpath("HIFAN.cyjs").as_posix()
+    nx.write_graphml(G, outfile_gml)
+    with open(outfile_cyjs, 'w') as fout:
+        fout.write(json.dumps(nx.cytoscape_data(G), indent=2))
 
 
 def load_and_generate_act_outputs(basket_path, act_path, configd):
-    baskets = load_basket_data(basket_path,configd)
-    actd = load_activity_data(act_path)
-#     embed()
-    scores = score_baskets(baskets, actd)
-    make_bokeh_input(baskets, scores)
-    # make_cytoscape_input(baskets, actd, scores)
+    baskets = load_basket_data(basket_path, configd)
+    activity_df = load_activity_data(act_path)
+    scores = score_baskets(baskets, activity_df)
+    outputdir = configd['outputdir']
+    make_bokeh_input(baskets, scores, outputdir)
+    make_cytoscape_input(baskets, scores, outputdir)

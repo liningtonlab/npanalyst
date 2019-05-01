@@ -16,6 +16,7 @@ setup(
         'numpy',
         'scipy',
         'pymzml',
+        'networkx',
     ],
     python_requires='~=3.6' #fstrings all over the place...
 )
