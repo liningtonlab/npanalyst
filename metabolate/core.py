@@ -772,7 +772,7 @@ def make_bokeh_input(baskets, scored, output):
 
 
 _BASKET_KEYS= ['PrecMz','RetTime','PrecIntensity']
-BINFO = namedtuple('Basket', ['id', 'freq', *[k for k in _BASKET_KEYS],
+BINFO = namedtuple('Basket', ['id', 'freq', 'samples', *[k for k in _BASKET_KEYS],
                               'activity_score', 'cluster_score'])
 def make_cytoscape_input(baskets,scored,output,act_thresh=2,clust_thresh=2):
     logging.debug("Writing Cytoscape output...")
@@ -792,8 +792,9 @@ def make_cytoscape_input(baskets,scored,output,act_thresh=2,clust_thresh=2):
             for samp in bask['samples']:
                 edges.append((bid,samp))
             basket_info.append(
-                BINFO(bid, len(bask['samples']), *[round(bask[k], 4) for k in
-                                                     _BASKET_KEYS],
+                BINFO(bid, len(bask['samples']),
+                      ';'.join(list(bask['samples'])),
+                      *[round(bask[k], 4) for k in _BASKET_KEYS],
                       round(score.activity, 2), round(score.cluster, 2)
                      )
             )
