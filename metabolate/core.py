@@ -676,9 +676,9 @@ def cluster_score(fpd, samples):
     if j == 1:
         return 0
     # Easy pairwise correlation in pandas
-    corr = pd.DataFrame(fps).corr('pearson').values
-    score = np.sum(corr[np.triu_indices_from(corr, k=1)])/(j**2*j/2)
-    return score
+    corr = pd.DataFrame(fps).corr('pearson').fillna(0).values
+    score = np.sum(corr[np.triu_indices_from(corr, k=1)])/((j**2-j)/2)
+    return score if not np.isnan(score) else 0.0
 
 
 def load_basket_data(bpath:Path, configd) -> list:
@@ -785,7 +785,7 @@ def make_cytoscape_input(baskets,scored,output,act_thresh=2,clust_thresh=2):
         try:
             score = scores[i]
         except IndexError as e:
-            # logging.warning(e)
+            logging.warning(e)
             score = SCORET(0, 0)
         if score.activity > act_thresh and score.cluster > clust_thresh:
             samples.update(bask['samples'])
