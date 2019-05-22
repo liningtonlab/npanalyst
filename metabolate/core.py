@@ -807,6 +807,11 @@ def make_cytoscape_input(baskets,scored,output,act_thresh=2,clust_thresh=2):
         G.add_node(b.id, **b._asdict(), type_="basket")
     for e in edges:
         G.add_edge(*e)
+    # Pre-calculate and add layout
+    pos = nx.spring_layout(G)
+    for node, (x,y) in pos.items():
+        G.node[node]['x'] = x
+        G.node[node]['y'] = y
 
     logging.debug(nx.info(G))
     outfile_gml = output.joinpath("HIFAN.graphml").as_posix()
