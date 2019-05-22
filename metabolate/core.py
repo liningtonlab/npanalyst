@@ -674,11 +674,11 @@ def cluster_score(fpd, samples):
     fps = get_fps(fpd, samples) # Get matrix of fingerprints
     j = fps.shape[0]
     if j == 1:
-        return 0
+        return 0.0
     # Easy pairwise correlation in pandas
-    corr = pd.DataFrame(fps).corr('pearson').fillna(0).values
+    corr = pd.DataFrame(np.transpose(fps)).corr('pearson').values
     score = np.sum(corr[np.triu_indices_from(corr, k=1)])/((j**2-j)/2)
-    return score if not np.isnan(score) else 0.0
+    return score
 
 
 def load_basket_data(bpath:Path, configd) -> list:
@@ -774,7 +774,7 @@ def make_bokeh_input(baskets, scored, output):
 _BASKET_KEYS= ['PrecMz','RetTime','PrecIntensity']
 BINFO = namedtuple('Basket', ['id', 'freq', 'samples', *[k for k in _BASKET_KEYS],
                               'activity_score', 'cluster_score'])
-def make_cytoscape_input(baskets,scored,output,act_thresh=2,clust_thresh=2):
+def make_cytoscape_input(baskets,scored,output,act_thresh=2,clust_thresh=0.5):
     logging.debug("Writing Cytoscape output...")
     scores = scored.get('Activity')
     edges = []
@@ -787,7 +787,7 @@ def make_cytoscape_input(baskets,scored,output,act_thresh=2,clust_thresh=2):
         except IndexError as e:
             logging.warning(e)
             score = SCORET(0, 0)
-        if score.activity > act_thresh and score.cluster > clust_thresh:
+        if score.activity > act_thresh and abs(score.cluster) > clust_thresh:
             samples.update(bask['samples'])
             for samp in bask['samples']:
                 edges.append((bid,samp))
@@ -809,7 +809,11 @@ def make_cytoscape_input(baskets,scored,output,act_thresh=2,clust_thresh=2):
         G.add_edge(*e)
     # Pre-calculate and add layout
     pos = nx.spring_layout(G)
+    scale = len(pos)*10
     for node, (x,y) in pos.items():
+        x = x * scale
+        y = y * scale
+        G.node[node]['position'] = {"x": x, "y": y}
         G.node[node]['x'] = x
         G.node[node]['y'] = y
 
@@ -817,8 +821,16 @@ def make_cytoscape_input(baskets,scored,output,act_thresh=2,clust_thresh=2):
     outfile_gml = output.joinpath("HIFAN.graphml").as_posix()
     outfile_cyjs = output.joinpath("HIFAN.cyjs").as_posix()
     nx.write_graphml(G, outfile_gml)
+    data = nx.cytoscape_data(G)
+
+    for d in data['elements']['nodes']:
+        posi = d.get('data').get('position')
+        d['position'] = posi
+        del d['data']['position']
+        del d['data']['x']
+        del d['data']['y']
     with open(outfile_cyjs, 'w') as fout:
-        fout.write(json.dumps(nx.cytoscape_data(G), indent=2))
+        fout.write(json.dumps(data, indent=2))
 
 
 def load_and_generate_act_outputs(basket_path, act_path, configd):
