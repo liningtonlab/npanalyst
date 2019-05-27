@@ -774,7 +774,7 @@ def make_bokeh_input(baskets, scored, output):
 _BASKET_KEYS= ['PrecMz','RetTime','PrecIntensity']
 BINFO = namedtuple('Basket', ['id', 'freq', 'samples', *[k for k in _BASKET_KEYS],
                               'activity_score', 'cluster_score'])
-def make_cytoscape_input(baskets,scored,output,act_thresh=2,clust_thresh=0.5):
+def make_cytoscape_input(baskets,scored,output,act_thresh=2,clust_thresh=0.3):
     logging.debug("Writing Cytoscape output...")
     scores = scored.get('Activity')
     edges = []
@@ -784,7 +784,7 @@ def make_cytoscape_input(baskets,scored,output,act_thresh=2,clust_thresh=0.5):
         bid = f"Basket_{i}"
         try:
             score = scores[i]
-        except IndexError as e:
+        except KeyError as e:
             logging.warning(e)
             score = SCORET(0, 0)
         if score.activity > act_thresh and abs(score.cluster) > clust_thresh:
@@ -807,28 +807,26 @@ def make_cytoscape_input(baskets,scored,output,act_thresh=2,clust_thresh=0.5):
         G.add_node(b.id, **b._asdict(), type_="basket")
     for e in edges:
         G.add_edge(*e)
-    # Pre-calculate and add layout
-    pos = nx.spring_layout(G)
-    scale = len(pos)*10
-    for node, (x,y) in pos.items():
-        x = x * scale
-        y = y * scale
-        G.node[node]['position'] = {"x": x, "y": y}
-        G.node[node]['x'] = x
-        G.node[node]['y'] = y
 
     logging.debug(nx.info(G))
     outfile_gml = output.joinpath("HIFAN.graphml").as_posix()
     outfile_cyjs = output.joinpath("HIFAN.cyjs").as_posix()
-    nx.write_graphml(G, outfile_gml)
+    nx.write_graphml(G, outfile_gml, prettyprint=True)
+
     data = nx.cytoscape_data(G)
+    # Pre-calculate and add layout
+    pos = nx.spring_layout(G)
+    pos_dict = dict()
+    scale = len(pos)*10
+    for node, (x,y) in pos.items():
+        x = x * scale
+        y = y * scale
+        pos_dict[node] = {'x': x, 'y': y}
 
     for d in data['elements']['nodes']:
-        posi = d.get('data').get('position')
+        posi = pos_dict.get(d.get('data').get('id'))
         d['position'] = posi
-        del d['data']['position']
-        del d['data']['x']
-        del d['data']['y']
+
     with open(outfile_cyjs, 'w') as fout:
         fout.write(json.dumps(data, indent=2))
 
