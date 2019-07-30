@@ -761,9 +761,9 @@ def make_bokeh_input(baskets, scored, output):
         except KeyError:
             act,clust = None,None
 
-        row = (bid,freq,bask['PrecMz'],bask['RetTime'],samplelist,act,clust)
+        row = (bid,freq,bask['PrecMz'],bask['PrecIntensity'],bask['RetTime'],samplelist,act,clust)
         data.append(row)
-    columns = ('BasketID','Frequency','PrecMz','RetTime','SampleList',
+    columns = ('BasketID','Frequency','PrecMz','PrecIntensity','RetTime','SampleList',
                'ACTIVITY_SCORE','CLUSTER_SCORE')
     df = pd.DataFrame(data,columns=columns)
     # df.to_excel("HIFAN.xlsx")
