@@ -1,12 +1,12 @@
 from setuptools import setup
 
 setup(
-    name="metabolate",
-    version="0.0.1",
-    packages=["metabolate"],
+    name="npanalyst",
+    version="0.0.2",
+    packages=["npanalyst"],
         entry_points={
         'console_scripts': [
-            'metabolate = metabolate.cli:main',
+            'npanalyst = npanalyst.cli:main',
         ]
         },
     install_requires=[

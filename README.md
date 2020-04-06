@@ -1,4 +1,4 @@
-# metabolate
+# npanalyst
 
 Tool-chain for relating metabolite MS data with bio-activity data.
 
@@ -8,9 +8,9 @@ Using an rtree to build connected component graphs of mz features with overlappi
 
 ## Functionality
 
-Right now things are implemented via a CLI (`metabolate`) which will process a folder of csv files or basket a folder of replicated CSV's (output from replicate task). 
+Right now things are implemented via a CLI (`npanalyst`) which will process a folder of csv files or basket a folder of replicated CSV's (output from replicate task). 
 
-A lot of the parameters are specified via a config file that defaults to `default.cfg` this will change a little as things get tuned. 
+A lot of the parameters are specified via a config file that defaults to `default.json` this will change a little as things get tuned. 
 
 Additionally activity mapping is roughly implemented now focused on generating inputs for the bokeh server and cytoscape files. Additional options and work to be done...
 
@@ -21,5 +21,3 @@ Additionally activity mapping is roughly implemented now focused on generating i
   
   * more agnostic on input type
   * add threshold parameters to config files
-
-* Alternative visualization and outputs
