@@ -97,6 +97,10 @@ def load_config(config_path=None):
     configd['MINREPS'] = int(config['ReplicateInfo']['RequiredReplicates'])
     configd['MSLEVEL'] = int(config['MSFileInfo']['MSLevel'])
 
+    # Network information
+    configd['ActivityThreshold'] = float(config['NetworkInfo']['ActivityThreshold'])
+    configd['ClusterThreshold'] = float(config['NetworkInfo']['ClusterThreshold'])
+
     logging.debug('Config loaded: \n%s', configd)
     return configd
 
@@ -837,4 +841,7 @@ def load_and_generate_act_outputs(basket_path, act_path, configd):
     scores = score_baskets(baskets, activity_df)
     outputdir = configd['outputdir']
     make_bokeh_input(baskets, scores, outputdir)
-    make_cytoscape_input(baskets, scores, outputdir)
+    make_cytoscape_input(baskets, scores, outputdir, 
+        act_thresh=configd['ActivityThreshold'], 
+        clust_thresh=configd['ClusterThreshold'],
+    )

@@ -15,7 +15,7 @@ setup(
         'tqdm',
         'numpy',
         'scipy',
-        'pymzml',
+        'pymzml==2.4.5',
         'networkx',
     ],
     python_requires='~=3.6' #fstrings all over the place...
