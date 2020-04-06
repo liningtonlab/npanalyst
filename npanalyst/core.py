@@ -181,7 +181,7 @@ def gen_rep_df_paths(datadir):
         repd[fname.split("_")[0]].append(fname) #parse rule.. probably needs to be more flexible
 
     for sample,files in repd.items():
-        if len(files) > 1:
+        if len(files) >= 1:
             paths = [os.path.join(datadir,f) for f in files]
             yield (sample, paths)
 
@@ -774,7 +774,7 @@ def make_bokeh_input(baskets, scored, output):
 _BASKET_KEYS= ['PrecMz','RetTime','PrecIntensity']
 BINFO = namedtuple('Basket', ['id', 'freq', 'samples', *[k for k in _BASKET_KEYS],
                               'activity_score', 'cluster_score'])
-def make_cytoscape_input(baskets,scored,output,act_thresh=2,clust_thresh=0.3):
+def make_cytoscape_input(baskets,scored,output,act_thresh=5000,clust_thresh=0.25):
     logging.debug("Writing Cytoscape output...")
     scores = scored.get('Activity')
     edges = []
