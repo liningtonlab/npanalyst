@@ -799,8 +799,7 @@ def make_bokeh_input(baskets, scored, output):
         "CLUSTER_SCORE",
     )
     df = pd.DataFrame(data, columns=columns)
-    # df.to_excel("HIFAN.xlsx")
-    outfile = output.joinpath("HIFAN.csv").as_posix()
+    outfile = output.joinpath("NPAnalyst.csv").as_posix()
     df.to_csv(outfile, index=False, quoting=1, doublequote=False, escapechar=" ")
 
 
@@ -856,8 +855,8 @@ def make_cytoscape_input(baskets, scored, output, act_thresh=5000, clust_thresh=
         G.add_edge(*e)
 
     logging.debug(nx.info(G))
-    outfile_gml = output.joinpath("HIFAN.graphml").resolve()
-    outfile_cyjs = output.joinpath("HIFAN.cyjs").resolve()
+    outfile_gml = output.joinpath("NPAnalyst.graphml").as_posix()
+    outfile_cyjs = output.joinpath("NPAnalyst.cyjs").as_posix()
     nx.write_graphml(G, outfile_gml, prettyprint=True)
 
     data = nx.cytoscape_data(G)
