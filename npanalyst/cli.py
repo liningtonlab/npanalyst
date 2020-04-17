@@ -1,5 +1,7 @@
 from pathlib import Path
+
 from npanalyst import core
+from npanalyst.config import load_config
 
 
 def main():
@@ -21,20 +23,10 @@ def main():
         "--workers",
         help="number of parallel workers to spin up",
         type=int,
-        default=0,
+        default=-1,
     )
     parser.add_argument(
         "-f", "--filename_col", help="column name for the filename", default="Sample"
-    )
-    parser.add_argument(
-        "--basket_info",
-        help="Flag to save basket info as a json object in resulting files.",
-        action="store_true",
-    )
-    parser.add_argument(
-        "--ms2",
-        help="match ms2 ions during basketing Note: Will drastically increase time required",
-        action="store_true",
     )
     parser.add_argument(
         "--activity_data",
@@ -56,6 +48,7 @@ def main():
         parser.error("Path argument must be to basketed data file")
 
     if args.config:
+        # conf = load_config(args.config)
         configd = core.load_config(args.config)
     else:
         configd = core.load_config()
@@ -65,7 +58,7 @@ def main():
 
     data_path = Path(args.path)
     if args.task in ["replicate", "both", "full_pipeline"]:
-        core.mp_proc_folder(data_path, configd, max_workers=args.workers)
+        core.proc_folder(data_path, configd, max_workers=args.workers)
 
     if args.task in ["basket", "both", "full_pipeline"]:
         if args.task in ["both", "full_pipeline"]:
@@ -77,7 +70,7 @@ def main():
         outdir = Path(args.output)
         if not outdir.exists():
             outdir.mkdir()
-        configd["outputdir"] = outdir.resolve()
+        configd["OUTPUTDIR"] = outdir.resolve()
         if args.task == "full_pipeline":
             basket_path = (
                 Path(args.path).joinpath("Replicated").joinpath("Basketed.csv")
