@@ -114,3 +114,5 @@ old_stuff/
 
 #profiles
 *.prof
+
+.vscode/

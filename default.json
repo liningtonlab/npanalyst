@@ -29,5 +29,9 @@
     },
     "BokehInfo": {
         "ColumnMap": null
+    },
+    "NetworkInfo": {
+        "ActivityThreshold": 5,
+        "ClusterThreshold": 0.25
     }
 }
