@@ -21,6 +21,6 @@ Additional options and work to be done...
 ```
 conda create -y -n npanalyst python=3.7
 conda activate npanalyst
-conda install -y -c conda-forge libspatialindex rtree pandas scipy networkx
+conda install -y -c conda-forge libspatialindex rtree pandas scipy networkx joblib
 python setup.py install
 ```
