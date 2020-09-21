@@ -54,7 +54,7 @@ def cluster_score(fpd: pd.DataFrame, samples: List) -> float:
         return 0.0
     # Easy pairwise correlation in pandas
     corr = pd.DataFrame(np.transpose(fps)).corr("pearson").values
-    score = np.sum(corr[np.triu_indices_from(corr, k=1)]) / ((j ** 2 - j) / 2.0)
+    score = np.nansum(corr[np.triu_indices_from(corr, k=1)]) / ((j ** 2 - j) / 2.0)
     return score
 
 
@@ -193,7 +193,7 @@ def make_cytoscape_input(baskets, scored, output, act_thresh=5000, clust_thresh=
         except KeyError as e:
             logging.warning(e)
             score = SCORET(0, 0)
-        if score.activity > act_thresh and abs(score.cluster) > clust_thresh:
+        if score.activity >= act_thresh and abs(score.cluster) >= clust_thresh:
             samples.update(bask["samples"])
             for samp in bask["samples"]:
                 edges.append((bid, samp))
@@ -238,3 +238,7 @@ def make_cytoscape_input(baskets, scored, output, act_thresh=5000, clust_thresh=
 
     with open(outfile_cyjs, "w") as fout:
         fout.write(json.dumps(data, indent=2))
+
+
+def auto_detect_threshold(scores):
+    return None

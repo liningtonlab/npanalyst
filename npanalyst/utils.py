@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import pymzml
 from rtree import index
-from tqdm import tqdm
+
 
 PATH = Union[Path, str]
 
@@ -122,12 +122,8 @@ def gen_con_comps(rtree: index.Index, rects: Iterable, pbar: bool = False):
     """
 
     seen = set()
-    if pbar:
-        to_it = tqdm(range(len(rects)))
-    else:
-        to_it = range(len(rects))
 
-    for i in to_it:
+    for i, _ in enumerate(rects):
         if i in seen:
             continue
         else:
@@ -418,6 +414,7 @@ def mzml_to_df(mzml_path: PATH, configd: Dict) -> pd.DataFrame:
     run = pymzml.run.Reader(str(mzml_path))
     df = _run2df(run)
     fname = Path(mzml_path).stem
+    logging.debug(f"{configd['FILENAMECOL']} -> {fname}")
     df[configd["FILENAMECOL"]] = fname
     logging.debug("Loaded file: %s", fname)
     return df

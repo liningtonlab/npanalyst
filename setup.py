@@ -8,11 +8,11 @@ setup(
     install_requires=[
         "pandas",
         "rtree",
-        "tqdm",
         "numpy",
         "scipy",
-        "pymzml==2.4.5", # Latest version which works 2.4.6 is broken
+        "pymzml==2.4.5",  # Latest version which works 2.4.6 is broken
         "networkx",
+        "joblib",
     ],
     python_requires="~=3.6",  # fstrings all over the place...
 )
