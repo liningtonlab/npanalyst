@@ -205,7 +205,7 @@ def load_and_generate_act_outputs(basket_path, act_path, configd):
             [abs(x.cluster) for x in scores.get("Activity")]
         )
     else:
-        act_thresh = configd["CLUSTERTHRESHOLD"]
+        clust_thresh = configd["CLUSTERTHRESHOLD"]
 
     activity.make_cytoscape_input(
         baskets,
