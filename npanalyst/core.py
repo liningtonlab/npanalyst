@@ -9,7 +9,6 @@ from typing import Dict, List, Optional
 
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
 
 from npanalyst import activity, utils
 from npanalyst.utils import PATH
@@ -100,7 +99,7 @@ def _proc_one(sample: str, df_paths: List[Path], configd: Dict, datadir: Path) -
         dfs = [utils.reduce_to_ms1(pd.read_csv(p), configd) for p in df_paths]
     else:  # mzML data
         dfs = [
-            utils.mzml_to_df(p, FILENAMECOL) for p in df_paths
+            utils.mzml_to_df(p, configd) for p in df_paths
         ]  # assumes only MS1 data is present
 
     df = pd.concat(dfs, sort=True).reset_index(drop=True)
@@ -137,7 +136,8 @@ def proc_folder(datadir: PATH, configd: Dict, max_workers: int = -1) -> None:
 
     paths_iter = utils.gen_rep_df_paths(datadir)
     Parallel(n_jobs=max_workers)(
-        delayed(_proc_one)(sample, paths, configd, datadir) for sample, paths in paths_iter
+        delayed(_proc_one)(sample, paths, configd, datadir)
+        for sample, paths in paths_iter
     )
 
 
@@ -154,7 +154,7 @@ def basket(datadir: PATH, configd: Dict) -> None:
     MS1COLS = configd["MS1COLS"]
     MS1ERRORCOLS = configd["MS1ERRORCOLS"]
     ERRORINFO = configd["ERRORINFO"]
-    ms2 = configd["BasketMSLevel"] == 2
+    ms2 = configd["BASKETMSLEVEL"] == 2
     logging.info("Loading Rep Files")
     df = utils.make_repdf(datadir)
     orig_len = df.shape[0]
@@ -189,14 +189,30 @@ def basket(datadir: PATH, configd: Dict) -> None:
 def load_and_generate_act_outputs(basket_path, act_path, configd):
     baskets = activity.load_basket_data(basket_path, configd)
     activity_df = activity.load_activity_data(act_path)
+    # Scores comes back as dict for if multiple activity files
+    # TODO: eliminate dict
     scores = activity.score_baskets(baskets, activity_df)
     activity.make_bokeh_input(baskets, scores, configd["OUTPUTDIR"])
+
+    if configd["ACTIVITYTHRESHOLD"] == "auto":
+        act_thresh = activity.auto_detect_threshold(
+            [x.activity for x in scores.get("Activity")]
+        )
+    else:
+        act_thresh = configd["ACTIVITYTHRESHOLD"]
+    if configd["CLUSTERTHRESHOLD"] == "auto":
+        clust_thresh = activity.auto_detect_threshold(
+            [abs(x.cluster) for x in scores.get("Activity")]
+        )
+    else:
+        clust_thresh = configd["CLUSTERTHRESHOLD"]
+
     activity.make_cytoscape_input(
         baskets,
         scores,
         configd["OUTPUTDIR"],
-        act_thresh=configd["ACTIVITYTHRESHOLD"],
-        clust_thresh=configd["CLUSTERTHRESHOLD"],
+        act_thresh=act_thresh,
+        clust_thresh=clust_thresh,
     )
 
 
