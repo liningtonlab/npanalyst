@@ -1,7 +1,9 @@
 from pathlib import Path
+import sys
 
-from npanalyst import core
+from npanalyst import core, utils, activity
 from npanalyst.config import load_config
+from npanalyst.convert import mzmine, gnps
 
 
 def main():
@@ -11,11 +13,18 @@ def main():
     parser.add_argument(
         "task",
         help="task to perform.",
-        choices=["replicate", "basket", "both", "activity", "full_pipeline"],
+        choices=["replicate", "basket", "activity", "full_pipeline", "import"],
     )
     parser.add_argument(
         "path",
         help="path to input for either task or basketed data for activity mapping",
+        type=str,
+    )
+    parser.add_argument(
+        "--msdatatype",
+        choices=["mzml", "mzmine", "gnps"],
+        default="mzml",
+        help="types of inputs inputs accepted: mzml (default), mzmine, and gnps"
     )
     parser.add_argument("-o", "--output", help="Output directory", default=".")
     parser.add_argument(
@@ -30,25 +39,45 @@ def main():
     )
     parser.add_argument(
         "--activity_data",
-        help="path to activity data or folder containing multiple activity files",
+        help="path to activity data or folder containing multiple activity files.",
     )
     parser.add_argument(
         "--config",
         help="custom config file to use. arguments will overwrite an overlapping config file options",
     )
+    parser.add_argument(
+        "--activity_threshold",
+        help="Activity threshold, default=3",
+        default=3,
+    )
+    parser.add_argument(
+        "--cluster_threshold",
+        help="Cluster threshold, default=0",
+        default=0,
+    )
     parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
-    args = parser.parse_args()
+    args, unknown = parser.parse_known_args()
+
+    # Checking to see if all the files listed using the glob operator "*" are of the same extension
+    if (unknown): 
+        if not (utils.sameFileFormat(args.path, unknown)):
+            parser.error("All imported files must have the same extension")
+        data_path = Path(args.path).parent
+    else:
+        data_path = Path(args.path)
 
     core.setup_logging(args.verbose)
 
+    if args.msdatatype not in ["mzml", "mzmine", "gnps"]:
+        parser.error("Only mzml, mzmine and gnps filetypes accepted")
+    else:
+        msdatatype = args.msdatatype
+    
     # Check required fields are satisfied based on arguments
-    if args.task in ("full_pipeline", "activity") and not args.activity_data:
+    if args.task in ("full_pipeline", "activity", "import") and not args.activity_data:
         parser.error("Activity data is missing")
-    if args.task == "activity" and "Basketed.csv" not in args.path:
-        parser.error("Path argument must be to basketed data file")
-
+        
     if args.config:
-        # conf = load_config(args.config)
         configd = core.load_config(args.config)
     else:
         configd = core.load_config()
@@ -56,28 +85,114 @@ def main():
     if args.filename_col:
         configd["FILENAMECOL"] = args.filename_col
 
-    data_path = Path(args.path)
-    if args.task in ["replicate", "both", "full_pipeline"]:
-        core.proc_folder(data_path, configd, max_workers=args.workers)
-
-    if args.task in ["basket", "both", "full_pipeline"]:
-        if args.task in ["both", "full_pipeline"]:
-            data_path = data_path.joinpath("Replicated")
+    clustThreshold = args.cluster_threshold
+    if not clustThreshold == "auto": 
+        if (float(clustThreshold) < 0 or float(clustThreshold) > 1):
+            parser.error("Cluster threshold must be between 0 and 1")
         else:
-            data_path = Path(args.path)
-        core.basket(data_path, configd)
-    if args.activity_data and args.task in ["activity", "full_pipeline"]:
+            configd["CLUSTERTHRESHOLD"] = float(clustThreshold)
+            print("CLUSTERTHRESHOLD set to", clustThreshold)
+    else:
+        configd["CLUSTERTHRESHOLD"] = "auto"
+        print ("Autodetect cluster threshold enabled")
+    
+    actTreshold = args.activity_threshold
+    if not actTreshold == "auto":
+        if (float(actTreshold) < 0):
+            parser.error("Activity threshold can not be negative")
+        else:
+            configd["ACTIVITYTHRESHOLD"] = float(actTreshold)
+            print("ACTIVITYTHRESHOLD set to", actTreshold)
+    else:
+        configd["ACTIVITYTHRESHOLD"] = "auto"
+        print ("Autodetect activity threshold enabled")
+
+    print (configd)
+
+    output_path = Path(args.output)
+    if not args.output == ".":
+        if not (output_path.exists()):
+            print ("Output path does not exist")
+
+    # Check to see if the activity file exists
+    if not (Path(args.activity_data).exists()):
+        parser.error("The activity file does not exist.")
+    else:
+        act_path = args.activity_data
+        # load sample names to be used for entire analysis - taken from activity_data
+        samples = utils.get_samples(act_path, configd["FILENAMECOL"])
+
+    if not (data_path.exists()):
+        parser.error("The data path/files do not exist.")
+
+    if msdatatype == "mzml":
+        print ("Running mzml.")
+
+        # consider full_pipeline to be the same as import for mzml
+        if args.task == "import":   
+            args.task = "full_pipeline"
+
+        if args.task in ["activity"] and "Basketed.csv" not in args.path:
+            parser.error("Path argument must be to basketed data file")
+        
+        if args.task in ["replicate", "full_pipeline"]:
+            core.proc_folder(data_path, output_path, configd, msdatatype, samples, max_workers=args.workers)
+
+        if args.task in ["basket", "full_pipeline"]:
+            if args.task in "full_pipeline":
+                #data_path = data_path.joinpath("Replicated")
+                output_path = output_path.joinpath("replicated")
+                core.basket(output_path, configd)
+            else:
+                #data_path = Path(args.path)
+                core.basket(data_path, configd)
+            #core.basket(data_path, configd)
+
+        if args.activity_data and args.task in ["activity", "full_pipeline"]:
+            outdir = Path(args.output)
+            if not outdir.exists():
+                outdir.mkdir()
+            configd["OUTPUTDIR"] = outdir.resolve()
+                
+            if args.task == "full_pipeline":
+                if (output_path.exists()):
+                    basket_path = output_path.joinpath("basketed.csv")
+                else:
+                    basket_path = data_path.joinpath("replicated").joinpath("basketed.csv")
+            else:
+                basket_path = Path(args.path)
+            core.load_and_generate_act_outputs(basket_path, args.activity_data, configd)
+
+    elif msdatatype == "mzmine":
+        print ("Running mzmine converter.")
+        
         outdir = Path(args.output)
         if not outdir.exists():
             outdir.mkdir()
         configd["OUTPUTDIR"] = outdir.resolve()
-        if args.task == "full_pipeline":
-            basket_path = (
-                Path(args.path).joinpath("Replicated").joinpath("Basketed.csv")
-            )
-        else:
-            basket_path = Path(args.path)
-        core.load_and_generate_act_outputs(basket_path, args.activity_data, configd)
+
+        # convert into mzmine
+        try:
+            mzmine(act_path, data_path, configd)
+            core.load_and_generate_act_outputs("basketed.csv", act_path, configd)
+            print ("Mzmine conversion completed.")
+        except:
+            print ("Mzmine conversion failed")
+
+
+    elif msdatatype == "gnps":
+        print ("Running gnps converter.")
+
+        outdir = Path(args.output)
+        if not outdir.exists():
+            outdir.mkdir()
+        configd["OUTPUTDIR"] = outdir.resolve()
+
+        gnps(act_path, data_path, configd)
+
+        core.load_and_generate_act_outputs("basketed.csv", args.activity_data, configd)
+        print ("GNPS conversion completed.")
+
 
 
 if __name__ == "__main__":

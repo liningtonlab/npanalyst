@@ -51,3 +51,23 @@ class Config:
 
 def load_config(path: Optional[Union[str, Path]] = None) -> Config:
     return Config()
+
+def change_setting(self, attr, value) -> Dict:
+    """Return updated dictionary of the configuration file
+
+    Returns: 
+        Dict: key, value map of configuration updated with the attr and value provided
+    """
+    #print (self, attr, value)
+    config = self
+
+    for key in self:
+        if (key == attr):
+            print ("Changing settings in", key, "to", value)
+            config.update({key: value})
+            print ("Changed settings")
+    return config
+
+#newconfig = Config().to_dict()
+#print(change_setting(newconfig, "activity_threshold", 10))
+#print(change_setting(newconfig, "cluster_threshold", 10))

@@ -8,20 +8,31 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 
+import sys
+import re
+
 PATH = Union[Path, str]
 
 
-def filename2sample(filename: str, fn_delim: str = "_", sampleidx: int = 1) -> str:
-    sample = filename.split(fn_delim)[sampleidx]
-    return sample
+# def filename2sample(filename: str, fn_delim: str = "_", sampleidx: int = 1) -> str:
+#     sample = filename.split(fn_delim)[sampleidx]
+#     return sample
 
 
 def filenames2samples(
     filenames: List, delim: str = "|", fn_delim: str = "_", sampleidx: int = 0
 ) -> Dict:
-    samples = {
-        filename.split(fn_delim)[sampleidx] for filename in filenames.split(delim)
-    }
+
+    samples = set()
+    for filename in filenames.split(delim):
+        if re.search("_[0-9]$", filename):
+            samples.add(filename.split(fn_delim)[sampleidx])
+        else:
+            samples.add(filename)
+    # samples = {
+    #     #filename.split(fn_delim)[sampleidx] for filename in filenames.split(delim)
+    #     filename for filename in filenames.split(delim)
+    # }
     return samples
 
 
@@ -82,7 +93,7 @@ def load_activity_data(apath: PATH, samplecol: int = 0) -> pd.DataFrame:
     if p.is_dir():
         filenames = [sd for sd in p.iterdir() if sd.suffix.lower().endswith("csv")]
         for fname in filenames:
-            df = pd.read_csv(fname).fillna(value=0)
+            df = pd.read_csv(fname).fillna(value=0) #na is not the same as 0!
             name = fname.stem
             df["filename"] = name
             dfs.append(df)
@@ -132,8 +143,8 @@ def make_bokeh_input(baskets, scored, output):
     data = []
     for i, bask in enumerate(baskets):
         bid = f"Basket_{i}"
-        freq = len(bask["samples"])
-        samplelist = "['{0}']".format("', '".join(bask["samples"]))
+        freq = len(bask["samples"])  
+        samplelist = "['{0}']".format("', '".join(sorted(bask["samples"])))
         try:
             act = scores[i].activity
             clust = scores[i].cluster
@@ -240,5 +251,5 @@ def make_cytoscape_input(baskets, scored, output, act_thresh=5000, clust_thresh=
         fout.write(json.dumps(data, indent=2))
 
 
-def auto_detect_threshold(scores):
+def auto_detect_threshold(scores):      # not developed, a way to automatically determine thresholds
     return None
