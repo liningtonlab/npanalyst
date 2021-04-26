@@ -10,7 +10,7 @@ from typing import Dict, List, Optional
 import numpy as np
 import pandas as pd
 
-from npanalyst import activity, utils
+from npanalyst import activity, utils, createCluster
 from npanalyst.utils import PATH
 
 import sys
@@ -155,7 +155,6 @@ def proc_folder(datadir: Path, outputdir: Path, configd: Dict, msdatatype: str, 
     # if they are significantly different than their replicates - throw out sample!
 
 def checkExtensions (msdatatype: str) -> str:
-
     if (msdatatype == "mzml"):
         return ".mzml"
     elif (msdatatype == "gnps"):
@@ -224,33 +223,42 @@ def load_and_generate_act_outputs(basket_path, act_path, configd):
     mismatches, matches = utils.check_sample_names(activity_df, baskets, configd)
     if mismatches:
         print("Sample names in basket and activity file differ!")
+        print ("The following samples were removed from the analysis:", mismatches)
     
-    scores = activity.score_baskets(baskets, activity_df)
-    activity.make_bokeh_input(baskets, scores, configd["OUTPUTDIR"])
-   
-    if configd["ACTIVITYTHRESHOLD"] == "auto":
-        act_thresh = activity.auto_detect_threshold(
-            [x.activity for x in scores.get("Activity")]
-        )
-    else: 
-        act_thresh = configd["ACTIVITYTHRESHOLD"]
- 
-    if configd["CLUSTERTHRESHOLD"] == "auto":
-        clust_thresh = activity.auto_detect_threshold(
-            [abs(x.cluster) for x in scores.get("Activity")]
-        )
-    else:
-        clust_thresh = configd["CLUSTERTHRESHOLD"]
+    print ("The following samples are kept:", matches)
+    # only keep the matches
+    activity_df = activity_df.loc[matches]
+
+    if len(activity_df) < 3:
+        print ("There are fewer than 3 matches between the activity and msdata files ... exiting")
+        sys.exit()
+    
+    scores = activity.score_baskets(baskets, activity_df, act_thresh=configd["ACTIVITYTHRESHOLD"], clust_thresh=configd["CLUSTERTHRESHOLD"])
+
+  
+    activity.make_heatmap_input(
+        activity_df,
+        configd["OUTPUTDIR"]
+    )
+
+    activity.make_bokeh_input(
+        baskets, 
+        scores, 
+        configd["OUTPUTDIR"]
+    )
 
     activity.make_cytoscape_input(
         baskets,
         scores,
-        configd["OUTPUTDIR"],
-        act_thresh=configd["ACTIVITYTHRESHOLD"],
-        clust_thresh=configd["CLUSTERTHRESHOLD"],
+        configd["OUTPUTDIR"]
     )
 
+def create_clusters(act_path, outdir):
+    logging.debug("Building clusters ... ")
 
+    # create cluster folder and structure with json files for heatmaps
+    createCluster.run(act_path, outdir)
+    
 def setup_logging(verbose: bool = False):
     """setup logging
 

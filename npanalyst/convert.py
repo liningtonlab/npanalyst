@@ -64,20 +64,24 @@ def mzmine(act_path, data_path, configd):
                 print ("Could not find", basketSample, "in activity file!")
 
     newTable = pd.DataFrame()
+    print ("Prepared the new table")
 
     for row in data_file.itertuples(index=False):   # pass through each row
         currSamples = set()
         currRow = []
+        values = []
         for col in range(0, data_file.shape[1]):    # pass through each column
             if row[col] > 0:
                 if basketList[col] != "NA":
                     currSamples.add(basketList[col])
+                    values.append(row[col])
                 else:
                     currRow.append(row[col])    # PrecMz and RetTime
-        currRow.append(None)            # PrecIntensity is empty
-        currRow.append("|".join(currSamples))  # SampleList
-        currRow.append(len(currSamples))  # frequency
         if(len(currSamples) > 1):
+            avg_value = sum(values)/len(values)
+            currRow.append(avg_value)            # PrecIntensity is average
+            currRow.append("|".join(currSamples))  # SampleList
+            currRow.append(len(currSamples))  # frequency
             dfRow = pd.DataFrame(currRow).transpose()   # change from row-wise to column-wise
             newTable = newTable.append(dfRow)
 
@@ -116,7 +120,14 @@ def gnps(act_path, data_path, configd):
 
     with open(data_path, 'r') as f:
         for line in f:
+            # print ("curr line", line)
             if re.search("<node", line):        # we started a new sample
+                if currRow:
+                    currRow.append(str("|".join(currSamples)))      # add samples
+                    currRow.append(len(currSamples))        # add frequency
+                    if(len(currSamples) > 1):
+                        dfRow = pd.DataFrame(currRow).transpose()
+                        newTable = newTable.append(dfRow)
                 currRow = []
                 currSamples = set()
                 next
@@ -129,15 +140,15 @@ def gnps(act_path, data_path, configd):
                     keys[id] = 'PrecMz'
                 elif re.search("RTMean", name):
                     keys[id] = "RTMean"
-                #elif re.search("precursor intensity", name):
-                #    keys[id] = "PrecIntensity"
+                elif re.search("precursor intensity", name):
+                    keys[id] = "PrecIntensity"
                 elif re.search("UniqueFileSources", name):
                     keys[id] = "Sample"
         
             elif re.search("<data", line):          # gather data values
                 currValue = re.findall('>(.*)<', line)
                 currKey = re.findall('<data key="(.*?)">', line)
-                
+
                 for key in keys:
                     if (currKey[0] == key):
                         if keys[key] == configd["FILENAMECOL"]:     # we found the sample key
@@ -149,17 +160,16 @@ def gnps(act_path, data_path, configd):
                                         currSamples.add(actSample)
                                 if not found:
                                     print ("No match in Basketed file for", i)                              
-                            currRow.append("")          # no intensity column
-                            currRow.append(str("|".join(currSamples)))      # add samples
-                            currRow.append(len(currSamples))        # add frequency
-                            if(len(currSamples) > 1):
-                                dfRow = pd.DataFrame(currRow).transpose()
-                                newTable = newTable.append(dfRow)
+                            # currRow.append(str("|".join(currSamples)))      # add samples
+                            # currRow.append(len(currSamples))        # add frequency
+                            # if(len(currSamples) > 1):
+                            #     dfRow = pd.DataFrame(currRow).transpose()
+                            #     newTable = newTable.append(dfRow)
                         else:
                             currRow.append(currValue[0])
+            
 
-                #print ("VALUE: " + str(value) + " KEY: " + str(key))
-
-    newTable.columns = ["PrecMz", "RetTime", "PrecIntensity", "Sample", "freq"]
+    newTable.columns = ["PrecIntensity", "PrecMz", "RetTime", "Sample", "freq"]
+    newTable = newTable[["PrecMz", "RetTime", "PrecIntensity", "Sample", "freq"]]
     newTable.to_csv("basketed.csv", index=False, quoting=None)
     print ("Saving file to basketed.csv")

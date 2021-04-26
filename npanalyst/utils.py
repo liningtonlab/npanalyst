@@ -38,7 +38,7 @@ def gen_rep_df_paths(datadir: PATH, extension: str, samples: Dict) -> Tuple[str,
     for sample in samples:
         found = False
         for fname in csvs:
-            if sample in str(fname.stem):
+            if re.search(f'{sample}', str(fname.stem), re.IGNORECASE):
                 repd[sample].append(fname)
                 found = True
 
@@ -486,8 +486,6 @@ def check_sample_names(actdf, basket, configd):
     
     print ("Activity/Basket matches:", str(len(matches)))
     print ("Activity/Basket mismatches:", str(len(mismatches)))
-    if (mismatches):
-        print ("Mismatches", mismatches)
 
     return mismatches, matches
 
@@ -510,5 +508,5 @@ def check_replicates(df):
     
     if replicateNumError:
         print ("Different number of replicates:", num_replicates)
-    else:
+    elif (len(num_replicates) > 0):
         print ("Autodetected:", num_replicates.pop(), "replicates per sample")

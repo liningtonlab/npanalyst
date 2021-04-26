@@ -11,6 +11,8 @@ import pandas as pd
 import sys
 import re
 
+from networkx.readwrite import json_graph
+
 PATH = Union[Path, str]
 
 
@@ -105,13 +107,14 @@ def load_activity_data(apath: PATH, samplecol: int = 0) -> pd.DataFrame:
 
     big_df = pd.concat(dfs)
     big_df.set_index(big_df.columns[samplecol], inplace=True)
+
     return big_df
 
 
 SCORET = namedtuple("Score", "activity cluster")
 
 
-def score_baskets(baskets, act_df):
+def score_baskets(baskets, act_df, act_thresh, clust_thresh):
     scores = defaultdict(dict)
     grouped = act_df.groupby("filename")
     # for i, bask in tqdm(enumerate(baskets),desc='Scoring Baskets'):
@@ -123,7 +126,8 @@ def score_baskets(baskets, act_df):
                 sfp = synth_fp(num_fpd, samples)
                 act_score = np.sum(sfp ** 2)
                 clust_score = cluster_score(num_fpd, samples)
-                scores[actname][i] = SCORET(act_score, clust_score)
+                if round(act_score,2) > act_thresh and round(clust_score,2) > clust_thresh:
+                    scores[actname][i] = SCORET(act_score, clust_score)
             except KeyError as e:
                 logging.warning(e)
 
@@ -142,26 +146,41 @@ def make_bokeh_input(baskets, scored, output):
     scores = scored.get("Activity")
     data = []
     for i, bask in enumerate(baskets):
-        bid = f"Basket_{i}"
-        freq = len(bask["samples"])  
-        samplelist = "['{0}']".format("', '".join(sorted(bask["samples"])))
-        try:
-            act = scores[i].activity
-            clust = scores[i].cluster
-        except KeyError:
-            act, clust = None, None
+        if scores is not None:
+            #bid = f"Basket_{i}"
+            bid = i
+            freq = len(bask["samples"])  
+            samplelist = "['{0}']".format("', '".join(sorted(bask["samples"])))
+            try:
+                act = scores[i].activity
+                clust = scores[i].cluster
 
-        row = (
-            bid,
-            freq,
-            bask["PrecMz"],
-            bask["PrecIntensity"],
-            bask["RetTime"],
-            samplelist,
-            act,
-            clust,
-        )
-        data.append(row)
+                row = (
+                    bid,
+                    freq,
+                    bask["PrecMz"],
+                    bask["PrecIntensity"],
+                    bask["RetTime"],
+                    samplelist,
+                    act,
+                    clust,
+                )
+                data.append(row)
+            except KeyError:
+                # act, clust = None, None
+                pass
+
+            # row = (
+            #     bid,
+            #     freq,
+            #     bask["PrecMz"],
+            #     bask["PrecIntensity"],
+            #     bask["RetTime"],
+            #     samplelist,
+            #     act,
+            #     clust,
+            # )
+            # data.append(row)
     columns = (
         "BasketID",
         "Frequency",
@@ -173,7 +192,7 @@ def make_bokeh_input(baskets, scored, output):
         "CLUSTER_SCORE",
     )
     df = pd.DataFrame(data, columns=columns)
-    outfile = output.joinpath("NPAnalyst.csv").as_posix()
+    outfile = output.joinpath("table.csv").as_posix()
     df.to_csv(outfile, index=False, quoting=1, doublequote=False, escapechar=" ")
 
 
@@ -191,46 +210,62 @@ BINFO = namedtuple(
 )
 
 
-def make_cytoscape_input(baskets, scored, output, act_thresh=5000, clust_thresh=0.25):
+def make_cytoscape_input(baskets, scored, output):
     logging.debug("Writing Cytoscape output...")
     scores = scored.get("Activity")
     edges = []
     basket_info = []
     samples = set()
     for i, bask in enumerate(baskets):
-        bid = f"Basket_{i}"
-        try:
-            score = scores[i]
-        except KeyError as e:
-            logging.warning(e)
-            score = SCORET(0, 0)
-        if score.activity >= act_thresh and abs(score.cluster) >= clust_thresh:
-            samples.update(bask["samples"])
-            for samp in bask["samples"]:
-                edges.append((bid, samp))
-            basket_info.append(
-                BINFO(
-                    bid,
-                    len(bask["samples"]),
-                    ";".join(list(bask["samples"])),
-                    *[round(bask[k], 4) for k in _BASKET_KEYS],
-                    round(score.activity, 2),
-                    round(score.cluster, 2),
+        if scores is not None:
+            #bid = f"Basket_{i}"
+            bid = i
+            try:
+                score = scores[i]
+            
+                samples.update(bask["samples"])
+
+                for samp in bask["samples"]:
+                    edges.append((bid, samp))
+                    
+                basket_info.append(
+                    BINFO(
+                        bid,
+                        len(bask["samples"]),
+                        ";".join(list(bask["samples"])),
+                        *[round(bask[k], 4) for k in _BASKET_KEYS],
+                        round(score.activity, 2),
+                        round(score.cluster, 2),
+                    )
                 )
-            )
+
+                logging.debug(basket_info)
+                
+            except KeyError as e:
+                logging.warning(e)
+                score = SCORET(0, 0)
+
+            
 
     # Construct graph and write outputs
     G = nx.Graph()
     for samp in samples:
         G.add_node(samp, type_="sample")
+        G.nodes[samp]['radius'] = 6
+        G.nodes[samp]['depth'] = 0
+        G.nodes[samp]['color'] = "rgb(244, 117, 96)"
     for b in basket_info:
         G.add_node(b.id, **b._asdict(), type_="basket")
+        G.nodes[b.id]['radius'] = 4
+        G.nodes[b.id]['depth'] = 1
+        G.nodes[b.id]['color'] = "rgb(97, 205, 187)"
     for e in edges:
         G.add_edge(*e)
-
+ 
     logging.debug(nx.info(G))
-    outfile_gml = output.joinpath("NPAnalyst.graphml").as_posix()
-    outfile_cyjs = output.joinpath("NPAnalyst.cyjs").as_posix()
+    outfile_gml = output.joinpath("network.graphml").as_posix()
+    outfile_cyjs = output.joinpath("network.cyjs").as_posix()
+    outfile_json = output.joinpath("network.json").as_posix()
     nx.write_graphml(G, outfile_gml, prettyprint=True)
 
     data = nx.cytoscape_data(G)
@@ -250,6 +285,30 @@ def make_cytoscape_input(baskets, scored, output, act_thresh=5000, clust_thresh=
     with open(outfile_cyjs, "w") as fout:
         fout.write(json.dumps(data, indent=2))
 
+    with open(outfile_json, "w") as fout:
+        jsonData = json_graph.node_link_data(G)
+        fout.write(json.dumps(jsonData, indent=2))
+
+
+def make_heatmap_input(activity_df, output):
+    """produce json file in record format to be used as a heatmap
+
+    Args:
+        activity_df a pandas dataframe with activity values
+    """
+    logging.debug("Writing Heatmap output...")
+
+    # save the big dataframe as json file for heatmap - remove filename column first though
+    heatmap_df = activity_df.drop(columns=['filename'])  # remove filename column
+    heatmap_df = heatmap_df.rename_axis('Sample').reset_index() # add index back as a column
+    result = heatmap_df.to_json(orient="records", index=True)
+    parsed = json.loads(result)
+
+
+    outfile = output.joinpath("activity.json").as_posix()
+
+    with open(outfile, "w") as fout:
+        fout.write(json.dumps(parsed, indent=2))
 
 def auto_detect_threshold(scores):      # not developed, a way to automatically determine thresholds
     return None

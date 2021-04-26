@@ -29,8 +29,8 @@ class Config:
     calc_basket_info: bool = True
 
     # Activity
-    activity_threshold: float  = 5.0
-    cluster_threshold: float = 0.25
+    activity_threshold: float  = 3
+    cluster_threshold: float = -1
 
     def _attr(self) -> Iterable:
         return iter(

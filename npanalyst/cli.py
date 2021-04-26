@@ -52,8 +52,8 @@ def main():
     )
     parser.add_argument(
         "--cluster_threshold",
-        help="Cluster threshold, default=0",
-        default=0,
+        help="Cluster threshold, default=-1",
+        default=-1,
     )
     parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
     args, unknown = parser.parse_known_args()
@@ -85,10 +85,10 @@ def main():
     if args.filename_col:
         configd["FILENAMECOL"] = args.filename_col
 
-    clustThreshold = args.cluster_threshold
+    clustThreshold = str(args.cluster_threshold)
     if not clustThreshold == "auto": 
-        if (float(clustThreshold) < 0 or float(clustThreshold) > 1):
-            parser.error("Cluster threshold must be between 0 and 1")
+        if (float(clustThreshold) < -1 or float(clustThreshold) > 1):
+            parser.error("Cluster threshold must be between -1 and 1")
         else:
             configd["CLUSTERTHRESHOLD"] = float(clustThreshold)
             print("CLUSTERTHRESHOLD set to", clustThreshold)
@@ -96,7 +96,7 @@ def main():
         configd["CLUSTERTHRESHOLD"] = "auto"
         print ("Autodetect cluster threshold enabled")
     
-    actTreshold = args.activity_threshold
+    actTreshold = str(args.activity_threshold)
     if not actTreshold == "auto":
         if (float(actTreshold) < 0):
             parser.error("Activity threshold can not be negative")
@@ -107,7 +107,7 @@ def main():
         configd["ACTIVITYTHRESHOLD"] = "auto"
         print ("Autodetect activity threshold enabled")
 
-    print (configd)
+    #print (configd)
 
     output_path = Path(args.output)
     if not args.output == ".":
@@ -132,7 +132,7 @@ def main():
         if args.task == "import":   
             args.task = "full_pipeline"
 
-        if args.task in ["activity"] and "Basketed.csv" not in args.path:
+        if args.task in ["activity"] and "basketed.csv" not in args.path:
             parser.error("Path argument must be to basketed data file")
         
         if args.task in ["replicate", "full_pipeline"]:
@@ -162,6 +162,7 @@ def main():
             else:
                 basket_path = Path(args.path)
             core.load_and_generate_act_outputs(basket_path, args.activity_data, configd)
+            core.create_clusters(act_path, configd["OUTPUTDIR"])
 
     elif msdatatype == "mzmine":
         print ("Running mzmine converter.")
@@ -175,6 +176,7 @@ def main():
         try:
             mzmine(act_path, data_path, configd)
             core.load_and_generate_act_outputs("basketed.csv", act_path, configd)
+            core.create_clusters(act_path, configd["OUTPUTDIR"])
             print ("Mzmine conversion completed.")
         except:
             print ("Mzmine conversion failed")
@@ -191,6 +193,7 @@ def main():
         gnps(act_path, data_path, configd)
 
         core.load_and_generate_act_outputs("basketed.csv", args.activity_data, configd)
+        core.create_clusters(act_path, configd["OUTPUTDIR"])
         print ("GNPS conversion completed.")
 
 
