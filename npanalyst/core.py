@@ -10,7 +10,7 @@ from typing import Dict, List, Optional
 import numpy as np
 import pandas as pd
 
-from npanalyst import activity, utils, createCluster
+from npanalyst import activity, utils, createCluster, createCommunities
 from npanalyst.utils import PATH
 
 import sys
@@ -258,6 +258,12 @@ def create_clusters(act_path, outdir):
 
     # create cluster folder and structure with json files for heatmaps
     createCluster.run(act_path, outdir)
+
+def create_communitites(act_path, outdir):
+    logging.debug("Creating Communities")
+
+    # create communities folder and structure with json files for heatmaps
+    createCommunities.run(act_path, outdir)
     
 def setup_logging(verbose: bool = False):
     """setup logging

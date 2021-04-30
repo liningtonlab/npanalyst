@@ -162,7 +162,8 @@ def main():
             else:
                 basket_path = Path(args.path)
             core.load_and_generate_act_outputs(basket_path, args.activity_data, configd)
-            core.create_clusters(act_path, configd["OUTPUTDIR"])
+            # core.create_clusters(act_path, configd["OUTPUTDIR"])
+            core.create_communitites(act_path, configd["OUTPUTDIR"])
 
     elif msdatatype == "mzmine":
         print ("Running mzmine converter.")
@@ -176,7 +177,8 @@ def main():
         try:
             mzmine(act_path, data_path, configd)
             core.load_and_generate_act_outputs("basketed.csv", act_path, configd)
-            core.create_clusters(act_path, configd["OUTPUTDIR"])
+            # core.create_clusters(act_path, configd["OUTPUTDIR"])
+            core.create_communitites(act_path, configd["OUTPUTDIR"])
             print ("Mzmine conversion completed.")
         except:
             print ("Mzmine conversion failed")
@@ -193,7 +195,8 @@ def main():
         gnps(act_path, data_path, configd)
 
         core.load_and_generate_act_outputs("basketed.csv", args.activity_data, configd)
-        core.create_clusters(act_path, configd["OUTPUTDIR"])
+        # core.create_clusters(act_path, configd["OUTPUTDIR"])
+        core.create_communitites(act_path, configd["OUTPUTDIR"])
         print ("GNPS conversion completed.")
 
 

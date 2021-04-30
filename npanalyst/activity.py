@@ -239,7 +239,7 @@ def make_cytoscape_input(baskets, scored, output):
                     )
                 )
 
-                logging.debug(basket_info)
+                # logging.debug(basket_info)
                 
             except KeyError as e:
                 logging.warning(e)
