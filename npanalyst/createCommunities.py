@@ -55,7 +55,7 @@ def prune_assay_df_by_community(assay_df, community_df, graph, output=None):
 
     community_count = max(community_df['community'])
 
-    for community in range(1, community_count + 1):
+    for community in range(community_count):
 
         # # Create the community folders and save the data
         # # TODO: This line creates the new folder. For the UNIX system, this has to be changed.
@@ -167,7 +167,7 @@ if __name__ == '__main__':
     community_df = community_assignment_df(G)
 
     # # If desired, save this table
-    #community_df.to_csv("community_HiFAN_sanghoon_louvain.csv")
+    community_df.to_csv("community_mapping.csv")
 
     # # Prune the graph and the bioassay table using the community id information and save the csv and graphml files.
     k = prune_assay_df_by_community(assay_df, community_df, G, os.getcwd())
