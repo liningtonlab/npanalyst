@@ -135,9 +135,9 @@ def run(activityFile, outdir):
 
     communities = algorithms.louvain(G, randomize=False)
 
-    add_community_as_node_attribute(G, communities)
+    add_community_as_node_attribute(G, communities) # only applies this to a subset of the nodes!!!!
 
-    nx.write_graphml(G, "network.graphml")
+    nx.write_graphml(G, "networkCommunities.graphml")
 
     community_df = community_assignment_df(G)
 

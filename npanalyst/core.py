@@ -73,6 +73,13 @@ def load_config(config_path: Optional[PATH] = None) -> Dict:
     configd["CLUSTERTHRESHOLD"] = float(config["NetworkInfo"]["ClusterThreshold"])
 
     logging.debug(f"Config loaded: \n{json.dumps(configd, indent=2)}")
+
+    # save the config file in the directory
+    logging.debug (f"Writing logfile as config.txt in the directory {os.path} ")
+    logfile = open("config.txt", "w")
+    logfile.write(json.dumps(configd, indent=2))
+    logfile.close()
+
     return configd
 
 
