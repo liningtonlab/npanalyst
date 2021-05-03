@@ -108,6 +108,7 @@ def main():
         print ("Autodetect activity threshold enabled")
 
     #print (configd)
+    core.save_config(configd)
 
     output_path = Path(args.output)
     if not args.output == ".":
