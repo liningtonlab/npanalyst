@@ -75,10 +75,10 @@ def load_config(config_path: Optional[PATH] = None) -> Dict:
     logging.debug(f"Config loaded: \n{json.dumps(configd, indent=2)}")
     return configd
 
-def save_config(configd):
+def save_config(baseDir, configd):
     # save the config file in the directory
-    logging.debug (f"Writing logfile as config.txt in the directory {os.path} ")
-    logfile = open("config.txt", "w")
+    logging.debug (f"Writing logfile as config.json in the directory {baseDir}/config.json ")
+    logfile = open(baseDir.joinpath("config.json"), "w")
     logfile.write(json.dumps(configd, indent=2))
     logfile.close()
 

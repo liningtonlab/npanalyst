@@ -55,7 +55,7 @@ def prune_assay_df_by_community(assay_df, community_df, graph, output=None):
 
     community_count = max(community_df['community'])
 
-    for community in range(community_count):
+    for community in range(community_count + 1):
 
         # # Create the community folders and save the data
         # # TODO: This line creates the new folder. For the UNIX system, this has to be changed.

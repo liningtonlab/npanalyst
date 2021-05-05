@@ -58,6 +58,9 @@ def main():
     parser.add_argument("-v", "--verbose", help="Verbose logging", action="store_true")
     args, unknown = parser.parse_known_args()
 
+    # only the base dir when running the app online!
+    baseDir = Path(args.path).parent.parent.parent
+
     # Checking to see if all the files listed using the glob operator "*" are of the same extension
     if (unknown): 
         if not (utils.sameFileFormat(args.path, unknown)):
@@ -107,9 +110,6 @@ def main():
         configd["ACTIVITYTHRESHOLD"] = "auto"
         print ("Autodetect activity threshold enabled")
 
-    #print (configd)
-    core.save_config(configd)
-
     output_path = Path(args.output)
     if not args.output == ".":
         if not (output_path.exists()):
@@ -125,6 +125,9 @@ def main():
 
     if not (data_path.exists()):
         parser.error("The data path/files do not exist.")
+
+    # save the config file
+    core.save_config(baseDir, configd)
 
     if msdatatype == "mzml":
         print ("Running mzml.")

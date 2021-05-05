@@ -110,9 +110,7 @@ def load_activity_data(apath: PATH, samplecol: int = 0) -> pd.DataFrame:
 
     return big_df
 
-
 SCORET = namedtuple("Score", "activity cluster")
-
 
 def score_baskets(baskets, act_df, act_thresh, clust_thresh):
     scores = defaultdict(dict)
@@ -126,7 +124,7 @@ def score_baskets(baskets, act_df, act_thresh, clust_thresh):
                 sfp = synth_fp(num_fpd, samples)
                 act_score = np.sum(sfp ** 2)
                 clust_score = cluster_score(num_fpd, samples)
-                if round(act_score,2) > act_thresh and round(clust_score,2) > clust_thresh:
+                if round(act_score,2) >= act_thresh and round(clust_score,2) >= clust_thresh:
                     scores[actname][i] = SCORET(act_score, clust_score)
             except KeyError as e:
                 logging.warning(e)
@@ -194,7 +192,6 @@ def make_bokeh_input(baskets, scored, output):
     df = pd.DataFrame(data, columns=columns)
     outfile = output.joinpath("table.csv").as_posix()
     df.to_csv(outfile, index=False, quoting=1, doublequote=False, escapechar=" ")
-
 
 _BASKET_KEYS = ["PrecMz", "RetTime", "PrecIntensity"]
 BINFO = namedtuple(
@@ -303,7 +300,6 @@ def make_heatmap_input(activity_df, output):
     heatmap_df = heatmap_df.rename_axis('Sample').reset_index() # add index back as a column
     result = heatmap_df.to_json(orient="records", index=True)
     parsed = json.loads(result)
-
 
     outfile = output.joinpath("activity.json").as_posix()
 
