@@ -112,9 +112,12 @@ def load_activity_data(apath: PATH, samplecol: int = 0) -> pd.DataFrame:
 
 SCORET = namedtuple("Score", "activity cluster")
 
-def score_baskets(baskets, act_df, act_thresh, clust_thresh):
+def score_baskets(baskets, act_df, configd):
     scores = defaultdict(dict)
     grouped = act_df.groupby("filename")
+    act_thresh = configd["ACTIVITYTHRESHOLD"]
+    clust_thresh =  configd["CLUSTERTHRESHOLD"]
+
     # for i, bask in tqdm(enumerate(baskets),desc='Scoring Baskets'):
     for i, bask in enumerate(baskets):
         samples = bask["samples"]
@@ -124,7 +127,7 @@ def score_baskets(baskets, act_df, act_thresh, clust_thresh):
                 sfp = synth_fp(num_fpd, samples)
                 act_score = np.sum(sfp ** 2)
                 clust_score = cluster_score(num_fpd, samples)
-                if round(act_score,2) >= act_thresh and round(clust_score,2) >= clust_thresh:
+                if act_score >= act_thresh and clust_score >= clust_thresh:
                     scores[actname][i] = SCORET(act_score, clust_score)
             except KeyError as e:
                 logging.warning(e)
@@ -213,12 +216,17 @@ def make_cytoscape_input(baskets, scored, output):
     edges = []
     basket_info = []
     samples = set()
+    actScores = []
+
     for i, bask in enumerate(baskets):
         if scores is not None:
             #bid = f"Basket_{i}"
             bid = i
             try:
-                score = scores[i]
+                act = scores[i].activity
+                actScores.append(act)
+
+                clust = scores[i].cluster
             
                 samples.update(bask["samples"])
 
@@ -231,8 +239,8 @@ def make_cytoscape_input(baskets, scored, output):
                         len(bask["samples"]),
                         ";".join(list(bask["samples"])),
                         *[round(bask[k], 4) for k in _BASKET_KEYS],
-                        round(score.activity, 2),
-                        round(score.cluster, 2),
+                        round(act, 2),
+                        round(clust, 2),
                     )
                 )
 
@@ -240,7 +248,7 @@ def make_cytoscape_input(baskets, scored, output):
                 
             except KeyError as e:
                 logging.warning(e)
-                score = SCORET(0, 0)
+                # score = SCORET(0, 0)
 
             
 
@@ -250,12 +258,39 @@ def make_cytoscape_input(baskets, scored, output):
         G.add_node(samp, type_="sample")
         G.nodes[samp]['radius'] = 6
         G.nodes[samp]['depth'] = 0
-        G.nodes[samp]['color'] = "rgb(244, 117, 96)"
+        G.nodes[samp]['color'] = "rgb(51,51,51)"
     for b in basket_info:
         G.add_node(b.id, **b._asdict(), type_="basket")
-        G.nodes[b.id]['radius'] = 4
+        # set node size based on activity score value - should range between 3 to 10 like scatterplot
+        # output_start + ((output_end - output_start) * (input - input_start)) / (input_end - input_start)
+        nodeSize = round(3 + ((10 - 3) * (G.nodes[b.id]['activity_score'] - min(actScores))) / (max(actScores) - min(actScores)))
+
+        #G.nodes[b.id]['radius'] = 4
+        G.nodes[b.id]['radius'] = nodeSize
         G.nodes[b.id]['depth'] = 1
-        G.nodes[b.id]['color'] = "rgb(97, 205, 187)"
+        # G.nodes[b.id]['color'] = "rgb(97, 205, 187)"
+
+        # colors are hard-coded - change this for future versions
+        if G.nodes[b.id]['cluster_score'] > 0.75:
+            color = "rgb(165,0,38)"     # red color
+        elif G.nodes[b.id]['cluster_score'] > 0.5:
+            color = "rgb(215,48,39)"
+        elif G.nodes[b.id]['cluster_score'] > 0.25:
+            color = "rgb(244,109,67)"
+        elif G.nodes[b.id]['cluster_score'] > 0:
+            color = "rgb(253,174,97)"
+        elif G.nodes[b.id]['cluster_score'] > -0.25:
+            color = "rgb(171,217,233)"
+        elif G.nodes[b.id]['cluster_score'] > -0.5:
+            color = "rbg(116,173,209)"
+        elif G.nodes[b.id]['cluster_score'] > -0.75:
+            color = "rgb(69,117,180)"
+        else:
+            color = "rgb(49,54,149)"  # blue color
+        
+        # set color for the basket node
+        G.nodes[b.id]['color'] = color
+    
     for e in edges:
         G.add_edge(*e)
  

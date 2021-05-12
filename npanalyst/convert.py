@@ -87,7 +87,7 @@ def mzmine(act_path, data_path, configd):
 
     newTable.columns = ["PrecMz", "RetTime", "PrecIntensity", "Sample", "freq"]
 
-    newTable.to_csv("basketed.csv", index=False, quoting=None)
+    newTable.to_csv(configd["OUTPUTDIR"].joinpath("basketed.csv"), index=False, quoting=None)
 
     print("Saving basketed file, as basketed.csv")
 
@@ -171,5 +171,5 @@ def gnps(act_path, data_path, configd):
 
     newTable.columns = ["PrecIntensity", "PrecMz", "RetTime", "Sample", "freq"]
     newTable = newTable[["PrecMz", "RetTime", "PrecIntensity", "Sample", "freq"]]
-    newTable.to_csv("basketed.csv", index=False, quoting=None)
+    newTable.to_csv(configd["OUTPUTDIR"].joinpath("basketed.csv"), index=False, quoting=None)
     print ("Saving file to basketed.csv")

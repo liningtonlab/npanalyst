@@ -77,10 +77,9 @@ def load_config(config_path: Optional[PATH] = None) -> Dict:
 
 def save_config(baseDir, configd):
     # save the config file in the directory
-    logging.debug (f"Writing logfile as config.json in the directory {baseDir}/config.json ")
-    logfile = open(baseDir.joinpath("config.json"), "w")
-    logfile.write(json.dumps(configd, indent=2))
-    logfile.close()
+    logging.debug(f"Writing logfile as config.json in the directory {baseDir}/config.json ")
+    with open(baseDir.joinpath("config.json"), 'w') as outfile:
+        json.dump(configd, outfile, indent=2)
 
 def _proc_one(sample: str, df_paths: List[Path], configd: Dict, datadir: Path, outputdir: Path) -> str:
     """
@@ -239,8 +238,9 @@ def load_and_generate_act_outputs(basket_path, act_path, configd):
         print ("There are fewer than 3 matches between the activity and msdata files ... exiting")
         sys.exit()
     
-    scores = activity.score_baskets(baskets, activity_df, act_thresh=configd["ACTIVITYTHRESHOLD"], clust_thresh=configd["CLUSTERTHRESHOLD"])
+    scores = activity.score_baskets(baskets, activity_df, configd)
 
+    # print ("SCORES", scores)
   
     activity.make_heatmap_input(
         activity_df,
