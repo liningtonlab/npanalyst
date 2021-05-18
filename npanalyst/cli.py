@@ -83,6 +83,9 @@ def main():
     else:
         configd = core.load_config()
 
+    # load entire function call
+    configd["CALL"] = vars(args)
+
     if args.filename_col:
         configd["FILENAMECOL"] = args.filename_col
 
@@ -116,7 +119,7 @@ def main():
         baseDir = baseDir.parent.parent.parent
     else:
         baseDir = baseDir.parent.parent
-    core.save_config(baseDir, configd)
+    # core.save_config(baseDir, configd)
 
     output_path = Path(args.output)
     if not args.output == ".":
@@ -134,7 +137,6 @@ def main():
     if not (data_path.exists()):
         parser.error("The data path/files do not exist.")
     
-
     if msdatatype == "mzml":
         print ("Running mzml.")
 
@@ -175,7 +177,9 @@ def main():
 
                 core.load_and_generate_act_outputs(basket_path, args.activity_data, configd)
                 # core.create_clusters(act_path, configd["OUTPUTDIR"])
-                core.create_communitites(act_path, configd["OUTPUTDIR"])
+                configd['MAXCLUSTERS'] = core.create_communitites(act_path, configd["OUTPUTDIR"])
+                core.save_config(baseDir, configd)
+                print ("Mzml analysis completed.")
         except: 
             print ("Mzml analysis failed")
         
@@ -194,7 +198,8 @@ def main():
             mzmine(act_path, data_path, configd)
             core.load_and_generate_act_outputs(basket_path, act_path, configd)
             # core.create_clusters(act_path, configd["OUTPUTDIR"])
-            core.create_communitites(act_path, configd["OUTPUTDIR"])
+            configd['MAXCLUSTERS'] = core.create_communitites(act_path, configd["OUTPUTDIR"])
+            core.save_config(baseDir, configd)
             print ("Mzmine conversion completed.")
         except:
             print ("Mzmine conversion failed")
@@ -213,7 +218,8 @@ def main():
             gnps(act_path, data_path, configd)
             core.load_and_generate_act_outputs(basket_path, args.activity_data, configd)
             # core.create_clusters(act_path, configd["OUTPUTDIR"])
-            core.create_communitites(act_path, configd["OUTPUTDIR"])
+            configd['MAXCLUSTERS'] = core.create_communitites(act_path, configd["OUTPUTDIR"])
+            core.save_config(baseDir, configd)
             print ("GNPS conversion completed.")
         except:
             print ("GNPS conversion failed")

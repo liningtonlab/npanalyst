@@ -124,7 +124,7 @@ def prune_assay_df_by_community(assay_df, community_df, graph, output=None):
         outfile_csv = open(output + "/clusters/" + str(community) + "/table.csv", "w")
         output_table.to_csv(outfile_csv)
 
-    return
+    return community_count
 
 def run(activityFile, outdir):
     assay_df = pd.read_csv(activityFile, index_col=0)
@@ -141,7 +141,9 @@ def run(activityFile, outdir):
 
     community_df = community_assignment_df(G)
 
-    k = prune_assay_df_by_community(assay_df, community_df, G, os.getcwd())
+    maxCount = prune_assay_df_by_community(assay_df, community_df, G, os.getcwd())
+
+    return maxCount
 
 
 if __name__ == '__main__':

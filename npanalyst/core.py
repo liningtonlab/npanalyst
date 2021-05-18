@@ -77,7 +77,9 @@ def load_config(config_path: Optional[PATH] = None) -> Dict:
 
 def save_config(baseDir, configd):
     # save the config file in the directory
-    logging.debug(f"Writing logfile as config.json in the directory {baseDir}/config.json ")
+    logging.debug(f"Writing logfile as config.json in the directory {baseDir}/config.json")
+    # convert pathposix to str
+    configd["OUTPUTDIR"] = str(configd["OUTPUTDIR"])
     with open(baseDir.joinpath("config.json"), 'w') as outfile:
         json.dump(configd, outfile, indent=2)
 
@@ -269,7 +271,7 @@ def create_communitites(act_path, outdir):
     logging.debug("Creating Communities")
 
     # create communities folder and structure with json files for heatmaps
-    createCommunities.run(act_path, outdir)
+    return createCommunities.run(act_path, outdir)
     
 def setup_logging(verbose: bool = False):
     """setup logging
