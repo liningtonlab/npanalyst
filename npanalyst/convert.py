@@ -8,6 +8,8 @@ import sys
 import argparse
 import logging
 
+from regex.regex import split
+
 pd.set_option('precision', 15)
 
 PATH = Union[Path, str]
@@ -31,28 +33,38 @@ PATH = Union[Path, str]
 
 def mzmine(act_path, data_path, configd):
     # check for proper extension
-    if not (data_path.suffix == ".csv"):
-        print("Only CSV supported for mzmine conversions, for now.")
-        sys.exit()
+    try:
+        if not (data_path.suffix == ".csv"):
+            print("Only CSV supported for mzmine conversions, for now.")
+            sys.exit()
+        else:
+            data_file = pd.read_csv(data_path)
+            print ("Loaded", data_file)
+    except:
+        print ("Using default data\n", data_path.head())
+        data_file = data_path
 
-    # load data and activity file
-    data_file = pd.read_csv(data_path)
+    # load activity file
     activity_file = pd.read_csv(act_path)
+    print ("activity file:\n", activity_file.head())
 
     # determine the sample column and save samples
     try:
         if configd["FILENAMECOL"] in activity_file.keys():
             actSamples = set(activity_file[configd["FILENAMECOL"]])
-    finally:
+        else:
+            actSamples = set(activity_file.iloc[:,0])
+    except:
         actSamples = set(activity_file.iloc[:,0])
 
     print (f"Found {len(actSamples)} unique samples")
 
     basketSamples = data_file.columns.tolist()
     basketList = []
+    found = False
+
     # map basket sample names to activity samples - in order
     for basketSample in basketSamples:
-        found = False
         for actSample in actSamples:
             if actSample in basketSample:
                 found = True
@@ -63,6 +75,11 @@ def mzmine(act_path, data_path, configd):
             if not re.search("row", basketSample):      # if it contains the word "row" probably not a sample
                 print ("Could not find", basketSample, "in activity file!")
 
+    if not found:
+        print ("This is not proper mzml format.")
+        print ("Require two columns with the names: 'row m/z' and 'row retention time'")
+        sys.exit()
+
     newTable = pd.DataFrame()
     print ("Prepared the new table")
 
@@ -71,18 +88,22 @@ def mzmine(act_path, data_path, configd):
         currRow = []
         values = []
         for col in range(0, data_file.shape[1]):    # pass through each column
-            if row[col] > 0:
-                if basketList[col] != "NA":
-                    currSamples.add(basketList[col])
-                    values.append(row[col])
-                else:
-                    currRow.append(row[col])    # PrecMz and RetTime
+            try:
+                if float(row[col]) > 0:
+                    if basketList[col] != "NA":
+                        currSamples.add(basketList[col])
+                        values.append(row[col])
+                    else:
+                        currRow.append(row[col])    # PrecMz and RetTime
+            except:
+                pass
         if(len(currSamples) > 1):
             avg_value = sum(values)/len(values)
             currRow.append(avg_value)            # PrecIntensity is average
             currRow.append("|".join(currSamples))  # SampleList
             currRow.append(len(currSamples))  # frequency
-            dfRow = pd.DataFrame(currRow).transpose()   # change from row-wise to column-wise
+            # change from row-wise to column-wise
+            dfRow = pd.DataFrame(currRow).transpose()
             newTable = newTable.append(dfRow)
 
     newTable.columns = ["PrecMz", "RetTime", "PrecIntensity", "Sample", "freq"]
@@ -105,7 +126,7 @@ def gnps(act_path, data_path, configd):
     try:
         if configd["FILENAMECOL"] in activity_file.keys():
             actSamples = set(activity_file[configd["FILENAMECOL"]])
-    finally:
+    except:
         actSamples = set(activity_file.iloc[:,0])
 
     print (f"Found {len(actSamples)} unique samples")
@@ -173,3 +194,63 @@ def gnps(act_path, data_path, configd):
     newTable = newTable[["PrecMz", "RetTime", "PrecIntensity", "Sample", "freq"]]
     newTable.to_csv(configd["OUTPUTDIR"].joinpath("basketed.csv"), index=False, quoting=None)
     print ("Saving file to basketed.csv")
+
+
+
+def default(act_path, data_path, configd):
+
+    transpose = False
+
+    # check for proper extension
+    try:
+        if not (data_path.suffix == ".csv" and act_path.suffix == ".csv"):
+            print("Only CSV supported for general conversions, for now.")
+            sys.exit()
+    except:
+        pass
+
+    # load data and activity file
+    try:
+        data_file = pd.read_csv(data_path)
+        print ("data file", str(data_path).upper(), "loaded")
+        # print (data_file.head())
+    except:
+        print ("Error: could not load data file ", str(data_path))
+        sys.exit()
+
+    # check to see if the header row contains the (#.#)_(#.#) pattern where /1 is the retention time and /2 is the m/z value
+    for col in data_file.columns:
+        try:
+            m = re.findall('([0-9]+\.[0-9]+)_([0-9]+\.[0-9]+)', col)
+            if (m):
+                data_file = pd.DataFrame(data_file).set_index('Compound').transpose()
+                transpose = True
+                break
+        except:
+            print ("Could not run check on", col)
+
+    if (transpose):
+        splitColumns = []
+
+        for row in data_file.index:   # pass through each row
+            m = re.findall('([0-9]+\.[0-9]+)_([0-9]+\.[0-9]+)', row)
+            if (m):
+                rettime = m[0][0]
+                precmz = m[0][1]
+                new_row = {'row m/z':precmz, 'row retention time':rettime}
+                splitColumns.append(new_row)
+            else:
+                pass
+
+        splitTable = pd.DataFrame(splitColumns, columns=['row m/z','row retention time'])
+
+        col_names = list(splitTable.columns) + list(data_file.columns)
+        df_merged = pd.concat([splitTable.reset_index(drop=True),data_file.reset_index(drop=True)], axis=1, ignore_index=True)
+        df_merged.columns = col_names
+
+        mzmine(act_path, df_merged, configd)
+
+    else:
+        print ("Data file not in general format")
+        mzmine(act_path, data_path, configd)
+

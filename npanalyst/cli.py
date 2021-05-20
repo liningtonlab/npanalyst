@@ -3,7 +3,7 @@ import sys
 
 from npanalyst import core, utils, activity
 from npanalyst.config import load_config
-from npanalyst.convert import mzmine, gnps
+from npanalyst.convert import mzmine, gnps, default
 
 def main():
     import argparse
@@ -195,7 +195,8 @@ def main():
         # convert into mzmine
         try:
             basket_path = configd["OUTPUTDIR"].joinpath("basketed.csv")
-            mzmine(act_path, data_path, configd)
+            default(act_path, data_path, configd)
+            # mzmine(act_path, data_path, configd)
             core.load_and_generate_act_outputs(basket_path, act_path, configd)
             # core.create_clusters(act_path, configd["OUTPUTDIR"])
             configd['MAXCLUSTERS'] = core.create_communitites(act_path, configd["OUTPUTDIR"])
