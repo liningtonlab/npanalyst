@@ -39,14 +39,12 @@ def mzmine(act_path, data_path, configd):
             sys.exit()
         else:
             data_file = pd.read_csv(data_path)
-            print ("Loaded", data_file)
     except:
-        print ("Using default data\n", data_path.head())
+        print ("Using Recchia format")
         data_file = data_path
 
     # load activity file
     activity_file = pd.read_csv(act_path)
-    print ("activity file:\n", activity_file.head())
 
     # determine the sample column and save samples
     try:
@@ -71,8 +69,10 @@ def mzmine(act_path, data_path, configd):
                 basketList.append(actSample)
                 break
         if not found:
-            basketList.append("NA")
-            if not re.search("row", basketSample):      # if it contains the word "row" probably not a sample
+            if re.search("row", basketSample):
+                basketList.append("ADD")
+            else:      # if it contains the word "row" probably not a sample
+                basketList.append("NA")
                 print ("Could not find", basketSample, "in activity file!")
 
     if not found:
@@ -90,13 +90,14 @@ def mzmine(act_path, data_path, configd):
         for col in range(0, data_file.shape[1]):    # pass through each column
             try:
                 if float(row[col]) > 0:
-                    if basketList[col] != "NA":
-                        currSamples.add(basketList[col])
-                        values.append(row[col])
-                    else:
+                    if basketList[col] == "ADD":
                         currRow.append(row[col])    # PrecMz and RetTime
+                    elif basketList[col] != "NA":
+                        currSamples.add(basketList[col])
+                        values.append(row[col])  
             except:
                 pass
+            
         if(len(currSamples) > 1):
             avg_value = sum(values)/len(values)
             currRow.append(avg_value)            # PrecIntensity is average
@@ -195,11 +196,32 @@ def gnps(act_path, data_path, configd):
     newTable.to_csv(configd["OUTPUTDIR"].joinpath("basketed.csv"), index=False, quoting=None)
     print ("Saving file to basketed.csv")
 
+def recchiaFormat(data_file):
 
+    splitColumns = []
+
+    for row in data_file.index:   # pass through each row
+        m = re.findall('([0-9]+\.[0-9]+)_([0-9]+\.[0-9]+)', row)
+        if (m):
+            rettime = m[0][0]
+            precmz = m[0][1]
+            new_row = {'row m/z':precmz, 'row retention time':rettime}
+            splitColumns.append(new_row)
+        else:
+            pass
+
+    splitTable = pd.DataFrame(splitColumns, columns=['row m/z','row retention time'])
+
+    col_names = list(splitTable.columns) + list(data_file.columns)
+    df_merged = pd.concat([splitTable.reset_index(drop=True),data_file.reset_index(drop=True)], axis=1, ignore_index=True)
+    df_merged.columns = col_names
+
+    return df_merged
 
 def default(act_path, data_path, configd):
 
     transpose = False
+    progene = False
 
     # check for proper extension
     try:
@@ -212,45 +234,57 @@ def default(act_path, data_path, configd):
     # load data and activity file
     try:
         data_file = pd.read_csv(data_path)
-        print ("data file", str(data_path).upper(), "loaded")
         # print (data_file.head())
     except:
         print ("Error: could not load data file ", str(data_path))
         sys.exit()
 
+    counter = 0
     # check to see if the header row contains the (#.#)_(#.#) pattern where /1 is the retention time and /2 is the m/z value
     for col in data_file.columns:
         try:
+            counter += 1
             m = re.findall('([0-9]+\.[0-9]+)_([0-9]+\.[0-9]+)', col)
             if (m):
                 data_file = pd.DataFrame(data_file).set_index('Compound').transpose()
                 transpose = True
                 break
+            elif (col == "Raw abundance"):
+                # print ("Discovered Progensis - only Raw abundance column calculated")
+                progene = counter
+                break
         except:
             print ("Could not run check on", col)
 
     if (transpose):
-        splitColumns = []
+        df_merged  = recchiaFormat(data_file)
+        mzmine(act_path, df_merged, configd)
+    
+    elif (progene):
+        print ("Found Progenesis data format.")
+        data_file = pd.read_csv(data_path, skiprows=2).set_index('Compound')
+        data_file = data_file.iloc[:, progene:]
 
-        for row in data_file.index:   # pass through each row
-            m = re.findall('([0-9]+\.[0-9]+)_([0-9]+\.[0-9]+)', row)
-            if (m):
-                rettime = m[0][0]
-                precmz = m[0][1]
-                new_row = {'row m/z':precmz, 'row retention time':rettime}
-                splitColumns.append(new_row)
+        endCol= 0
+        samples = []
+        # skip columns until "Raw abundance"
+        for col in data_file.columns:
+            splitColumn =  col.split("_")
+            if len(splitColumn) == 2:
+                endCol += 1
+                samples.append(col.split("_")[1])
             else:
-                pass
+                # omit all columns after this
+                break
 
-        splitTable = pd.DataFrame(splitColumns, columns=['row m/z','row retention time'])
-
-        col_names = list(splitTable.columns) + list(data_file.columns)
-        df_merged = pd.concat([splitTable.reset_index(drop=True),data_file.reset_index(drop=True)], axis=1, ignore_index=True)
-        df_merged.columns = col_names
-
+        data_file = data_file.iloc[:, :endCol]
+        data_file.columns = samples
+        print ("DOES NOT WORK", data_file.head())
+        df_merged = recchiaFormat(data_file)
+        print (df_merged.head())
         mzmine(act_path, df_merged, configd)
 
     else:
-        print ("Data file not in general format")
+        print ("Data file not in Recchia format")
         mzmine(act_path, data_path, configd)
 
