@@ -279,9 +279,7 @@ def default(act_path, data_path, configd):
 
         data_file = data_file.iloc[:, :endCol]
         data_file.columns = samples
-        print ("DOES NOT WORK", data_file.head())
         df_merged = recchiaFormat(data_file)
-        print (df_merged.head())
         mzmine(act_path, df_merged, configd)
 
     else:
