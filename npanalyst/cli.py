@@ -178,6 +178,7 @@ def main():
                 core.load_and_generate_act_outputs(basket_path, args.activity_data, configd)
                 # core.create_clusters(act_path, configd["OUTPUTDIR"])
                 configd['MAXCLUSTERS'] = core.create_communitites(act_path, configd["OUTPUTDIR"])
+                configd['MAXSUBCLUSTERS'] = core.create_subclusters(act_path, configd["OUTPUTDIR"])
                 core.save_config(baseDir, configd)
                 print ("Mzml analysis completed.")
         except: 
@@ -198,8 +199,8 @@ def main():
             default(act_path, data_path, configd)
             # mzmine(act_path, data_path, configd)
             core.load_and_generate_act_outputs(basket_path, act_path, configd)
-            # core.create_clusters(act_path, configd["OUTPUTDIR"])
             configd['MAXCLUSTERS'] = core.create_communitites(act_path, configd["OUTPUTDIR"])
+            configd['MAXSUBCLUSTERS'] = core.create_subclusters(act_path, configd["OUTPUTDIR"])
             core.save_config(baseDir, configd)
             print ("Mzmine conversion completed.")
         except:
@@ -220,6 +221,7 @@ def main():
             core.load_and_generate_act_outputs(basket_path, args.activity_data, configd)
             # core.create_clusters(act_path, configd["OUTPUTDIR"])
             configd['MAXCLUSTERS'] = core.create_communitites(act_path, configd["OUTPUTDIR"])
+            configd['MAXSUBCLUSTERS'] = core.create_subclusters(act_path, configd["OUTPUTDIR"])
             core.save_config(baseDir, configd)
             print ("GNPS conversion completed.")
         except:

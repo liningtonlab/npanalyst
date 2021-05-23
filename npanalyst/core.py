@@ -10,7 +10,7 @@ from typing import Dict, List, Optional
 import numpy as np
 import pandas as pd
 
-from npanalyst import activity, utils, createCluster, createCommunities
+from npanalyst import activity, utils, createSubclusters, createCommunities
 from npanalyst.utils import PATH
 
 import sys
@@ -261,11 +261,11 @@ def load_and_generate_act_outputs(basket_path, act_path, configd):
         configd["OUTPUTDIR"]
     )
 
-def create_clusters(act_path, outdir):
+def create_subclusters(act_path, outdir):
     logging.debug("Building clusters ... ")
 
     # create cluster folder and structure with json files for heatmaps
-    createCluster.run(act_path, outdir)
+    return createSubclusters.run(act_path, outdir)
 
 def create_communitites(act_path, outdir):
     logging.debug("Creating Communities")

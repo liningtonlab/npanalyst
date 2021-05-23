@@ -267,9 +267,9 @@ def top_n_plot_wrapper(top_n_df, linkage_matrix=None, X=None, top_n_results=1, o
 
     if len(unique_top_n) < top_n_results:
         top_n_results = len(unique_top_n)
-        print('Only the top ' + str(len(unique_top_n)) + ' clusters are shown.')
+        print('Only the top ' + str(len(unique_top_n)) + ' subclusters are shown.')
 
-    output = "clusters"
+    output = "subclusters"
     os.makedirs(os.path.join(output), exist_ok=True)
 
     for n, i in enumerate(unique_top_n[:top_n_results]):
@@ -349,11 +349,13 @@ def run(activityFile, outdir):
     # # # Find the top 3 clustering solutions, using the silhouette coefficient as a cut-off criterion
     top_n_df = find_clusters(X=X_prepared, linkage_matrix=lm, method=cluster_method)
 
+    
     # change directory to the jobid to output files
     os.chdir(outdir)
+    
     # only include the top df
     top_cluster_df = top_n_df[(top_n_df['top_n'] == 1)]
-    top_cluster_df.to_csv("cluster_info.csv")
+    top_cluster_df.to_csv("subcluster_info.csv")
 
     # # Retrieve dendrogram and silhouette plots - only pick the best one for now
     top_n_plot_wrapper(top_n_df, lm, X, top_n_results=1)
@@ -369,7 +371,7 @@ def run(activityFile, outdir):
 
     G = nx.read_graphml('network.graphml')      # full graph 
     table = pd.read_csv('table.csv')            # full table
-    output = "clusters"
+    output = "subclusters"
 
     # traverse through each cluster and write the network and table files
     for i in range(cluster_size):
@@ -398,9 +400,12 @@ def run(activityFile, outdir):
         outfile_csv = open(output + "/" + str(i+1) + "/table.csv", "w")
         output_table.to_csv(outfile_csv)
 
+    return int(cluster_size)
+
 if __name__ == '__main__':
 
     print ("[createCluster.py] Main")
+
     # filename = sys.argv[1]
     # print("Building clusters ...")
     # run("Activity.csv")
