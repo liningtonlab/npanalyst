@@ -133,6 +133,8 @@ def score_baskets(baskets, act_df, configd):
                 logging.warning(e)
 
     scores = dict(scores)
+    scores = auto_detect_threshold(scores)
+
     return scores
 
 
@@ -218,9 +220,10 @@ def make_cytoscape_input(baskets, scored, output):
     samples = set()
     actScores = []
 
+    # Need to remove basket ids that were removed during the automatic cutoff threshold
     for i, bask in enumerate(baskets):
         if scores is not None:
-            #bid = f"Basket_{i}"
+            # print (f"Basket_{i}")
             bid = i
             try:
                 act = scores[i].activity
@@ -248,7 +251,6 @@ def make_cytoscape_input(baskets, scored, output):
                 
             except KeyError as e:
                 logging.warning(e)
-                # score = SCORET(0, 0)
 
             
 
@@ -342,4 +344,42 @@ def make_heatmap_input(activity_df, output):
         fout.write(json.dumps(parsed, indent=2))
 
 def auto_detect_threshold(scores):      # not developed, a way to automatically determine thresholds
-    return None
+    logging.debug("Autodetecting threshold cutoffs...")
+    size = len(scores['Activity'])
+    bids = []
+    
+    if size > 10:
+        logging.debug(f"Automatic threshold trimming performed since n = {size} > 1000")
+
+        # pick top 25% of the data set
+        pickSize = round(size * 0.25)
+        print (f"Selecting top 25% of the dataset, n={pickSize}")
+
+        newColumns = []
+        # go through each of the scores and calculate their product
+        for key in scores['Activity']:
+            act = scores['Activity'][key].activity
+            clust = scores['Activity'][key].cluster
+            # print (key, act, clust, act * clust)
+            new_row = {'basket':key, 'activity':act, 'cluster':clust, 'score':act*clust}
+            newColumns.append(new_row)
+
+        newTable = pd.DataFrame(newColumns, columns=['basket','activity', 'cluster', 'score']).sort_values(by='score', ascending=False)
+        trimmed=newTable.iloc[0:pickSize,:]
+        print("CUTOFF SCORE >", newTable["score"][pickSize])
+        newScores = defaultdict(dict)
+        # logging.debug(f"Removed all points < {newTable["score"][pickSize]}")
+        print ("TRIMMED DATA", trimmed.head())
+
+        for row in trimmed.itertuples():
+            # print(row[1], row[2], row[3])
+            bid = row[1]
+            act_score = np.float64(row[2])
+            clust_score = np.float64(row[3])
+            bids.append(bid)
+            newScores['Activity'][bid] = SCORET(act_score, clust_score)
+        return newScores
+
+    else:
+        logging.debug(f"No automatic threshold trimming performed since n = {size} < 1000")
+        return scores

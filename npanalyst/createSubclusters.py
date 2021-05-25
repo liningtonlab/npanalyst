@@ -15,12 +15,12 @@ import gower
 
 import os
 import json
-import sys
 from pathlib import Path
-import logging
+# import logging
 import networkx as nx
 from networkx.readwrite import json_graph
 import re
+import sys
 
 
 def initialize_clustering_method(X, cat_vector, method='standardize'):
@@ -34,6 +34,7 @@ def initialize_clustering_method(X, cat_vector, method='standardize'):
     :param cat_vector: list / numpy 1-D array with booleans indicating if a variable (column position) is categorical
     :return: X_prepared for further analysis (might be unchanged, if Gower distance was used), linkage method
     """
+
     if len(cat_vector) < X.shape[1]:
         raise ValueError(
             "Length of cat_vector needs to be identical with variable count (columns) of X")
@@ -283,34 +284,34 @@ def top_n_plot_wrapper(top_n_df, linkage_matrix=None, X=None, top_n_results=1, o
         # # TODO: This line creates the new folder. For the UNIX system, this has to be changed.
         # os.mkdir(os.path.join(output, "nr" + str(n + 1) + "_silhouette_coeff"))
 
-        # # In case a linkage_matrix exists, plot the dendrogram
-        if linkage_matrix is not None:
-            dendrogram_plot(linkage_matrix, y_pred, labels)
-            # # TODO: This line creates the path to place the figures in. For the UNIX system, this has to be changed.
-            # outfile_silhouette = os.path.join(output, "nr" + str(n + 1) + "_silhouette_coeff\\dendrogram_plot_nr"
-            #   + str(n + 1) + ".svg")
-            outfile_silhouette = os.path.join(output, "dendrogram_plot.svg")
-            plt.savefig(outfile_silhouette, bbox_inches='tight')
-            # plt.show()
-            plt.close()
+        # # # In case a linkage_matrix exists, plot the dendrogram
+        # if linkage_matrix is not None:
+        #     dendrogram_plot(linkage_matrix, y_pred, labels)
+        #     # # TODO: This line creates the path to place the figures in. For the UNIX system, this has to be changed.
+        #     # outfile_silhouette = os.path.join(output, "nr" + str(n + 1) + "_silhouette_coeff\\dendrogram_plot_nr"
+        #     #   + str(n + 1) + ".svg")
+        #     outfile_silhouette = os.path.join(output, "dendrogram_plot.svg")
+        #     plt.savefig(outfile_silhouette, bbox_inches='tight')
+        #     # plt.show()
+        #     plt.close()
 
-        # # Prepare silhouette plot
-        silhouette_coeff = temp_df['silhouette_coeff']
-        silhouette_df = pd.DataFrame(
-            {'silhouette_vals': silhouette_coeff, 'cluster_id': y_pred})
-        silhouette_df = silhouette_df.sort_values(
-            by=['cluster_id', 'silhouette_vals'], ascending=[True, False])
-        silhouette_df['position'] = [x for x in range(silhouette_df.shape[0])]
+        # # # Prepare silhouette plot
+        # silhouette_coeff = temp_df['silhouette_coeff']
+        # silhouette_df = pd.DataFrame(
+        #     {'silhouette_vals': silhouette_coeff, 'cluster_id': y_pred})
+        # silhouette_df = silhouette_df.sort_values(
+        #     by=['cluster_id', 'silhouette_vals'], ascending=[True, False])
+        # silhouette_df['position'] = [x for x in range(silhouette_df.shape[0])]
 
-        silhouette_plot(silhouette_df)
-        # # TODO: This line creates the path to place the figures in. For the UNIX system, this has to be changed.
-        # outfile_silhouette = os.path.join(output, "nr" + str(n + 1) + "_silhouette_coeff\\silhouette_plot_nr"
-        #   + str(n + 1) + ".svg")
-        outfile_silhouette = os.path.join(output, "silhouette_plot.svg")
+        # silhouette_plot(silhouette_df)
+        # # # TODO: This line creates the path to place the figures in. For the UNIX system, this has to be changed.
+        # # outfile_silhouette = os.path.join(output, "nr" + str(n + 1) + "_silhouette_coeff\\silhouette_plot_nr"
+        # #   + str(n + 1) + ".svg")
+        # outfile_silhouette = os.path.join(output, "silhouette_plot.svg")
 
-        plt.savefig(outfile_silhouette, bbox_inches='tight')
-        # plt.show()
-        plt.close()
+        # plt.savefig(outfile_silhouette, bbox_inches='tight')
+        # # plt.show()
+        # plt.close()
 
         # # Create subset X (assay data) dataframes as CSVs. The X dataframe has been split by top_n cluster count
         # # (for folder creation)
