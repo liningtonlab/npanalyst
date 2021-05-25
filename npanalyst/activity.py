@@ -351,9 +351,11 @@ def auto_detect_threshold(scores):      # not developed, a way to automatically 
     if size > 10:
         logging.debug(f"Automatic threshold trimming performed since n = {size} > 1000")
 
-        # pick top 25% of the data set
+        # pick top 25% of the data set or 1000 (due to viewing difficulties)
         pickSize = round(size * 0.25)
-        print (f"Selecting top 25% of the dataset, n={pickSize}")
+        if (pickSize > 1000):
+            pickSize = 1000
+        print (f"Selecting top 25% or top 1000 of the dataset, n={pickSize}")
 
         newColumns = []
         # go through each of the scores and calculate their product
