@@ -1,0 +1,18 @@
+name: npanalyst
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.8
+  - pip
+  - joblib
+  - numpy
+  - pandas
+  - scipy
+  - click
+  - networkx
+  - scikit-learn
+  - matplotlib
+  - python-louvain
+  - pip:
+      - rtree
+      - pymzml==2.4.5
