@@ -32,6 +32,6 @@
     },
     "NetworkInfo": {
         "ActivityThreshold": 5,
-        "ClusterThreshold": 0.25
+        "ClusterThreshold": 0.0
     }
 }

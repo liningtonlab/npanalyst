@@ -9,15 +9,15 @@ import pandas as pd
 import pymzml
 from rtree import index
 
-import re 
-
-import sys
+import re
 
 
 PATH = Union[Path, str]
 
 
-def gen_rep_df_paths(datadir: PATH, extension: str, samples: Dict) -> Tuple[str, List[Path]]:
+def gen_rep_df_paths(
+    datadir: PATH, extension: str, samples: Dict
+) -> Tuple[str, List[Path]]:
     """
     generator func which yields concatenated replica file dataframes
 
@@ -25,10 +25,10 @@ def gen_rep_df_paths(datadir: PATH, extension: str, samples: Dict) -> Tuple[str,
         datadir (str or Path): data directory path
         ext: extension we are considering
     """
-    #extensions = [
+    # extensions = [
     #    ".mzml",
     #    ".csv",
-    #]  # allow mzml or csv, if files are mixed this will cause issues
+    # ]  # allow mzml or csv, if files are mixed this will cause issues
     sd = Path(datadir)
     csvs = [f for f in sd.iterdir() if f.suffix.lower() == extension]
     logging.info("Collected replicate files:")
@@ -38,17 +38,21 @@ def gen_rep_df_paths(datadir: PATH, extension: str, samples: Dict) -> Tuple[str,
     for sample in samples:
         found = False
         for fname in csvs:
-            if re.search(f'{sample}', str(fname.stem), re.IGNORECASE):
+            if re.search(f"{sample}", str(fname.stem), re.IGNORECASE):
                 repd[sample].append(fname)
                 found = True
 
         if not found:
-            print ("Could not find an mzml file for", sample,"check activity and/or the mzml file.")
-            print (sample, "will be ignored.")
+            print(
+                "Could not find an mzml file for",
+                sample,
+                "check activity and/or the mzml file.",
+            )
+            print(sample, "will be ignored.")
 
     check_replicates(repd)
 
-    #for fname in csvs:
+    # for fname in csvs:
     #    sample = fname.stem.split("_")[0]
     #    repd[sample].append(
     #        fname
@@ -420,7 +424,13 @@ def _run2df(mzrun: pymzml.run.Reader) -> pd.DataFrame:
 
         for mz, inte in specdata:
             data.append(
-                [mz, inte, scantime, mslevel, mode,]
+                [
+                    mz,
+                    inte,
+                    scantime,
+                    mslevel,
+                    mode,
+                ]
             )
     df = pd.DataFrame(
         data, columns=["PrecMz", "PrecIntensity", "RetTime", "mslevel", "mode"]
@@ -443,22 +453,24 @@ def _update(pbar, future):
     """callback func for future object to update progress bar"""
     pbar.update()
 
+
 def sameFileFormat(path: PATH, unknown: List) -> bool:
     ext = set()
     file_names = list(path) + unknown
 
-    allowed_ext = ['.csv', '.mzml', '.graphml']
-    
+    allowed_ext = [".csv", ".mzml", ".graphml"]
+
     for files in file_names:
-        if (Path(files).is_file()):
+        if Path(files).is_file():
             ext.add(Path(files).suffix.lower())
-            if (len(ext) > 1):
-                print(ext.pop(),"is a different format to",ext.pop())
+            if len(ext) > 1:
+                print(ext.pop(), "is a different format to", ext.pop())
                 return False
-        if (Path(files).is_dir()):
+        if Path(files).is_dir():
             pass
-    print ("Checked all file extensions same format", ext.pop())
+    print("Checked all file extensions same format", ext.pop())
     return True
+
 
 def check_sample_names(actdf, basket, configd):
     # save all activity file sample names into a set
@@ -470,43 +482,52 @@ def check_sample_names(actdf, basket, configd):
         matched_samples = set(record[configd["FILENAMECOL"]].split("|"))
         basketSamples = basketSamples.union(matched_samples)
 
-    matches =  set()
+    matches = set()
     mismatches = set()
 
     for actSample in actSamples:
         found_match = False
         for basketSample in basketSamples:
-            if (actSample in basketSample):
+            if actSample in basketSample:
                 found_match = True
                 matches.add(actSample)
 
         if not found_match:
-            print ("No match in Basketed file for", actSample)
+            print("No match in Basketed file for", actSample)
             mismatches.add(actSample)
-    
-    print ("Activity/Basket matches:", str(len(matches)))
-    print ("Activity/Basket mismatches:", str(len(mismatches)))
+
+    print("Activity/Basket matches:", str(len(matches)))
+    print("Activity/Basket mismatches:", str(len(mismatches)))
 
     return mismatches, matches
 
-def get_samples (actdf, samplecol) -> Dict:
-    df = pd.read_csv(actdf, index_col = None)
-    try: 
+
+def get_samples(actdf, samplecol) -> Dict:
+    df = pd.read_csv(actdf, index_col=None)
+    try:
         if df[samplecol]:
             return set((df[samplecol]))
     except:
-        return (set(df[df.columns[0]]))
+        return set(df[df.columns[0]])
+
 
 def check_replicates(df):
     num_replicates = set()
     replicateNumError = False
     for sample in df:
         num_replicates.add(len(df[sample]))
-        if (len(num_replicates) == 2 and not replicateNumError):
-            print ("Sample", sample, "has different number of replicates:", len(df[sample]), "compared to", num_replicates)
+        if len(num_replicates) == 2 and not replicateNumError:
+            print(
+                "Sample",
+                sample,
+                "has different number of replicates:",
+                len(df[sample]),
+                "compared to",
+                num_replicates,
+            )
             replicateNumError = True
-    
+
     if replicateNumError:
-        print ("Different number of replicates:", num_replicates)
-    elif (len(num_replicates) > 0):
-        print ("Autodetected:", num_replicates.pop(), "replicates per sample")
+        print("Different number of replicates:", num_replicates)
+    elif len(num_replicates) > 0:
+        print("Autodetected:", num_replicates.pop(), "replicates per sample")

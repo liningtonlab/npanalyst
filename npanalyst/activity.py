@@ -8,12 +8,12 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 
-import sys
 import re
 
 from networkx.readwrite import json_graph
 
 PATH = Union[Path, str]
+Score = namedtuple("Score", "activity cluster")
 
 
 # def filename2sample(filename: str, fn_delim: str = "_", sampleidx: int = 1) -> str:
@@ -95,7 +95,7 @@ def load_activity_data(apath: PATH, samplecol: int = 0) -> pd.DataFrame:
     if p.is_dir():
         filenames = [sd for sd in p.iterdir() if sd.suffix.lower().endswith("csv")]
         for fname in filenames:
-            df = pd.read_csv(fname).fillna(value=0) #na is not the same as 0!
+            df = pd.read_csv(fname).fillna(value=0)  # na is not the same as 0!
             name = fname.stem
             df["filename"] = name
             dfs.append(df)
@@ -110,13 +110,12 @@ def load_activity_data(apath: PATH, samplecol: int = 0) -> pd.DataFrame:
 
     return big_df
 
-SCORET = namedtuple("Score", "activity cluster")
 
 def score_baskets(baskets, act_df, configd):
     scores = defaultdict(dict)
     grouped = act_df.groupby("filename")
     act_thresh = configd["ACTIVITYTHRESHOLD"]
-    clust_thresh =  configd["CLUSTERTHRESHOLD"]
+    clust_thresh = configd["CLUSTERTHRESHOLD"]
 
     # for i, bask in tqdm(enumerate(baskets),desc='Scoring Baskets'):
     for i, bask in enumerate(baskets):
@@ -128,7 +127,7 @@ def score_baskets(baskets, act_df, configd):
                 act_score = np.sum(sfp ** 2)
                 clust_score = cluster_score(num_fpd, samples)
                 if act_score >= act_thresh and clust_score >= clust_thresh:
-                    scores[actname][i] = SCORET(act_score, clust_score)
+                    scores[actname][i] = Score(act_score, clust_score)
             except KeyError as e:
                 logging.warning(e)
 
@@ -150,9 +149,9 @@ def make_bokeh_input(baskets, scored, output):
     data = []
     for i, bask in enumerate(baskets):
         if scores is not None:
-            #bid = f"Basket_{i}"
+            # bid = f"Basket_{i}"
             bid = i
-            freq = len(bask["samples"])  
+            freq = len(bask["samples"])
             samplelist = "['{0}']".format("', '".join(sorted(bask["samples"])))
             try:
                 act = scores[i].activity
@@ -198,6 +197,7 @@ def make_bokeh_input(baskets, scored, output):
     outfile = output.joinpath("table.csv").as_posix()
     df.to_csv(outfile, index=False, quoting=1, doublequote=False, escapechar=" ")
 
+
 _BASKET_KEYS = ["PrecMz", "RetTime", "PrecIntensity"]
 BINFO = namedtuple(
     "Basket",
@@ -223,19 +223,19 @@ def make_cytoscape_input(baskets, scored, output):
     # Need to remove basket ids that were removed during the automatic cutoff threshold
     for i, bask in enumerate(baskets):
         if scores is not None:
-            # print (f"Basket_{i}")
+            # print(f"Basket_{i}")
             bid = i
             try:
                 act = scores[i].activity
                 actScores.append(act)
 
                 clust = scores[i].cluster
-            
+
                 samples.update(bask["samples"])
 
                 for samp in bask["samples"]:
                     edges.append((bid, samp))
-                    
+
                 basket_info.append(
                     BINFO(
                         bid,
@@ -248,54 +248,56 @@ def make_cytoscape_input(baskets, scored, output):
                 )
 
                 # logging.debug(basket_info)
-                
+
             except KeyError as e:
                 logging.warning(e)
-
-            
 
     # Construct graph and write outputs
     G = nx.Graph()
     for samp in samples:
         G.add_node(samp, type_="sample")
-        G.nodes[samp]['radius'] = 6
-        G.nodes[samp]['depth'] = 0
-        G.nodes[samp]['color'] = "rgb(51,51,51)"
+        G.nodes[samp]["radius"] = 6
+        G.nodes[samp]["depth"] = 0
+        G.nodes[samp]["color"] = "rgb(51,51,51)"
     for b in basket_info:
         G.add_node(b.id, **b._asdict(), type_="basket")
         # set node size based on activity score value - should range between 3 to 10 like scatterplot
         # output_start + ((output_end - output_start) * (input - input_start)) / (input_end - input_start)
-        nodeSize = round(3 + ((10 - 3) * (G.nodes[b.id]['activity_score'] - min(actScores))) / (max(actScores) - min(actScores)))
+        nodeSize = round(
+            3
+            + ((10 - 3) * (G.nodes[b.id]["activity_score"] - min(actScores)))
+            / (max(actScores) - min(actScores))
+        )
 
-        #G.nodes[b.id]['radius'] = 4
-        G.nodes[b.id]['radius'] = nodeSize
-        G.nodes[b.id]['depth'] = 1
+        # G.nodes[b.id]['radius'] = 4
+        G.nodes[b.id]["radius"] = nodeSize
+        G.nodes[b.id]["depth"] = 1
         # G.nodes[b.id]['color'] = "rgb(97, 205, 187)"
 
         # colors are hard-coded - change this for future versions
-        if G.nodes[b.id]['cluster_score'] > 0.75:
-            color = "rgb(165,0,38)"     # red color
-        elif G.nodes[b.id]['cluster_score'] > 0.5:
+        if G.nodes[b.id]["cluster_score"] > 0.75:
+            color = "rgb(165,0,38)"  # red color
+        elif G.nodes[b.id]["cluster_score"] > 0.5:
             color = "rgb(215,48,39)"
-        elif G.nodes[b.id]['cluster_score'] > 0.25:
+        elif G.nodes[b.id]["cluster_score"] > 0.25:
             color = "rgb(244,109,67)"
-        elif G.nodes[b.id]['cluster_score'] > 0:
+        elif G.nodes[b.id]["cluster_score"] > 0:
             color = "rgb(253,174,97)"
-        elif G.nodes[b.id]['cluster_score'] > -0.25:
+        elif G.nodes[b.id]["cluster_score"] > -0.25:
             color = "rgb(171,217,233)"
-        elif G.nodes[b.id]['cluster_score'] > -0.5:
+        elif G.nodes[b.id]["cluster_score"] > -0.5:
             color = "rbg(116,173,209)"
-        elif G.nodes[b.id]['cluster_score'] > -0.75:
+        elif G.nodes[b.id]["cluster_score"] > -0.75:
             color = "rgb(69,117,180)"
         else:
             color = "rgb(49,54,149)"  # blue color
-        
+
         # set color for the basket node
-        G.nodes[b.id]['color'] = color
-    
+        G.nodes[b.id]["color"] = color
+
     for e in edges:
         G.add_edge(*e)
- 
+
     logging.debug(nx.info(G))
     outfile_gml = output.joinpath("network.graphml").as_posix()
     outfile_cyjs = output.joinpath("network.cyjs").as_posix()
@@ -333,8 +335,10 @@ def make_heatmap_input(activity_df, output):
     logging.debug("Writing Heatmap output...")
 
     # save the big dataframe as json file for heatmap - remove filename column first though
-    heatmap_df = activity_df.drop(columns=['filename'])  # remove filename column
-    heatmap_df = heatmap_df.rename_axis('Sample').reset_index() # add index back as a column
+    heatmap_df = activity_df.drop(columns=["filename"])  # remove filename column
+    heatmap_df = heatmap_df.rename_axis(
+        "Sample"
+    ).reset_index()  # add index back as a column
     result = heatmap_df.to_json(orient="records", index=True)
     parsed = json.loads(result)
 
@@ -343,35 +347,45 @@ def make_heatmap_input(activity_df, output):
     with open(outfile, "w") as fout:
         fout.write(json.dumps(parsed, indent=2))
 
-def auto_detect_threshold(scores):      # not developed, a way to automatically determine thresholds
+
+def auto_detect_threshold(
+    scores,
+):  # not developed, a way to automatically determine thresholds
     logging.debug("Autodetecting threshold cutoffs...")
-    size = len(scores['Activity'])
+    size = len(scores["Activity"])
     bids = []
-    
+
     if size > 10:
         logging.debug(f"Automatic threshold trimming performed since n = {size} > 1000")
 
         # pick top 25% of the data set or 1000 (due to viewing difficulties)
         pickSize = round(size * 0.25)
-        if (pickSize > 1000):
+        if pickSize > 1000:
             pickSize = 1000
-        print (f"Selecting top 25% or top 1000 of the dataset, n={pickSize}")
+        print(f"Selecting top 25% or top 1000 of the dataset, n={pickSize}")
 
         newColumns = []
         # go through each of the scores and calculate their product
-        for key in scores['Activity']:
-            act = scores['Activity'][key].activity
-            clust = scores['Activity'][key].cluster
-            # print (key, act, clust, act * clust)
-            new_row = {'basket':key, 'activity':act, 'cluster':clust, 'score':act*clust}
+        for key in scores["Activity"]:
+            act = scores["Activity"][key].activity
+            clust = scores["Activity"][key].cluster
+            # print(key, act, clust, act * clust)
+            new_row = {
+                "basket": key,
+                "activity": act,
+                "cluster": clust,
+                "score": act * clust,
+            }
             newColumns.append(new_row)
 
-        newTable = pd.DataFrame(newColumns, columns=['basket','activity', 'cluster', 'score']).sort_values(by='score', ascending=False)
-        trimmed=newTable.iloc[0:pickSize,:]
+        newTable = pd.DataFrame(
+            newColumns, columns=["basket", "activity", "cluster", "score"]
+        ).sort_values(by="score", ascending=False)
+        trimmed = newTable.iloc[0:pickSize, :]
         print("CUTOFF SCORE >", newTable["score"][pickSize])
         newScores = defaultdict(dict)
         # logging.debug(f"Removed all points < {newTable["score"][pickSize]}")
-        print ("TRIMMED DATA", trimmed.head())
+        print("TRIMMED DATA", trimmed.head())
 
         for row in trimmed.itertuples():
             # print(row[1], row[2], row[3])
@@ -379,9 +393,11 @@ def auto_detect_threshold(scores):      # not developed, a way to automatically 
             act_score = np.float64(row[2])
             clust_score = np.float64(row[3])
             bids.append(bid)
-            newScores['Activity'][bid] = SCORET(act_score, clust_score)
+            newScores["Activity"][bid] = Score(act_score, clust_score)
         return newScores
 
     else:
-        logging.debug(f"No automatic threshold trimming performed since n = {size} < 1000")
+        logging.debug(
+            f"No automatic threshold trimming performed since n = {size} < 1000"
+        )
         return scores
