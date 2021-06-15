@@ -36,7 +36,7 @@ def run_replicate(
 ):
     """Run replication comparison on input mzML data.
 
-    INPUT_PATH is the path to directory with input mzML files
+    INPUT_PATH is the path to directory with input mzML files.
     """
     print(kwargs)
 
@@ -59,7 +59,7 @@ def run_basketing(
 ):
     """Run basketting from replicate compared input data.
 
-    INPUT_PATH is the path to directory with input mzML files
+    INPUT_PATH is the path to directory with input mzML files.
     """
     print(kwargs)
 
@@ -83,9 +83,9 @@ def run_activity(
     """Run activity integration from standard input format
 
     Input format is ~= to basketed format.
-    If not using mzML pipeline, first run import for MZmine or GNPS inputs.
+    If not using mzML pipeline, first run `import` for MZmine or GNPS inputs.
 
-    INPUT_PATH is the path to input file
+    INPUT_PATH is the path to the input CSV file.
     """
     print(kwargs)
 
@@ -106,6 +106,12 @@ def run_import(
     **kwargs,
     # input_path: Path,
 ):
+    """Run import of MZmine for GNPS input formats to standard basket format.
+
+    Use this prior to the `activity` step.
+
+    INPUT_PATH is the path to the input file.
+    """
     print(kwargs)
 
 
