@@ -1,18 +1,18 @@
 from setuptools import setup
 
+import npanalyst
+
 setup(
     name="npanalyst",
-    version="0.0.2",
+    version=npanalyst.__version__,
     packages=["npanalyst"],
-    entry_points={"console_scripts": ["npanalyst = npanalyst.cli:main",]},
+    entry_points={
+        "console_scripts": [
+            "npanalyst = npanalyst.cli:cli",
+        ]
+    },
     install_requires=[
-        "pandas",
-        "rtree",
-        "numpy",
-        "scipy",
-        "pymzml==2.4.5",  # Latest version which works 2.4.6 is broken
-        "networkx",
-        "joblib",
+        "click",
     ],
-    python_requires="~=3.6",  # fstrings all over the place...
+    python_requires=">=3.7"
 )

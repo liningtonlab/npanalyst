@@ -31,7 +31,7 @@
         "ColumnMap": null
     },
     "NetworkInfo": {
-        "ActivityThreshold": 5,
-        "ClusterThreshold": 0.0
+        "ActivityThreshold": 3,
+        "ClusterThreshold": -1
     }
 }
