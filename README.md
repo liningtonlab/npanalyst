@@ -27,15 +27,6 @@ A lot of the parameters are specified via a config file that defaults to `defaul
 
 Additional options and work to be done...
 
-## Installation
-
-```
-conda create -y -n npanalyst python=3.7
-conda activate npanalyst
-conda install -y -c conda-forge libspatialindex rtree pandas scipy networkx joblib
-python setup.py install
-```
-
 ## TODO
 
 - Add functionality to config file

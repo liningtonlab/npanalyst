@@ -1,5 +1,5 @@
 from pathlib import Path
-
+from typing import Optional
 import click
 
 from npanalyst import __version__ as VERSION
@@ -22,23 +22,51 @@ def cli():
 ##      REPLICATE COMPARISON
 ############################
 @cli.command("replicate")
-@click.argument("input_path")
+@click.option(
+    "--input_path",
+    "-i",
+    type=Path,
+    required=True,
+    help="Path to directory with input mzML files",
+)
 @click.option(
     "--output_path",
     "-o",
+    type=Path,
     help="Output directory",
     default=".",
     show_default=True,
 )
+@click.option(
+    "--config",
+    type=Path,
+    help="Configuration file to use. "
+    "Arguments will overwrite an overlapping config file options",
+)
+@click.option(
+    "--workers",
+    "-w",
+    help="Number of parallel workers",
+    type=int,
+    default=-1,
+    show_default=True,
+)
+# @click.option("--verbose/--no-verbose", default=False, help="Verbose or quite logging")
 def run_replicate(
-    **kwargs,
-    # input_path: Path,
+    input_path: Path,
+    output_path: Path,
+    workers: int,
+    # verbose: bool,
+    config: Optional[Path] = None,
 ):
-    """Run replication comparison on input mzML data.
-
-    INPUT_PATH is the path to directory with input mzML files.
-    """
-    print(kwargs)
+    """Run replication comparison on input mzML data."""
+    configd = core.load_config(config_path=config)
+    core.process_replicates(
+        input_path,
+        output_path,
+        configd,
+        max_workers=workers,
+    )
 
 
 ############################

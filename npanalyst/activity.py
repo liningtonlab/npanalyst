@@ -38,12 +38,12 @@ def filenames2samples(
     return samples
 
 
-def synth_fp(act_df: pd.DataFrame, samples: List) -> np.ndarray:
-    to_cat = get_fps(act_df, samples)
+def feature_synthetic_fp(act_df: pd.DataFrame, samples: List) -> np.ndarray:
+    to_cat = get_samples_fps(act_df, samples)
     return np.vstack(to_cat).mean(axis=0)
 
 
-def get_fps(fpd: pd.DataFrame, samples: List) -> np.ndarray:
+def get_samples_fps(fpd: pd.DataFrame, samples: List) -> np.ndarray:
     to_cat = []
     for samp in samples:
         try:
@@ -61,7 +61,7 @@ def cluster_score(fpd: pd.DataFrame, samples: List) -> float:
     correlation matrix of all the fingerprints for the extracts a feature
     appears in.
     """
-    fps = get_fps(fpd, samples)  # Get matrix of fingerprints
+    fps = get_samples_fps(fpd, samples)  # Get matrix of fingerprints
     j = fps.shape[0]
     if j == 1:
         return 0.0
@@ -85,23 +85,27 @@ def load_basket_data(bpath: PATH, configd: Dict) -> List:
     return baskets
 
 
-def load_activity_data(apath: PATH, samplecol: int = 0) -> pd.DataFrame:
+def load_activity_data(path: PATH, samplecol: int = 0) -> pd.DataFrame:
     """
     Take activity file path and make dataframe with loaded data
-    Add filename as column for future grouping
+    Add filename as column for future grouping.
+
+    Sets the samplecol as the index
     """
-    p = Path(apath)
+    path = Path(path)
     dfs = []
-    if p.is_dir():
-        filenames = [sd for sd in p.iterdir() if sd.suffix.lower().endswith("csv")]
+    if path.is_dir():
+        filenames = [sd for sd in path.iterdir() if sd.suffix.lower().endswith("csv")]
         for fname in filenames:
-            df = pd.read_csv(fname).fillna(value=0)  # na is not the same as 0!
+            # df = pd.read_csv(fname).fillna(value=0)  # na is not the same as 0!
+            df = pd.read_csv(fname)
             name = fname.stem
             df["filename"] = name
             dfs.append(df)
-    if p.is_file():
-        name = p.stem
-        df = pd.read_csv(p).fillna(value=0)
+    if path.is_file():
+        name = path.stem
+        # df = pd.read_csv(path).fillna(value=0)  # na is not the same as 0!
+        df = pd.read_csv(path)
         df["filename"] = name
         dfs.append(df)
 
@@ -112,29 +116,26 @@ def load_activity_data(apath: PATH, samplecol: int = 0) -> pd.DataFrame:
 
 
 def score_baskets(baskets, act_df, configd):
+    """Compute the activity and cluster score for all baskets.
+
+    TODO: Double check the filename groupby and numeric feature detection
+    """
     scores = defaultdict(dict)
     grouped = act_df.groupby("filename")
-    act_thresh = configd["ACTIVITYTHRESHOLD"]
-    clust_thresh = configd["CLUSTERTHRESHOLD"]
 
-    # for i, bask in tqdm(enumerate(baskets),desc='Scoring Baskets'):
     for i, bask in enumerate(baskets):
         samples = bask["samples"]
         for actname, fpd in grouped:
-            num_fpd = fpd[[c for c in fpd.columns if c != "filename"]]
+            numeric_feature_df = fpd[[c for c in fpd.columns if c != "filename"]]
             try:
-                sfp = synth_fp(num_fpd, samples)
+                sfp = feature_synthetic_fp(numeric_feature_df, samples)
                 act_score = np.sum(sfp ** 2)
-                clust_score = cluster_score(num_fpd, samples)
-                if act_score >= act_thresh and clust_score >= clust_thresh:
-                    scores[actname][i] = Score(act_score, clust_score)
+                clust_score = cluster_score(numeric_feature_df, samples)
+                scores[actname][i] = Score(act_score, clust_score)
             except KeyError as e:
                 logging.warning(e)
 
-    scores = dict(scores)
-    scores = auto_detect_threshold(scores)
-
-    return scores
+    return dict(scores)
 
 
 def make_bokeh_input(baskets, scored, output):
@@ -152,7 +153,7 @@ def make_bokeh_input(baskets, scored, output):
             # bid = f"Basket_{i}"
             bid = i
             freq = len(bask["samples"])
-            samplelist = "['{0}']".format("', '".join(sorted(bask["samples"])))
+            samplelist = json.dumps(sorted(bask["samples"]))
             try:
                 act = scores[i].activity
                 clust = scores[i].cluster
@@ -172,17 +173,6 @@ def make_bokeh_input(baskets, scored, output):
                 # act, clust = None, None
                 pass
 
-            # row = (
-            #     bid,
-            #     freq,
-            #     bask["PrecMz"],
-            #     bask["PrecIntensity"],
-            #     bask["RetTime"],
-            #     samplelist,
-            #     act,
-            #     clust,
-            # )
-            # data.append(row)
     columns = (
         "BasketID",
         "Frequency",
@@ -194,7 +184,7 @@ def make_bokeh_input(baskets, scored, output):
         "CLUSTER_SCORE",
     )
     df = pd.DataFrame(data, columns=columns)
-    outfile = output.joinpath("table.csv").as_posix()
+    outfile = output.joinpath("table.csv").resolve()
     df.to_csv(outfile, index=False, quoting=1, doublequote=False, escapechar=" ")
 
 
@@ -218,19 +208,16 @@ def make_cytoscape_input(baskets, scored, output):
     edges = []
     basket_info = []
     samples = set()
-    actScores = []
+    activity_scores = []
 
     # Need to remove basket ids that were removed during the automatic cutoff threshold
     for i, bask in enumerate(baskets):
         if scores is not None:
-            # print(f"Basket_{i}")
             bid = i
             try:
                 act = scores[i].activity
-                actScores.append(act)
-
+                activity_scores.append(act)
                 clust = scores[i].cluster
-
                 samples.update(bask["samples"])
 
                 for samp in bask["samples"]:
@@ -265,8 +252,8 @@ def make_cytoscape_input(baskets, scored, output):
         # output_start + ((output_end - output_start) * (input - input_start)) / (input_end - input_start)
         nodeSize = round(
             3
-            + ((10 - 3) * (G.nodes[b.id]["activity_score"] - min(actScores)))
-            / (max(actScores) - min(actScores))
+            + ((10 - 3) * (G.nodes[b.id]["activity_score"] - min(activity_scores)))
+            / (max(activity_scores) - min(activity_scores))
         )
 
         # G.nodes[b.id]['radius'] = 4
@@ -346,58 +333,3 @@ def make_heatmap_input(activity_df, output):
 
     with open(outfile, "w") as fout:
         fout.write(json.dumps(parsed, indent=2))
-
-
-def auto_detect_threshold(
-    scores,
-):  # not developed, a way to automatically determine thresholds
-    logging.debug("Autodetecting threshold cutoffs...")
-    size = len(scores["Activity"])
-    bids = []
-
-    if size > 10:
-        logging.debug(f"Automatic threshold trimming performed since n = {size} > 1000")
-
-        # pick top 25% of the data set or 1000 (due to viewing difficulties)
-        pickSize = round(size * 0.25)
-        if pickSize > 1000:
-            pickSize = 1000
-        print(f"Selecting top 25% or top 1000 of the dataset, n={pickSize}")
-
-        newColumns = []
-        # go through each of the scores and calculate their product
-        for key in scores["Activity"]:
-            act = scores["Activity"][key].activity
-            clust = scores["Activity"][key].cluster
-            # print(key, act, clust, act * clust)
-            new_row = {
-                "basket": key,
-                "activity": act,
-                "cluster": clust,
-                "score": act * clust,
-            }
-            newColumns.append(new_row)
-
-        newTable = pd.DataFrame(
-            newColumns, columns=["basket", "activity", "cluster", "score"]
-        ).sort_values(by="score", ascending=False)
-        trimmed = newTable.iloc[0:pickSize, :]
-        print("CUTOFF SCORE >", newTable["score"][pickSize])
-        newScores = defaultdict(dict)
-        # logging.debug(f"Removed all points < {newTable["score"][pickSize]}")
-        print("TRIMMED DATA", trimmed.head())
-
-        for row in trimmed.itertuples():
-            # print(row[1], row[2], row[3])
-            bid = row[1]
-            act_score = np.float64(row[2])
-            clust_score = np.float64(row[3])
-            bids.append(bid)
-            newScores["Activity"][bid] = Score(act_score, clust_score)
-        return newScores
-
-    else:
-        logging.debug(
-            f"No automatic threshold trimming performed since n = {size} < 1000"
-        )
-        return scores

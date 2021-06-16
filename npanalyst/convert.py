@@ -59,7 +59,7 @@ def mzmine(act_path, data_path, configd):
     except:
         actSamples = set(activity_file.iloc[:, 0])
 
-    print(f"Found {len(actSamples)} unique samples")
+    logging.debug(f"Found {len(actSamples)} unique samples")
 
     basketSamples = data_file.columns.tolist()
     basketList = []
