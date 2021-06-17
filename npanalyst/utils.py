@@ -2,7 +2,7 @@ import json
 import logging
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, Iterable, List, Set, Tuple, Union, Iterator
+from typing import Dict, Iterable, Iterator, List, Set, Tuple
 
 import numpy as np
 import pandas as pd
@@ -10,12 +10,12 @@ import pymzml
 from rtree import index
 
 from npanalyst import exceptions
+from npanalyst.logging import get_logger
+
+logger = get_logger()
 
 
-PATH = Union[Path, str]
-
-
-def generate_rep_df_paths(datadir: PATH) -> Iterator[Tuple[str, List[Path]]]:
+def generate_rep_df_paths(datadir: Path) -> Iterator[Tuple[str, List[Path]]]:
     """
     generator func which yields concatenated replica file dataframes
 
@@ -27,7 +27,7 @@ def generate_rep_df_paths(datadir: PATH) -> Iterator[Tuple[str, List[Path]]]:
     # extensions = ("mzml", "csv")
     datadir = Path(datadir)
     files = [f for f in datadir.iterdir() if f.suffix.lower().endswith("mzml")]
-    logging.debug(files)
+    logger.debug(files)
     repd = defaultdict(list)
     for fpath in files:
         repd[fpath.stem.split("_")[0]].append(
@@ -151,8 +151,8 @@ def generate_connected_components(
                 try:
                     neighbors = set(rtree.intersection(rects[search]))
                 except Exception as e:
-                    logging.error(e)
-                    logging.error(rects[search])
+                    logger.error(e)
+                    logger.error(rects[search])
                     raise e
 
                 for n in neighbors - seen:  # set math
@@ -248,7 +248,7 @@ def collapse_connected_components(
     return ndf
 
 
-def make_repdf(datadir: PATH) -> pd.DataFrame:
+def make_repdf(datadir: Path) -> pd.DataFrame:
     """
     Make a concatonated dataframe from all the replicated data files.
     Assumes filenames end in 'replicated.csv' (as done in the replicate step from this toolchain)
@@ -289,7 +289,7 @@ def _run2df(mzrun: pymzml.run.Reader) -> pd.DataFrame:
                 specdata = mzi.tolist()
 
             except (AttributeError, IndexError) as e:
-                logging.warning(e)
+                logger.warning(e)
                 specdata = []
 
             if spec["MS:1000130"] is not None:
@@ -308,12 +308,12 @@ def _run2df(mzrun: pymzml.run.Reader) -> pd.DataFrame:
     return df
 
 
-def mzml_to_df(mzml_path: PATH, configd: Dict) -> pd.DataFrame:
+def mzml_to_df(mzml_path: Path, configd: Dict) -> pd.DataFrame:
     """Read MS data from mzML file and return a DataFrame."""
     run = pymzml.run.Reader(str(mzml_path))
     df = _run2df(run)
     fname = Path(mzml_path).stem
-    logging.debug(f"{configd['FILENAMECOL']} -> {fname}")
+    logger.debug(f"{configd['FILENAMECOL']} -> {fname}")
     df[configd["FILENAMECOL"]] = fname
-    logging.debug("Loaded file: %s", fname)
+    logger.debug("Loaded file: %s", mzml_path)
     return df

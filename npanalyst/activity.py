@@ -2,7 +2,7 @@ import json
 import logging
 from collections import defaultdict, namedtuple
 from pathlib import Path
-from typing import Union, List, Dict
+from typing import List, Dict
 
 import networkx as nx
 import numpy as np
@@ -12,7 +12,6 @@ import re
 
 from networkx.readwrite import json_graph
 
-PATH = Union[Path, str]
 Score = namedtuple("Score", "activity cluster")
 
 
@@ -71,7 +70,7 @@ def cluster_score(fpd: pd.DataFrame, samples: List) -> float:
     return score
 
 
-def load_basket_data(bpath: PATH, configd: Dict) -> List:
+def load_basket_data(bpath: Path, configd: Dict) -> List:
     bpath = Path(bpath)
     df = pd.read_csv(bpath.resolve())
     MS1COLS = configd["MS1COLS"]
@@ -85,7 +84,7 @@ def load_basket_data(bpath: PATH, configd: Dict) -> List:
     return baskets
 
 
-def load_activity_data(path: PATH, samplecol: int = 0) -> pd.DataFrame:
+def load_activity_data(path: Path, samplecol: int = 0) -> pd.DataFrame:
     """
     Take activity file path and make dataframe with loaded data
     Add filename as column for future grouping.
@@ -138,7 +137,7 @@ def score_baskets(baskets, act_df, configd):
     return dict(scores)
 
 
-def make_bokeh_input(baskets, scored, output):
+def create_output_table(baskets, scored, output):
     """produce output CSV consistent with bokeh server input
 
     Args:
@@ -189,20 +188,25 @@ def make_bokeh_input(baskets, scored, output):
 
 
 _BASKET_KEYS = ["PrecMz", "RetTime", "PrecIntensity"]
-BINFO = namedtuple(
+Basket = namedtuple(
     "Basket",
     [
         "id",
         "freq",
         "samples",
-        *[k for k in _BASKET_KEYS],
+        # BASKET KEYS - MS data to carry forward
+        # These values are rounded in Network format
+        "PrecMz",
+        "RetTime",
+        "PrecIntensity",
+        # Actvity Data to carry forward
         "activity_score",
         "cluster_score",
     ],
 )
 
 
-def make_cytoscape_input(baskets, scored, output):
+def create_association_network(baskets, scored, output):
     logging.debug("Writing Cytoscape output...")
     scores = scored.get("Activity")
     edges = []
@@ -224,7 +228,7 @@ def make_cytoscape_input(baskets, scored, output):
                     edges.append((bid, samp))
 
                 basket_info.append(
-                    BINFO(
+                    Basket(
                         bid,
                         len(bask["samples"]),
                         ";".join(list(bask["samples"])),
@@ -233,7 +237,6 @@ def make_cytoscape_input(baskets, scored, output):
                         round(clust, 2),
                     )
                 )
-
                 # logging.debug(basket_info)
 
             except KeyError as e:
@@ -286,9 +289,9 @@ def make_cytoscape_input(baskets, scored, output):
         G.add_edge(*e)
 
     logging.debug(nx.info(G))
-    outfile_gml = output.joinpath("network.graphml").as_posix()
-    outfile_cyjs = output.joinpath("network.cyjs").as_posix()
-    outfile_json = output.joinpath("network.json").as_posix()
+    outfile_gml = output.joinpath("network.graphml").resolve()
+    outfile_cyjs = output.joinpath("network.cyjs").resolve()
+    outfile_json = output.joinpath("network.json").resolve()
     nx.write_graphml(G, outfile_gml, prettyprint=True)
 
     data = nx.cytoscape_data(G)
@@ -313,7 +316,7 @@ def make_cytoscape_input(baskets, scored, output):
         fout.write(json.dumps(jsonData, indent=2))
 
 
-def make_heatmap_input(activity_df, output):
+def create_activity_heatmap(activity_df, output):
     """produce json file in record format to be used as a heatmap
 
     Args:
@@ -329,7 +332,7 @@ def make_heatmap_input(activity_df, output):
     result = heatmap_df.to_json(orient="records", index=True)
     parsed = json.loads(result)
 
-    outfile = output.joinpath("activity.json").as_posix()
+    outfile = output.joinpath("activity.json").resolve()
 
     with open(outfile, "w") as fout:
         fout.write(json.dumps(parsed, indent=2))

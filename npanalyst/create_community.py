@@ -1,5 +1,4 @@
 import json
-import logging
 import os
 from collections import defaultdict
 
@@ -10,6 +9,10 @@ from networkx.readwrite import json_graph
 from scipy.cluster.hierarchy import leaves_list, linkage
 from scipy.spatial.distance import pdist
 from sklearn.preprocessing import StandardScaler
+
+# from npanalyst.logging import get_logger
+
+# logger = get_logger()
 
 
 def add_community_as_node_attribute(graph, community_list, community_key="community"):

@@ -1,11 +1,7 @@
 import pandas as pd
-import numpy as np
 import regex as re
 
-from typing import Union, List, Dict
-from pathlib import Path
 import sys
-import argparse
 import logging
 
 from regex.regex import split
@@ -13,8 +9,6 @@ from regex.regex import split
 from . import exceptions
 
 pd.set_option("precision", 15)
-
-PATH = Union[Path, str]
 
 """
 To keep the data structure the same, we will try to mimic our data format when handling mzMl data: 
