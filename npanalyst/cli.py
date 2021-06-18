@@ -116,6 +116,13 @@ def run_replicate(
     help="Path to directory with `replicated` folder",
 )
 @click.option(
+    "--output_path",
+    "-o",
+    type=Path,
+    required=False,
+    help="Output directory",
+)
+@click.option(
     "--config",
     type=Path,
     help="Configuration file to use. "
@@ -123,6 +130,7 @@ def run_replicate(
 )
 @click.option(
     "--verbose/--no-verbose",
+    "-v/",
     default=False,
     show_default=True,
     help="Verbose or quiet logging",
@@ -130,21 +138,27 @@ def run_replicate(
 def run_basketing_command(
     input_path: Path,
     verbose: bool,
+    output_path: Optional[Path] = None,
     config: Optional[Path] = None,
 ):
     """Run basketting from replicate compared input data."""
-    run_basketing(input_path=input_path, verbose=verbose, config=config)
+    if output_path is None:
+        output_path = input_path / "output"
+    run_basketing(
+        input_path=input_path, output_path=output_path, verbose=verbose, config=config
+    )
 
 
 def run_basketing(
     input_path: Path,
+    output_path: Path,
     verbose: bool,
     config: Optional[Path] = None,
 ):
     """Run basketting from replicate compared input data."""
     setup_logging(verbose=verbose)
     configd = core.load_config(config_path=config)
-    core.basket_replicated(input_path, configd)
+    core.basket_replicated(input_path, output_path, configd)
 
 
 ############################
@@ -184,6 +198,13 @@ def run_basketing(
     help="Path to basketed input file",
 )
 @click.option(
+    "--output_path",
+    "-o",
+    type=Path,
+    required=False,
+    help="Output directory",
+)
+@click.option(
     "--activity",
     "-a",
     type=Path,
@@ -198,14 +219,24 @@ def run_basketing(
 )
 @click.option(
     "--verbose/--no-verbose",
+    "-v/",
     default=False,
     show_default=True,
     help="Verbose or quiet logging",
+)
+@click.option(
+    "--include_web_output/--no_include_web_output",
+    "-w/",
+    default="False",
+    show_default=True,
+    help="Include web formats during final save stage of outputs?",
 )
 def run_activity_command(
     input_path: Path,
     activity: Path,
     verbose: bool,
+    include_web_output: bool,
+    output_path: Optional[Path] = None,
     config: Optional[Path] = None,
 ):
     """Run activity integration from standard input format.
@@ -214,25 +245,35 @@ def run_activity_command(
 
     If not using mzML pipeline, first run `import` for MZmine or GNPS inputs.
     """
+    if output_path is None:
+        output_path = input_path / "output"
     run_activity(
         input_path=input_path,
+        output_path=output_path,
         activity_path=activity,
         verbose=verbose,
         config=config,
+        include_web_output=include_web_output,
     )
 
 
 def run_activity(
     input_path: Path,
+    output_path: Path,
     activity_path: Path,
     verbose: bool,
+    include_web_output: bool,
     config: Optional[Path] = None,
 ):
     """Run activity integration from standard input format."""
     setup_logging(verbose=verbose)
     configd = core.load_config(config_path=config)
-    core.load_and_generate_act_outputs(
-        basket_path=input_path, act_path=activity_path, configd=configd
+    core.bioactivity_mapping(
+        basket_path=input_path,
+        output_dir=output_path,
+        activity_path=activity_path,
+        configd=configd,
+        include_web_output=include_web_output,
     )
 
 

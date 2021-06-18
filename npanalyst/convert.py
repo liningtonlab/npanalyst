@@ -4,7 +4,6 @@ import regex as re
 import sys
 import logging
 
-from regex.regex import split
 
 from . import exceptions
 

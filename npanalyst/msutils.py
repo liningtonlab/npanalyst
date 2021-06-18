@@ -1,5 +1,4 @@
 import json
-import logging
 from collections import defaultdict
 from pathlib import Path
 from typing import Dict, Iterable, Iterator, List, Set, Tuple
@@ -188,15 +187,14 @@ def _average_data_rows(
 
 
 def _combine_rows(cc_df: pd.DataFrame, configd: Dict) -> List:
-    """combine ms1 rows and optionally ms2 information in conncected component
-    dataframe
+    """combine ms1 rows in conncected component dataframe
 
     Args:
         cc_df (pd.DataFrame): conncected component dataframe
         min_reps (int): minumum number of replicates (number of uniqe files) that must be in connected component
 
     Returns:
-        list: averaged values from rows of cc_df and optionally ms2 info and/or basket info
+        list: averaged values from rows of cc_df and/or basket info
     """
     calc_basket_info = configd["CALCBASKETINFO"]
     ms1vals = _average_data_rows(

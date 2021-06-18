@@ -54,7 +54,7 @@ def setup_logging(
     logger.setLevel(level)
     logger.addHandler(ch)
     if fpath is not None:
-        fh = logging.FileHandler(fpath, mode="w")
+        fh = logging.FileHandler(fpath, mode="a")
         fh.setFormatter(formatter)
         fh.setLevel(logging.DEBUG)
         logger.addHandler(fh)

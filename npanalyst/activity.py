@@ -1,9 +1,9 @@
 import json
-import logging
-from collections import defaultdict, namedtuple
+from collections import namedtuple
+from npanalyst import community_detection
 from pathlib import Path
 from typing import List, Dict
-
+from joblib import Parallel, delayed
 import networkx as nx
 import numpy as np
 import pandas as pd
@@ -11,6 +11,11 @@ import pandas as pd
 import re
 
 from networkx.readwrite import json_graph
+from npanalyst import logging
+
+from npanalyst.logging import get_logger
+
+logger = get_logger()
 
 Score = namedtuple("Score", "activity cluster")
 
@@ -48,7 +53,7 @@ def get_samples_fps(fpd: pd.DataFrame, samples: List) -> np.ndarray:
         try:
             to_cat.append(fpd.loc[samp].values)
         except KeyError as e:
-            logging.warning(e)
+            logger.warning(e)
     if not to_cat:
         raise KeyError("No Fingerprints found...")
     return np.asarray(to_cat)
@@ -70,7 +75,7 @@ def cluster_score(fpd: pd.DataFrame, samples: List) -> float:
     return score
 
 
-def load_basket_data(bpath: Path, configd: Dict) -> List:
+def load_basket_data(bpath: Path, configd: Dict) -> List[Dict]:
     bpath = Path(bpath)
     df = pd.read_csv(bpath.resolve())
     MS1COLS = configd["MS1COLS"]
@@ -91,86 +96,68 @@ def load_activity_data(path: Path, samplecol: int = 0) -> pd.DataFrame:
 
     Sets the samplecol as the index
     """
-    path = Path(path)
-    dfs = []
-    if path.is_dir():
-        filenames = [sd for sd in path.iterdir() if sd.suffix.lower().endswith("csv")]
-        for fname in filenames:
-            # df = pd.read_csv(fname).fillna(value=0)  # na is not the same as 0!
-            df = pd.read_csv(fname)
-            name = fname.stem
-            df["filename"] = name
-            dfs.append(df)
-    if path.is_file():
-        name = path.stem
-        # df = pd.read_csv(path).fillna(value=0)  # na is not the same as 0!
-        df = pd.read_csv(path)
-        df["filename"] = name
-        dfs.append(df)
+    name = path.stem
+    # df = pd.read_csv(path).fillna(value=0)  # na is not the same as 0!
+    df = pd.read_csv(path)
+    # df["filename"] = name
 
-    big_df = pd.concat(dfs)
-    big_df.set_index(big_df.columns[samplecol], inplace=True)
+    df.set_index(df.columns[samplecol], inplace=True)
 
-    return big_df
+    return df
 
 
-def score_baskets(baskets, act_df, configd):
-    """Compute the activity and cluster score for all baskets.
-
-    TODO: Double check the filename groupby and numeric feature detection
-    """
-    scores = defaultdict(dict)
-    grouped = act_df.groupby("filename")
-
-    for i, bask in enumerate(baskets):
-        samples = bask["samples"]
-        for actname, fpd in grouped:
-            numeric_feature_df = fpd[[c for c in fpd.columns if c != "filename"]]
-            try:
-                sfp = feature_synthetic_fp(numeric_feature_df, samples)
-                act_score = np.sum(sfp ** 2)
-                clust_score = cluster_score(numeric_feature_df, samples)
-                scores[actname][i] = Score(act_score, clust_score)
-            except KeyError as e:
-                logging.warning(e)
-
-    return dict(scores)
+def score_basket(basket: Dict, activity_df: pd.DataFrame) -> Score:
+    """Compute the activity and cluster score for a single basket"""
+    samples = basket["samples"]
+    sfp = feature_synthetic_fp(activity_df, samples)
+    act_score = np.sum(sfp ** 2)
+    clust_score = cluster_score(activity_df, samples)
+    return Score(act_score, clust_score)
 
 
-def create_output_table(baskets, scored, output):
+def score_baskets(
+    baskets: List[Dict], activity_df: pd.DataFrame, max_workers=-1
+) -> List[Score]:
+    """Compute the activity and cluster score for all baskets in a parallelized fashion."""
+    scores = Parallel(n_jobs=max_workers, backend="multiprocessing")(
+        delayed(score_basket)(bask, activity_df) for bask in baskets
+    )
+
+    return scores
+
+
+def create_output_table(baskets: List[Dict], scores: List[Score]) -> pd.DataFrame:
     """produce output CSV consistent with bokeh server input
 
     Args:
         baskets (list): List of basketed data loaded with load_baskets
-        scored (dict): Dict of scores from score_baskets
+        scored (Score): Score namedtuple from score_baskets
     """
-    logging.debug("Writing Bokeh output...")
-    scores = scored.get("Activity")
+    logger.debug("Writing tabular output...")
     data = []
     for i, bask in enumerate(baskets):
-        if scores is not None:
-            # bid = f"Basket_{i}"
-            bid = i
-            freq = len(bask["samples"])
-            samplelist = json.dumps(sorted(bask["samples"]))
-            try:
-                act = scores[i].activity
-                clust = scores[i].cluster
+        # bid = f"Basket_{i}"
+        bid = i
+        freq = len(bask["samples"])
+        samplelist = json.dumps(sorted(bask["samples"]))
+        try:
+            act = scores[i].activity
+            clust = scores[i].cluster
 
-                row = (
-                    bid,
-                    freq,
-                    bask["PrecMz"],
-                    bask["PrecIntensity"],
-                    bask["RetTime"],
-                    samplelist,
-                    act,
-                    clust,
-                )
-                data.append(row)
-            except KeyError:
-                # act, clust = None, None
-                pass
+            row = (
+                bid,
+                freq,
+                bask["PrecMz"],
+                bask["PrecIntensity"],
+                bask["RetTime"],
+                samplelist,
+                act,
+                clust,
+            )
+            data.append(row)
+        except KeyError:
+            # act, clust = None, None
+            pass
 
     columns = (
         "BasketID",
@@ -183,8 +170,7 @@ def create_output_table(baskets, scored, output):
         "CLUSTER_SCORE",
     )
     df = pd.DataFrame(data, columns=columns)
-    outfile = output.joinpath("table.csv").resolve()
-    df.to_csv(outfile, index=False, quoting=1, doublequote=False, escapechar=" ")
+    return df
 
 
 _BASKET_KEYS = ["PrecMz", "RetTime", "PrecIntensity"]
@@ -206,9 +192,8 @@ Basket = namedtuple(
 )
 
 
-def create_association_network(baskets, scored, output):
-    logging.debug("Writing Cytoscape output...")
-    scores = scored.get("Activity")
+def create_association_network(baskets: List[Dict], scores: List[Score]) -> nx.Graph:
+    logger.info("Generating association network...")
     edges = []
     basket_info = []
     samples = set()
@@ -216,33 +201,32 @@ def create_association_network(baskets, scored, output):
 
     # Need to remove basket ids that were removed during the automatic cutoff threshold
     for i, bask in enumerate(baskets):
-        if scores is not None:
-            bid = i
-            try:
-                act = scores[i].activity
-                activity_scores.append(act)
-                clust = scores[i].cluster
-                samples.update(bask["samples"])
+        bid = i
+        try:
+            act = scores[i].activity
+            activity_scores.append(act)
+            clust = scores[i].cluster
+            samples.update(bask["samples"])
 
-                for samp in bask["samples"]:
-                    edges.append((bid, samp))
+            for samp in bask["samples"]:
+                edges.append((bid, samp))
 
-                basket_info.append(
-                    Basket(
-                        bid,
-                        len(bask["samples"]),
-                        ";".join(list(bask["samples"])),
-                        *[round(bask[k], 4) for k in _BASKET_KEYS],
-                        round(act, 2),
-                        round(clust, 2),
-                    )
+            basket_info.append(
+                Basket(
+                    bid,
+                    len(bask["samples"]),
+                    ";".join(list(bask["samples"])),
+                    *[round(bask[k], 4) for k in _BASKET_KEYS],
+                    round(act, 2),
+                    round(clust, 2),
                 )
-                # logging.debug(basket_info)
+            )
+            # logger.debug(basket_info)
 
-            except KeyError as e:
-                logging.warning(e)
+        except KeyError as e:
+            logger.warning(e)
 
-    # Construct graph and write outputs
+    # Construct graph
     G = nx.Graph()
     for samp in samples:
         G.add_node(samp, type_="sample")
@@ -288,51 +272,70 @@ def create_association_network(baskets, scored, output):
     for e in edges:
         G.add_edge(*e)
 
-    logging.debug(nx.info(G))
-    outfile_gml = output.joinpath("network.graphml").resolve()
-    outfile_cyjs = output.joinpath("network.cyjs").resolve()
-    outfile_json = output.joinpath("network.json").resolve()
-    nx.write_graphml(G, outfile_gml, prettyprint=True)
+    logger.debug(nx.info(G))
+    return G
 
-    data = nx.cytoscape_data(G)
+
+def save_association_network(
+    G: nx.Graph,
+    output_dir: Path,
+    include_web_output: bool,
+) -> None:
+    """Save network output(s) to specified output directory"""
+    outfile_gml = output_dir.joinpath("network.graphml").resolve()
+
     # Pre-calculate and add layout
     pos = nx.spring_layout(G)
-    pos_dict = dict()
-    scale = len(pos) * 10
     for node, (x, y) in pos.items():
-        x = x * scale
-        y = y * scale
-        pos_dict[node] = {"x": x, "y": y}
+        G.nodes[node]["x"] = float(x)
+        G.nodes[node]["y"] = float(y)
+    logger.debug(f"Saving {outfile_gml}")
+    nx.write_graphml(G, outfile_gml, prettyprint=True)
 
-    for d in data["elements"]["nodes"]:
-        posi = pos_dict.get(d.get("data").get("id"))
-        d["position"] = posi
+    if include_web_output:
+        outfile_cyjs = output_dir.joinpath("network.cyjs").resolve()
+        data = nx.cytoscape_data(G)
+        #     scale = len(G.nodes()) * 10
+        #     for node, ndata in G.nodes(data=True):
 
-    with open(outfile_cyjs, "w") as fout:
-        fout.write(json.dumps(data, indent=2))
+        #         x = ndata["x"] * scale
+        #         y = ndata["x"] * scale
+        #         node_pos = {"x": x, "y": y}
 
-    with open(outfile_json, "w") as fout:
-        jsonData = json_graph.node_link_data(G)
-        fout.write(json.dumps(jsonData, indent=2))
+        # # for d in data["elements"]["nodes"]:
+        # #     posi = pos_dict.get(d.get("data").get("id"))
+        # #     d["position"] = posi
+        logger.debug(f"Saving {outfile_cyjs}")
+        with open(outfile_cyjs, "w") as fout:
+            fout.write(json.dumps(data, indent=2))
 
 
-def create_activity_heatmap(activity_df, output):
-    """produce json file in record format to be used as a heatmap
+def save_table_output(
+    df: pd.DataFrame,
+    output_dir: Path,
+    fstem: str = "table",
+    index: bool = False,
+    # include_web_output: bool,
+) -> None:
+    fpath = output_dir.joinpath(f"{fstem}.csv").resolve()
+    logger.debug(f"Saving {fpath}")
+    df.to_csv(fpath, index=index)
 
-    Args:
-        activity_df a pandas dataframe with activity values
-    """
-    logging.debug("Writing Heatmap output...")
 
-    # save the big dataframe as json file for heatmap - remove filename column first though
-    heatmap_df = activity_df.drop(columns=["filename"])  # remove filename column
-    heatmap_df = heatmap_df.rename_axis(
-        "Sample"
-    ).reset_index()  # add index back as a column
-    result = heatmap_df.to_json(orient="records", index=True)
-    parsed = json.loads(result)
-
-    outfile = output.joinpath("activity.json").resolve()
-
-    with open(outfile, "w") as fout:
-        fout.write(json.dumps(parsed, indent=2))
+def save_communities(
+    communites: List[community_detection.Community],
+    output_dir: Path,
+    include_web_output: bool,
+) -> None:
+    root_com_dir = output_dir / "communities"
+    root_com_dir.mkdir(exist_ok=True)
+    for idc, comm in enumerate(communites):
+        com_dir = root_com_dir / str(idc)
+        com_dir.mkdir(
+            exist_ok=True,
+        )
+        save_association_network(
+            comm.graph, com_dir, include_web_output=include_web_output
+        )
+        save_table_output(comm.table, com_dir, fstem="table")
+        save_table_output(comm.assay, com_dir, fstem="assay", index=True)
