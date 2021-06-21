@@ -80,8 +80,8 @@ def load_basket_data(bpath: Path, configd: Dict) -> List[Dict]:
     df = pd.read_csv(bpath.resolve())
     MS1COLS = configd["MS1COLS"]
     FILENAMECOL = configd["FILENAMECOL"]
-    cols_to_keep = MS1COLS + [FILENAMECOL]
-    ms1df = pd.DataFrame(list(set(df[cols_to_keep].itertuples(index=False))))
+    cols_to_keep = list(set(MS1COLS + [FILENAMECOL]))
+    ms1df = df[cols_to_keep].copy(deep=True)
     baskets = []
     for bd in ms1df.to_dict("records"):
         bd["samples"] = filenames2samples(bd[FILENAMECOL])
@@ -133,13 +133,14 @@ def create_output_table(baskets: List[Dict], scores: List[Score]) -> pd.DataFram
         baskets (list): List of basketed data loaded with load_baskets
         scored (Score): Score namedtuple from score_baskets
     """
-    logger.debug("Writing tabular output...")
+    logger.debug("Generating tabular output...")
     data = []
     for i, bask in enumerate(baskets):
         # bid = f"Basket_{i}"
         bid = i
         freq = len(bask["samples"])
-        samplelist = json.dumps(sorted(bask["samples"]))
+        # samplelist = json.dumps(sorted(bask["samples"]))
+        samplelist = "|".join(sorted(bask["samples"]))
         try:
             act = scores[i].activity
             clust = scores[i].cluster
@@ -272,7 +273,6 @@ def create_association_network(baskets: List[Dict], scores: List[Score]) -> nx.G
     for e in edges:
         G.add_edge(*e)
 
-    logger.debug(nx.info(G))
     return G
 
 
@@ -284,12 +284,15 @@ def save_association_network(
     """Save network output(s) to specified output directory"""
     outfile_gml = output_dir.joinpath("network.graphml").resolve()
 
+    logger.info("Precomputing network layout")
     # Pre-calculate and add layout
     pos = nx.spring_layout(G)
     for node, (x, y) in pos.items():
         G.nodes[node]["x"] = float(x)
         G.nodes[node]["y"] = float(y)
     logger.debug(f"Saving {outfile_gml}")
+    logger.debug(nx.info(G))
+
     nx.write_graphml(G, outfile_gml, prettyprint=True)
 
     if include_web_output:
@@ -317,6 +320,7 @@ def save_table_output(
     index: bool = False,
     # include_web_output: bool,
 ) -> None:
+    """Pandas To CSV is quite slow here..."""
     fpath = output_dir.joinpath(f"{fstem}.csv").resolve()
     logger.debug(f"Saving {fpath}")
     df.to_csv(fpath, index=index)

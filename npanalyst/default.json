@@ -16,7 +16,7 @@
     "BasketInfo": {
         "ColumnsToFeature": "PrecMz,RetTime,PrecIntensity",
         "BasketMSLevel": 1,
-        "CalcBasketInfo": true,
+        "CalcBasketInfo": false,
         "RequiredReplicates": 1
     },
     "ActivityFileInfo": {

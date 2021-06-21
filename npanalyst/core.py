@@ -149,6 +149,8 @@ def basket_replicated(datadir: Path, output_dir: Path, configd: Dict) -> None:
     logger.info("Generating Baskets")
     ndf = msutils.collapse_connected_components(con_comps, df, configd, min_reps=1)
     ndf["freq"] = ndf[FILENAMECOL].apply(lambda x: len(x.split("|")))
+    # Sort baskets by RT then MZ
+    ndf.sort_values(["RetTime", "PrecMz"], inplace=True)
     logger.info(f"Found a total of {len(ndf)} basketed features")
     logger.info("Saving output file")
     # create the basketed.csv file
@@ -163,7 +165,7 @@ def import_data(input_file: Path, output_dir: Path, mstype: str) -> None:
     Saves the CSV files as `output_dir/basketed.csv`.
     """
     # Extra guard - probably unnecessary
-    assert mstype.lower() in ("gnps", "mzmine")
+    assert mstype in ("gnps", "mzmine")
     if mstype == "gnps":
         logger.info(f"Importing molecular network from {input_file}")
         basket_df = convert.gnps(input_file)
@@ -174,6 +176,8 @@ def import_data(input_file: Path, output_dir: Path, mstype: str) -> None:
     logger.info(f"Found a total of {len(basket_df)} basketed features")
     logger.info("Saving output file")
     output_dir.mkdir(exist_ok=True, parents=True)
+    # Sort baskets by RT then MZ
+    basket_df.sort_values(["RetTime", "PrecMz"], inplace=True)
     basket_df.to_csv(output_dir.joinpath("basketed.csv"), index=False)
 
 
