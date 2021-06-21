@@ -96,7 +96,9 @@ def run_replicate(
     config: Optional[Path] = None,
 ):
     """Run replication comparison on input mzML data."""
-    setup_logging(verbose=verbose, fpath=Path() / "log.txt")
+    if not output_path.exists():
+        output_path.mkdir(parents=True)
+    setup_logging(verbose=verbose, fpath=output_path / "npanalyst.log")
     configd = core.load_config(config_path=config)
     core.process_replicates(
         input_path,
@@ -160,7 +162,9 @@ def run_basketing(
     config: Optional[Path] = None,
 ):
     """Run basketting from replicate compared input data."""
-    setup_logging(verbose=verbose)
+    if not output_path.exists():
+        output_path.mkdir(parents=True)
+    setup_logging(verbose=verbose, fpath=output_path / "npanalyst.log")
     configd = core.load_config(config_path=config)
     core.basket_replicated(input_path, output_path, configd)
 
@@ -221,7 +225,9 @@ def run_import(
     verbose: bool,
 ):
     """Run import of MZmine for GNPS input formats to standard basket format."""
-    setup_logging(verbose=verbose)
+    if not output_path.exists():
+        output_path.mkdir(parents=True)
+    setup_logging(verbose=verbose, fpath=output_path / "npanalyst.log")
     core.import_data(input_path, output_path, mstype.lower())
 
 
@@ -307,7 +313,9 @@ def run_activity(
     config: Optional[Path] = None,
 ):
     """Run activity integration from standard input format."""
-    setup_logging(verbose=verbose)
+    if not output_path.exists():
+        output_path.mkdir(parents=True)
+    setup_logging(verbose=verbose, fpath=output_path / "npanalyst.log")
     configd = core.load_config(config_path=config)
     core.bioactivity_mapping(
         basket_path=input_path,
@@ -316,23 +324,3 @@ def run_activity(
         configd=configd,
         include_web_output=include_web_output,
     )
-
-
-# TODO: Determine if needed
-############################
-##      HELPER FXNS
-############################
-# def gt_zero(ctx, param, value):
-#     try:
-#         assert value > 0
-#         return value
-#     except AssertionError:
-#         raise click.BadParameter(f"{param} must be greater than 0.")
-
-
-# def gte_zero(ctx, param, value):
-#     try:
-#         assert value >= 0
-#         return value
-#     except AssertionError:
-#         raise click.BadParameter(f"{param} must be greater than or equal to 0.")
