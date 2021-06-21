@@ -5,12 +5,11 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import networkx as nx
-from networkx.utils.decorators import random_state
 import numpy as np
 import pandas as pd
 from joblib import Parallel, delayed
 
-from npanalyst import activity, community_detection, msutils
+from npanalyst import activity, community_detection, msutils, convert
 from npanalyst.logging import get_logger
 
 logger = get_logger()
@@ -151,8 +150,31 @@ def basket_replicated(datadir: Path, output_dir: Path, configd: Dict) -> None:
     ndf = msutils.collapse_connected_components(con_comps, df, configd, min_reps=1)
     ndf["freq"] = ndf[FILENAMECOL].apply(lambda x: len(x.split("|")))
     logger.info(f"Found a total of {len(ndf)} basketed features")
+    logger.info("Saving output file")
     # create the basketed.csv file
     ndf.to_csv(output_dir.joinpath("basketed.csv"), index=False)
+
+
+def import_data(input_file: Path, output_dir: Path, mstype: str) -> None:
+    """Convert the GNPS molecular network or  MZmine feature list to a list of
+    basketed features with the same columns as the `basketed.csv` output from
+    the mzML pipeline.
+
+    Saves the CSV files as `output_dir/basketed.csv`.
+    """
+    # Extra guard - probably unnecessary
+    assert mstype.lower() in ("gnps", "mzmine")
+    if mstype == "gnps":
+        logger.info(f"Importing molecular network from {input_file}")
+        basket_df = convert.gnps(input_file)
+    elif mstype == "mzmine":
+        logger.info(f"Importing MZmine features from {input_file}")
+        basket_df = convert.mzmine(input_file)
+    # create the basketed.csv file
+    logger.info(f"Found a total of {len(basket_df)} basketed features")
+    logger.info("Saving output file")
+    output_dir.mkdir(exist_ok=True, parents=True)
+    basket_df.to_csv(output_dir.joinpath("basketed.csv"), index=False)
 
 
 def bioactivity_mapping(
@@ -162,6 +184,7 @@ def bioactivity_mapping(
     configd: Dict,
     include_web_output: bool,
 ) -> None:
+    """Performs compound activity mapping on basketed features."""
     logger.debug("Loading baskets and activity data")
     baskets = activity.load_basket_data(basket_path, configd)
     activity_df = activity.load_activity_data(activity_path)
@@ -187,6 +210,9 @@ def create_communitites(
     activity_df: pd.DataFrame,
     basket_df: pd.DataFrame,
 ) -> Tuple[nx.Graph, List[community_detection.Community]]:
+    """Detect communities in compound activity mapping association network and returns
+    newly annotated network and a list of Community named tuples for export
+    """
     logger.info("Building communities ...")
     communities = community_detection.louvain(G)
     # Add the community number as a new attribute ('community') to each sample and basket node
@@ -195,6 +221,4 @@ def create_communitites(
     communities = community_detection.detect_communities(
         activity_df, community_df, basket_df, G
     )
-    # create cluster folder and structure with json files for heatmaps
-    # return community_detection.run(act_path, outdir)
     return G, communities

@@ -3,7 +3,7 @@ from typing import Optional
 
 import click
 
-from npanalyst import __version__ as VERSION
+from npanalyst import __version__ as VERSION, exceptions
 from npanalyst import core
 from npanalyst.logging import setup_logging, get_logger
 
@@ -45,6 +45,8 @@ def cli():
     type=Path,
     required=False,
     help="Output directory",
+    default=".",
+    show_default=True,
 )
 @click.option(
     "--config",
@@ -76,7 +78,7 @@ def run_replicate_command(
 ):
     """Run replication comparison on input mzML data."""
     if output_path is None:
-        output_path = input_path / "output"
+        output_path = Path()
     run_replicate(
         input_path=input_path,
         output_path=output_path,
@@ -120,6 +122,8 @@ def run_replicate(
     "-o",
     type=Path,
     required=False,
+    default=".",
+    show_default=True,
     help="Output directory",
 )
 @click.option(
@@ -143,7 +147,7 @@ def run_basketing_command(
 ):
     """Run basketting from replicate compared input data."""
     if output_path is None:
-        output_path = input_path / "output"
+        output_path = Path()
     run_basketing(
         input_path=input_path, output_path=output_path, verbose=verbose, config=config
     )
@@ -165,25 +169,60 @@ def run_basketing(
 ##      IMPORT
 ############################
 # TODO: Implement
-# @cli.command("import")
-# @click.argument("input_path")
-# @click.option(
-#     "--output_path",
-#     "-o",
-#     help="Output directory",
-#     default=".",
-#     show_default=True,
-# )
-# def run_import(
-#     **kwargs,
-#     # input_path: Path,
-# ):
-#     """Run import of MZmine for GNPS input formats to standard basket format.
-#     Use this prior to the `activity` step.
+@cli.command("import")
+@click.option(
+    "--input_path",
+    "-i",
+    type=Path,
+    required=True,
+    help="Path to input file",
+)
+@click.option(
+    "--output_path",
+    "-o",
+    help="Output directory",
+    type=Path,
+    default=".",
+    show_default=True,
+)
+@click.option(
+    "--mstype",
+    "-t",
+    type=click.Choice(["GNPS", "MZmine"], case_sensitive=False),
+    help="Select an import data format",
+)
+@click.option(
+    "--verbose/--no-verbose",
+    "-v/",
+    default=False,
+    show_default=True,
+    help="Verbose or quiet logging",
+)
+def run_import_command(
+    input_path: Path,
+    mstype: str,
+    verbose: bool,
+    output_path: Optional[Path] = None,
+):
+    """Run import of MZmine for GNPS input formats to standard basket format.
+    Use this prior to the `activity` step.
+    """
+    if output_path is None:
+        output_path = Path()
+    run_import(
+        input_path=input_path, output_path=output_path, verbose=verbose, mstype=mstype
+    )
 
-#     INPUT_Path is the path to the input file.
-#     """
-#     print(kwargs)
+
+def run_import(
+    input_path: Path,
+    output_path: Path,
+    mstype: str,
+    verbose: bool,
+):
+    """Run import of MZmine for GNPS input formats to standard basket format."""
+    setup_logging(verbose=verbose)
+    core.import_data(input_path, output_path, mstype.lower())
 
 
 ############################
@@ -203,6 +242,8 @@ def run_basketing(
     type=Path,
     required=False,
     help="Output directory",
+    default=".",
+    show_default=True,
 )
 @click.option(
     "--activity",
@@ -246,7 +287,7 @@ def run_activity_command(
     If not using mzML pipeline, first run `import` for MZmine or GNPS inputs.
     """
     if output_path is None:
-        output_path = input_path / "output"
+        output_path = Path()
     run_activity(
         input_path=input_path,
         output_path=output_path,
