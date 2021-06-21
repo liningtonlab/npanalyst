@@ -126,7 +126,7 @@ def score_baskets(
     return scores
 
 
-def create_output_table(baskets: List[Dict], scores: List[Score]) -> pd.DataFrame:
+def create_basket_table(baskets: List[Dict], scores: List[Score]) -> pd.DataFrame:
     """produce output CSV consistent with bokeh server input
 
     Args:
@@ -193,25 +193,34 @@ Basket = namedtuple(
 )
 
 
-def create_association_network(baskets: List[Dict], scores: List[Score]) -> nx.Graph:
+def create_association_network(
+    baskets: List[Dict], scores: List[Score], configd: Dict
+) -> nx.Graph:
+    """Generate an assocation network of baskets and sampples
+    filtering based on the ACTIVITYTHRESHOLD and CLUSTERTHRESHOLD.
+    """
     logger.info("Generating association network...")
     edges = []
+    # List of named tuples for convenient node creation
+    # using built in **as_dict()
     basket_info = []
     samples = set()
     activity_scores = []
+    act_thresh = configd["ACTIVITYTHRESHOLD"]
+    clust_thresh = configd["CLUSTERTHRESHOLD"]
 
     # Need to remove basket ids that were removed during the automatic cutoff threshold
     for i, bask in enumerate(baskets):
         bid = i
-        try:
-            act = scores[i].activity
-            activity_scores.append(act)
-            clust = scores[i].cluster
+        act = scores[i].activity
+        activity_scores.append(act)
+        clust = scores[i].cluster
+        # TODO: verify this is the correct intention of filtering
+        if act > act_thresh and abs(clust) > clust_thresh:
             samples.update(bask["samples"])
-
             for samp in bask["samples"]:
                 edges.append((bid, samp))
-
+            # Format this baskets for use in the networks
             basket_info.append(
                 Basket(
                     bid,
@@ -222,58 +231,60 @@ def create_association_network(baskets: List[Dict], scores: List[Score]) -> nx.G
                     round(clust, 2),
                 )
             )
-            # logger.debug(basket_info)
-
-        except KeyError as e:
-            logger.warning(e)
 
     # Construct graph
     G = nx.Graph()
     for samp in samples:
         G.add_node(samp, type_="sample")
-        G.nodes[samp]["radius"] = 6
-        G.nodes[samp]["depth"] = 0
-        G.nodes[samp]["color"] = "rgb(51,51,51)"
+
     for b in basket_info:
         G.add_node(b.id, **b._asdict(), type_="basket")
-        # set node size based on activity score value - should range between 3 to 10 like scatterplot
-        # output_start + ((output_end - output_start) * (input - input_start)) / (input_end - input_start)
-        nodeSize = round(
-            3
-            + ((10 - 3) * (G.nodes[b.id]["activity_score"] - min(activity_scores)))
-            / (max(activity_scores) - min(activity_scores))
-        )
-
-        # G.nodes[b.id]['radius'] = 4
-        G.nodes[b.id]["radius"] = nodeSize
-        G.nodes[b.id]["depth"] = 1
-        # G.nodes[b.id]['color'] = "rgb(97, 205, 187)"
-
-        # colors are hard-coded - change this for future versions
-        if G.nodes[b.id]["cluster_score"] > 0.75:
-            color = "rgb(165,0,38)"  # red color
-        elif G.nodes[b.id]["cluster_score"] > 0.5:
-            color = "rgb(215,48,39)"
-        elif G.nodes[b.id]["cluster_score"] > 0.25:
-            color = "rgb(244,109,67)"
-        elif G.nodes[b.id]["cluster_score"] > 0:
-            color = "rgb(253,174,97)"
-        elif G.nodes[b.id]["cluster_score"] > -0.25:
-            color = "rgb(171,217,233)"
-        elif G.nodes[b.id]["cluster_score"] > -0.5:
-            color = "rbg(116,173,209)"
-        elif G.nodes[b.id]["cluster_score"] > -0.75:
-            color = "rgb(69,117,180)"
-        else:
-            color = "rgb(49,54,149)"  # blue color
-
-        # set color for the basket node
-        G.nodes[b.id]["color"] = color
 
     for e in edges:
         G.add_edge(*e)
 
     return G
+
+
+# def add_network_styling(G: nx.Graph) -> None:
+#     """Add's Nima's styling to graph inplace"""
+#         G.nodes[samp]["radius"] = 6
+#         G.nodes[samp]["depth"] = 0
+#         G.nodes[samp]["color"] = "rgb(51,51,51)"
+
+#         # set node size based on activity score value - should range between 3 to 10 like scatterplot
+#         # output_start + ((output_end - output_start) * (input - input_start)) / (input_end - input_start)
+#         node_size = round(
+#             3
+#             + ((10 - 3) * (G.nodes[b.id]["activity_score"] - min(activity_scores)))
+#             / (max(activity_scores) - min(activity_scores))
+#         )
+
+#         # G.nodes[b.id]['radius'] = 4
+#         G.nodes[b.id]["radius"] = node_size
+#         G.nodes[b.id]["depth"] = 1
+#         # G.nodes[b.id]['color'] = "rgb(97, 205, 187)"
+
+#         # colors are hard-coded - change this for future versions
+#         if G.nodes[b.id]["cluster_score"] > 0.75:
+#             color = "rgb(165,0,38)"  # red color
+#         elif G.nodes[b.id]["cluster_score"] > 0.5:
+#             color = "rgb(215,48,39)"
+#         elif G.nodes[b.id]["cluster_score"] > 0.25:
+#             color = "rgb(244,109,67)"
+#         elif G.nodes[b.id]["cluster_score"] > 0:
+#             color = "rgb(253,174,97)"
+#         elif G.nodes[b.id]["cluster_score"] > -0.25:
+#             color = "rgb(171,217,233)"
+#         elif G.nodes[b.id]["cluster_score"] > -0.5:
+#             color = "rbg(116,173,209)"
+#         elif G.nodes[b.id]["cluster_score"] > -0.75:
+#             color = "rgb(69,117,180)"
+#         else:
+#             color = "rgb(49,54,149)"  # blue color
+
+#         # set color for the basket node
+#         G.nodes[b.id]["color"] = color
 
 
 def save_association_network(
@@ -284,7 +295,7 @@ def save_association_network(
     """Save network output(s) to specified output directory"""
     outfile_gml = output_dir.joinpath("network.graphml").resolve()
 
-    logger.info("Precomputing network layout")
+    logger.debug("Precomputing network layout")
     # Pre-calculate and add layout
     pos = nx.spring_layout(G)
     for node, (x, y) in pos.items():
@@ -298,6 +309,7 @@ def save_association_network(
     if include_web_output:
         outfile_cyjs = output_dir.joinpath("network.cyjs").resolve()
         data = nx.cytoscape_data(G)
+        # Old code for cytoscape JS positioning information
         #     scale = len(G.nodes()) * 10
         #     for node, ndata in G.nodes(data=True):
 

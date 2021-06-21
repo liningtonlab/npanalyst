@@ -115,7 +115,7 @@ def process_replicates(
             many workers for processing. If there is limited system memory this might be good to set low.
     """
     outputdir.joinpath("replicated").mkdir(exist_ok=True, parents=True)
-    paths_iter = msutils.generate_rep_df_paths(datadir)
+    paths_iter = msutils.collect_replicate_paths(datadir)
     Parallel(n_jobs=max_workers, backend="multiprocessing")(
         delayed(replicate_compare_sample)(sample, paths, configd, outputdir)
         for sample, paths in paths_iter
@@ -194,7 +194,7 @@ def bioactivity_mapping(
     activity_df = activity.load_activity_data(activity_path)
     logger.info("Computing activity and cluster scores")
     scores = activity.score_baskets(baskets, activity_df)
-    basket_df = activity.create_output_table(baskets, scores)
+    basket_df = activity.create_basket_table(baskets, scores)
     G = activity.create_association_network(baskets, scores)
     logger.info("Computing network communities")
     G, communities = create_communitites(G, activity_df, basket_df)

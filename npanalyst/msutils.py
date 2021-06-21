@@ -14,13 +14,12 @@ from npanalyst.logging import get_logger
 logger = get_logger()
 
 
-def generate_rep_df_paths(datadir: Path) -> Iterator[Tuple[str, List[Path]]]:
+def collect_replicate_paths(datadir: Path) -> Iterator[Tuple[str, List[Path]]]:
     """
-    generator func which yields concatenated replica file dataframes
+    generator func which yields concatenated replica paths
 
     Args:
         datadir (str or Path): data directory path
-        ext: extension we are considering
     """
     # allow mzml or csv, if files are mixed this will cause issues
     # extensions = ("mzml", "csv")
@@ -97,7 +96,7 @@ def get_hyperrectangles(df: pd.DataFrame, errorcols: Iterable) -> np.ndarray:
         df (pd.DataFrame): datafame with error cols in format <datacol>_low and <datacol>_high
 
     Returns:
-        np.ndarray: array of hyperrectangles in format [[x_low,y_low...x_high,y_high]]
+        np.ndarray: array of hyperrectangles in format [[x_low,y_low,z_low...x_high,y_high,z_low]]
     """
     order = errorcols
     return df[order].values
