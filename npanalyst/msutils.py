@@ -146,13 +146,7 @@ def generate_connected_components(
             c = {i}
             while search_idxs:
                 search = search_idxs.pop()
-                try:
-                    neighbors = set(rtree.intersection(rects[search]))
-                except Exception as e:
-                    logger.error(e)
-                    logger.error(rects[search])
-                    raise e
-
+                neighbors = set(rtree.intersection(rects[search]))
                 for n in neighbors - seen:  # set math
                     c.add(n)
                     search_idxs.append(n)
@@ -245,7 +239,7 @@ def collapse_connected_components(
     return ndf
 
 
-def make_repdf(datadir: Path) -> pd.DataFrame:
+def create_all_replicate_df(datadir: Path) -> pd.DataFrame:
     """
     Make a concatonated dataframe from all the replicated data files.
     Assumes filenames end in 'replicated.csv' (as done in the replicate step from this toolchain)
