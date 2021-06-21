@@ -132,7 +132,7 @@ def basket_replicated(datadir: Path, output_dir: Path, configd: Dict) -> None:
     MS1ERRORCOLS = configd["MS1ERRORCOLS"]
     ERRORINFO = configd["ERRORINFO"]
     logger.info("Loading Rep Files")
-    df = msutils.make_repdf(datadir)
+    df = msutils.create_all_replicate_df(datadir)
     orig_len = df.shape[0]
 
     # need to handle multiple file name cols from legacy/mixed input files
