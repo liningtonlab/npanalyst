@@ -19,12 +19,6 @@
         "CalcBasketInfo": false,
         "RequiredReplicates": 1
     },
-    "ActivityFileInfo": {
-        "NameColumn": 0
-    },
-    "BokehInfo": {
-        "ColumnMap": null
-    },
     "NetworkInfo": {
         "ActivityThreshold": 3,
         "ClusterThreshold": -1

@@ -18,11 +18,8 @@ logger = get_logger()
 HERE = Path(__file__).resolve().parent
 
 
-def load_config(config_path: Optional[Path] = None) -> Dict:
-    """loads the config_path config file and stores a bunch of values in a flatten dict
-    config_path (str, optional): Defaults to 'default.json'.
-        path to the config file, defaults can be overridden.
-    """
+def load_raw_config(config_path: Optional[Path] = None) -> Dict:
+    """Loads raw (overly-structures) config dictionary"""
     if config_path is None:
         config_path = HERE / "default.json"
     try:
@@ -34,17 +31,25 @@ def load_config(config_path: Optional[Path] = None) -> Dict:
     except JSONDecodeError as e:
         logger.error("Invalid JSON config file")
         raise e
+    return config
 
+
+def load_config(config_path: Optional[Path] = None) -> Dict:
+    """loads the config_path config file and stores a bunch of values in a flatten dict
+    config_path (str, optional): Defaults to 'default.json'.
+        path to the config file, defaults can be overridden.
+    """
+    config = load_raw_config(config_path)
     MS1COLSTOMATCH = config["MSFileInfo"]["MS1ColsToMatch"].split(",")
     configd = {
         "FILENAMECOL": config["MSFileInfo"]["FileNameCol"],
+        "MSLEVEL": int(config["MSFileInfo"]["MSLevel"]),
         "MS1COLS": config["MSFileInfo"]["MS1Cols"].split(","),
         "MS1COLSTOMATCH": MS1COLSTOMATCH,
         "MS1ERRORCOLS": msutils.make_error_col_names(MS1COLSTOMATCH),
         "CALCBASKETINFO": config["BasketInfo"]["CalcBasketInfo"],
         "BASKETMSLEVEL": int(config["BasketInfo"]["BasketMSLevel"]),
         "MINREPS": int(config["ReplicateInfo"]["RequiredReplicates"]),
-        "MSLEVEL": int(config["MSFileInfo"]["MSLevel"]),
         "ACTIVITYTHRESHOLD": float(config["NetworkInfo"]["ActivityThreshold"]),
         "CLUSTERTHRESHOLD": float(config["NetworkInfo"]["ClusterThreshold"]),
     }
