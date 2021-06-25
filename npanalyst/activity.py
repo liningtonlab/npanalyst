@@ -69,7 +69,10 @@ def load_basket_data(
     activity_samples = activity_df.index.to_list()
     bpath = Path(bpath)
     df = pd.read_csv(bpath.resolve())
-    MS1COLS = configd["BASKETFEATURES"]
+    mmcols = []
+    for col in configd["BASKETMINMAXCOLS"]:
+        mmcols += [f"Min{col}", f"Max{col}"]
+    MS1COLS = configd["BASKETFEATURES"] + mmcols
     FILENAMECOL = configd["FILENAMECOL"]
     cols_to_keep = list(set(MS1COLS + [FILENAMECOL]))
     ms1df = df[cols_to_keep].copy(deep=True)
@@ -135,6 +138,8 @@ def create_feature_table(baskets: List[Dict], scores: List[Score]) -> pd.DataFra
                 bid,
                 bask["PrecMz"],
                 bask["PrecIntensity"],
+                bask["MinPrecIntensity"],
+                bask["MaxPrecIntensity"],
                 bask["RetTime"],
                 samplelist,
                 act,
@@ -149,6 +154,8 @@ def create_feature_table(baskets: List[Dict], scores: List[Score]) -> pd.DataFra
         "BasketID",
         "PrecMz",
         "PrecIntensity",
+        "MinPrecIntensity",
+        "MaxPrecIntensity",
         "RetTime",
         "SampleList",
         "ACTIVITY_SCORE",
@@ -158,7 +165,13 @@ def create_feature_table(baskets: List[Dict], scores: List[Score]) -> pd.DataFra
     return df
 
 
-_BASKET_KEYS = ["PrecMz", "RetTime", "PrecIntensity"]
+_BASKET_KEYS = [
+    "PrecMz",
+    "RetTime",
+    "PrecIntensity",
+    "MinPrecIntensity",
+    "MaxPrecIntensity",
+]
 Basket = namedtuple(
     "Basket",
     [
@@ -170,6 +183,8 @@ Basket = namedtuple(
         "PrecMz",
         "RetTime",
         "PrecIntensity",
+        "MinPrecIntensity",
+        "MaxPrecIntensity",
         # Actvity Data to carry forward
         "activity_score",
         "cluster_score",
