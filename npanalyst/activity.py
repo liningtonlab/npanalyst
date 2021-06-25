@@ -10,8 +10,7 @@ import pandas as pd
 
 import re
 
-from networkx.readwrite import json_graph
-from npanalyst import logging
+# from networkx.readwrite import json_graph
 
 from npanalyst.logging import get_logger
 
@@ -20,26 +19,14 @@ logger = get_logger()
 Score = namedtuple("Score", "activity cluster")
 
 
-# def filename2sample(filename: str, fn_delim: str = "_", sampleidx: int = 1) -> str:
-#     sample = filename.split(fn_delim)[sampleidx]
-#     return sample
-
-
-def filenames2samples(
-    filenames: List, delim: str = "|", fn_delim: str = "_", sampleidx: int = 0
-) -> Dict:
-
-    samples = set()
-    for filename in filenames.split(delim):
-        if re.search("_[0-9]$", filename):
-            samples.add(filename.split(fn_delim)[sampleidx])
-        else:
-            samples.add(filename)
-    # samples = {
-    #     #filename.split(fn_delim)[sampleidx] for filename in filenames.split(delim)
-    #     filename for filename in filenames.split(delim)
-    # }
-    return samples
+def filenames2samples(filenames: str, all_samples: List) -> List:
+    """Aligns activity sames to filenames string for each basketed feature"""
+    delims = "[_.-]"
+    found_samples = set()
+    match = re.findall(f"{delims}?({'|'.join(all_samples)}){delims}", filenames)
+    if match:
+        found_samples.update(match)
+    return sorted(list(found_samples))
 
 
 def feature_synthetic_fp(act_df: pd.DataFrame, samples: List) -> np.ndarray:
@@ -75,16 +62,20 @@ def cluster_score(fpd: pd.DataFrame, samples: List) -> float:
     return score
 
 
-def load_basket_data(bpath: Path, configd: Dict) -> List[Dict]:
+def load_basket_data(
+    bpath: Path, activity_df: pd.DataFrame, configd: Dict
+) -> List[Dict]:
+    """Loads basketed data and aligns samples from Activity file to filenames"""
+    activity_samples = activity_df.index.to_list()
     bpath = Path(bpath)
     df = pd.read_csv(bpath.resolve())
-    MS1COLS = configd["MS1COLS"]
+    MS1COLS = configd["BASKETFEATURES"]
     FILENAMECOL = configd["FILENAMECOL"]
     cols_to_keep = list(set(MS1COLS + [FILENAMECOL]))
     ms1df = df[cols_to_keep].copy(deep=True)
     baskets = []
     for bd in ms1df.to_dict("records"):
-        bd["samples"] = filenames2samples(bd[FILENAMECOL])
+        bd["samples"] = filenames2samples(bd[FILENAMECOL], activity_samples)
         baskets.append(bd)
     return baskets
 
@@ -96,13 +87,9 @@ def load_activity_data(path: Path, samplecol: int = 0) -> pd.DataFrame:
 
     Sets the samplecol as the index
     """
-    name = path.stem
     # df = pd.read_csv(path).fillna(value=0)  # na is not the same as 0!
     df = pd.read_csv(path)
-    # df["filename"] = name
-
     df.set_index(df.columns[samplecol], inplace=True)
-
     return df
 
 
@@ -126,7 +113,7 @@ def score_baskets(
     return scores
 
 
-def create_basket_table(baskets: List[Dict], scores: List[Score]) -> pd.DataFrame:
+def create_feature_table(baskets: List[Dict], scores: List[Score]) -> pd.DataFrame:
     """produce output CSV consistent with bokeh server input
 
     Args:
@@ -138,7 +125,6 @@ def create_basket_table(baskets: List[Dict], scores: List[Score]) -> pd.DataFram
     for i, bask in enumerate(baskets):
         # bid = f"Basket_{i}"
         bid = i
-        freq = len(bask["samples"])
         # samplelist = json.dumps(sorted(bask["samples"]))
         samplelist = "|".join(sorted(bask["samples"]))
         try:
@@ -147,7 +133,6 @@ def create_basket_table(baskets: List[Dict], scores: List[Score]) -> pd.DataFram
 
             row = (
                 bid,
-                freq,
                 bask["PrecMz"],
                 bask["PrecIntensity"],
                 bask["RetTime"],
@@ -162,7 +147,6 @@ def create_basket_table(baskets: List[Dict], scores: List[Score]) -> pd.DataFram
 
     columns = (
         "BasketID",
-        "Frequency",
         "PrecMz",
         "PrecIntensity",
         "RetTime",
@@ -216,7 +200,7 @@ def create_association_network(
         activity_scores.append(act)
         clust = scores[i].cluster
         # TODO: verify this is the correct intention of filtering
-        if act > act_thresh and abs(clust) > clust_thresh:
+        if act >= act_thresh and clust >= clust_thresh:
             samples.update(bask["samples"])
             for samp in bask["samples"]:
                 edges.append((bid, samp))

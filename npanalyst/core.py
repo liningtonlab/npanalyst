@@ -49,6 +49,8 @@ def load_config(config_path: Optional[Path] = None) -> Dict:
         "MS1ERRORCOLS": msutils.make_error_col_names(MS1COLSTOMATCH),
         "CALCBASKETINFO": config["BasketInfo"]["CalcBasketInfo"],
         "BASKETMSLEVEL": int(config["BasketInfo"]["BasketMSLevel"]),
+        "BASKETMINMAXCOLS": config["BasketInfo"]["MinMaxCols"].split(","),
+        "BASKETFEATURES": config["BasketInfo"]["ColumnsToFeature"].split(","),
         "MINREPS": int(config["ReplicateInfo"]["RequiredReplicates"]),
         "ACTIVITYTHRESHOLD": float(config["NetworkInfo"]["ActivityThreshold"]),
         "CLUSTERTHRESHOLD": float(config["NetworkInfo"]["ClusterThreshold"]),
@@ -138,12 +140,12 @@ def basket_replicated(datadir: Path, output_dir: Path, configd: Dict) -> None:
     ERRORINFO = configd["ERRORINFO"]
     logger.info("Loading Rep Files")
     df = msutils.create_all_replicate_df(datadir)
-    orig_len = df.shape[0]
 
-    # need to handle multiple file name cols from legacy/mixed input files
-    df[FILENAMECOL] = np.where(df[FILENAMECOL].isnull(), df["Sample"], df[FILENAMECOL])
-    df.dropna(subset=[FILENAMECOL], inplace=True)
-    logger.info(f"Dropped {orig_len-df.shape[0]} rows missing values in {FILENAMECOL}")
+    # orig_len = df.shape[0]
+    # # need to handle multiple file name cols from legacy/mixed input files
+    # df[FILENAMECOL] = np.where(df[FILENAMECOL].isnull(), df["Sample"], df[FILENAMECOL])
+    # df.dropna(subset=[FILENAMECOL], inplace=True)
+    # logger.info(f"Dropped {orig_len-df.shape[0]} rows missing values in {FILENAMECOL}")
     msutils.add_error_cols(df, configd["MS1COLSTOMATCH"], ERRORINFO)
     logger.info("Making Rtree Index")
     rtree = msutils.build_rtree(df, MS1ERRORCOLS)
@@ -152,8 +154,9 @@ def basket_replicated(datadir: Path, output_dir: Path, configd: Dict) -> None:
         rtree, msutils.get_hyperrectangles(df, MS1ERRORCOLS)
     )
     logger.info("Generating Baskets")
-    ndf = msutils.collapse_connected_components(con_comps, df, configd, min_reps=1)
-    ndf["freq"] = ndf[FILENAMECOL].apply(lambda x: len(x.split("|")))
+    ndf = msutils.collapse_connected_components(
+        con_comps, df, configd, min_reps=1, minmax=True
+    )
     # Sort baskets by RT then MZ
     ndf.sort_values(["RetTime", "PrecMz"], inplace=True)
     logger.info(f"Found a total of {len(ndf)} basketed features")
@@ -195,12 +198,12 @@ def bioactivity_mapping(
 ) -> None:
     """Performs compound activity mapping on basketed features."""
     logger.debug("Loading baskets and activity data")
-    baskets = activity.load_basket_data(basket_path, configd)
     activity_df = activity.load_activity_data(activity_path)
+    baskets = activity.load_basket_data(basket_path, activity_df, configd)
     logger.info("Computing activity and cluster scores")
     scores = activity.score_baskets(baskets, activity_df)
-    basket_df = activity.create_basket_table(baskets, scores)
-    G = activity.create_association_network(baskets, scores)
+    basket_df = activity.create_feature_table(baskets, scores)
+    G = activity.create_association_network(baskets, scores, configd)
     logger.info("Computing network communities")
     G, communities = create_communitites(G, activity_df, basket_df)
     logger.info("Saving output files")

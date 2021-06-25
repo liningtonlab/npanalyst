@@ -1,6 +1,6 @@
 {
     "MSFileInfo": {
-        "FileNameCol": "Sample",
+        "FileNameCol": "UniqueFiles",
         "MS1Cols": "PrecMz,RetTime,PrecIntensity",
         "MS1ColsToMatch": "PrecMz,RetTime",
         "MSLevel": 1
@@ -14,13 +14,14 @@
         "RequiredReplicates": 2
     },
     "BasketInfo": {
-        "ColumnsToFeature": "PrecMz,RetTime,PrecIntensity",
+        "ColumnsToFeature": "PrecMz,RetTime,PrecIntensity,UniqueFiles",
+        "MinMaxCols": "PrecIntensity",
         "BasketMSLevel": 1,
         "CalcBasketInfo": false,
         "RequiredReplicates": 1
     },
     "NetworkInfo": {
         "ActivityThreshold": 3,
-        "ClusterThreshold": -1
+        "ClusterThreshold": 0
     }
 }
