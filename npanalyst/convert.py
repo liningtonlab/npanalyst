@@ -54,8 +54,9 @@ def gnps(input_file: Path) -> pd.DataFrame:
         "PrecMz": float(precmz),
         "RetTime": float(rt),
         "PrecIntensity": float(inten),
-        "Sample": samples,
-        "freq": len(samples.split("|")),
+        "MaxPrecIntensity": float(inten),
+        "MinPrecIntensity": float(inten),
+        "UniqueFiles": samples,
     }
     try:
         G = nx.read_graphml(input_file)
@@ -69,11 +70,13 @@ def gnps(input_file: Path) -> pd.DataFrame:
         # TODO: determine if this is consistent for all GNPS networks
         # may need a try except or more robust solution
         # NOTE: I have manually tested one classic MN and one FBMN input
+        inten = ndata.get("sum(precursor intensity)")
         baskets.append(
             create_row(
                 ndata.get("precursor mass"),
                 ndata.get("RTMean"),
-                ndata.get("sum(precursor intensity)"),
+                # Mean, Max, Min Itensity all the same from GNPS -> 0.0
+                inten,
                 ndata.get("UniqueFileSources"),
             )
         )
@@ -81,87 +84,41 @@ def gnps(input_file: Path) -> pd.DataFrame:
 
 
 def mzmine(input_file: Path) -> pd.DataFrame:
-    pass
-    # # check for proper extension
-    # try:
-    #     if not (data_path.suffix == ".csv"):
-    #         raise exceptions.InvalidFormatError(
-    #             "Only CSV supported for mzmine conversions, for now."
-    #         )
-    #     else:
-    #         data_file = pd.read_csv(data_path)
-    # except:
-    #     print("Using Recchia format")
-    #     data_file = data_path
-
-    # # load activity file
-    # activity_file = pd.read_csv(act_path)
-
-    # # determine the sample column and save samples
-    # try:
-    #     if configd["FILENAMECOL"] in activity_file.keys():
-    #         actSamples = set(activity_file[configd["FILENAMECOL"]])
-    #     else:
-    #         actSamples = set(activity_file.iloc[:, 0])
-    # except:
-    #     actSamples = set(activity_file.iloc[:, 0])
-
-    # logging.debug(f"Found {len(actSamples)} unique samples")
-
-    # basketSamples = data_file.columns.tolist()
-    # basketList = []
-    # found = False
-
-    # # map basket sample names to activity samples - in order
-    # for basketSample in basketSamples:
-    #     for actSample in actSamples:
-    #         if actSample in basketSample:
-    #             found = True
-    #             basketList.append(actSample)
-    #             break
-    #     if not found:
-    #         if re.search("row", basketSample):
-    #             basketList.append("ADD")
-    #         else:  # if it contains the word "row" probably not a sample
-    #             basketList.append("NA")
-    #             print("Could not find", basketSample, "in activity file!")
-
-    # if not found:
-    #     print("This is not proper mzml format.")
-    #     print("Require two columns with the names: 'row m/z' and 'row retention time'")
-    #     sys.exit()
-
-    # newTable = pd.DataFrame()
-    # print("Prepared the new table")
-
-    # for row in data_file.itertuples(index=False):  # pass through each row
-    #     currSamples = set()
-    #     currRow = []
-    #     values = []
-    #     for col in range(0, data_file.shape[1]):  # pass through each column
-    #         try:
-    #             if float(row[col]) > 0:
-    #                 if basketList[col] == "ADD":
-    #                     currRow.append(row[col])  # PrecMz and RetTime
-    #                 elif basketList[col] != "NA":
-    #                     currSamples.add(basketList[col])
-    #                     values.append(row[col])
-    #         except:
-    #             pass
-
-    #     if len(currSamples) > 1:
-    #         avg_value = sum(values) / len(values)
-    #         currRow.append(avg_value)  # PrecIntensity is average
-    #         currRow.append("|".join(currSamples))  # SampleList
-    #         currRow.append(len(currSamples))  # frequency
-    #         # change from row-wise to column-wise
-    #         dfRow = pd.DataFrame(currRow).transpose()
-    #         newTable = newTable.append(dfRow)
-
-    # newTable.columns = ["PrecMz", "RetTime", "PrecIntensity", "Sample", "freq"]
-
-    # newTable.to_csv(
-    #     configd["OUTPUTDIR"].joinpath("basketed.csv"), index=False, quoting=None
-    # )
-
-    # print("Saving basketed file, as basketed.csv")
+    """Convert the MZmine feature list to a list of basketed features
+    with the same columns as the `basketed.csv` output from the mzML pipeline.
+    """
+    # check for proper extension
+    if not input_file.suffix == ".csv":
+        raise exceptions.InvalidFormatError(
+            "Only CSV supported for mzmine conversions."
+        )
+    baskets = []
+    # samples should be a string of files separated by |
+    create_row = lambda precmz, rt, mean_inten, max_inten, min_inten, samples: {
+        "PrecMz": float(precmz),
+        "RetTime": float(rt),
+        "PrecIntensity": float(mean_inten),
+        "MaxPrecIntensity": float(max_inten),
+        "MinPrecIntensity": float(min_inten),
+        "UniqueFiles": samples,
+    }
+    df = pd.read_csv(input_file)
+    # TODO: determine if this is consistent for MZmine inputs
+    data_cols = ["row m/z", "row retention time", "row identity (main ID)"]
+    sample_cols = [x for x in df.columns if x not in data_cols]
+    # Unpivot MZmine input file, keeping index for groupby
+    df1 = df.melt(id_vars=data_cols, value_vars=sample_cols, ignore_index=False)
+    for _, group in df1.groupby(df1.index):
+        group_presence = group[group["value"] > 0]
+        mz = group_presence.iloc[0]["row m/z"]
+        rt = group_presence.iloc[0]["row retention time"]
+        mean_inten = group_presence["value"].mean()
+        max_inten = group_presence["value"].max()
+        min_inten = group_presence["value"].min()
+        samples = "|".join(
+            sorted(
+                x.replace(" Peak area", "") for x in group_presence["variable"].unique()
+            )
+        )
+        baskets.append(create_row(mz, rt, mean_inten, max_inten, min_inten, samples))
+    return pd.DataFrame(baskets)

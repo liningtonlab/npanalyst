@@ -155,7 +155,10 @@ def generate_connected_components(
 
 
 def _average_data_rows(
-    cc_df: pd.DataFrame, datacols: Iterable, calc_basket_info: bool = False
+    cc_df: pd.DataFrame,
+    datacols: Iterable,
+    minmaxcols: Iterable = [],
+    calc_basket_info: bool = False,
 ) -> List:
     """average (mean) the datacols values. optionally calculates the bounds
     of each resulting basket. basket_info will be serialized as json.
@@ -164,12 +167,16 @@ def _average_data_rows(
         cc_df (pd.DataFrame): connected component dataframe
         datacols (iterable): the columns whose data should be averaged
         calc_basket_info (bool, optional): Defaults to False. flag to compute bounds of basket parameters
+        minmaxcols (iterable): the columns whose data should be computed as new min max columns
 
     Returns:
         list: row of averaged values (+ optional basket_info json)
     """
 
     avgd = list(cc_df[list(datacols)].mean())
+    for col in minmaxcols:
+        avgd.append(cc_df[col].min())
+        avgd.append(cc_df[col].max())
     if calc_basket_info:
         basket_info = {
             cn: [float(cc_df[cn].min()), float(cc_df[cn].max())] for cn in datacols
@@ -179,25 +186,33 @@ def _average_data_rows(
     return avgd
 
 
-def _combine_rows(cc_df: pd.DataFrame, configd: Dict) -> List:
+def _combine_rows(cc_df: pd.DataFrame, configd: Dict, minmax: bool = False) -> List:
     """combine ms1 rows in conncected component dataframe
 
     Args:
         cc_df (pd.DataFrame): conncected component dataframe
         min_reps (int): minumum number of replicates (number of uniqe files) that must be in connected component
+        minmax (bool): Whether to compute min max of configd["BASKETMINMAXCOLS"]
 
     Returns:
         list: averaged values from rows of cc_df and/or basket info
     """
     calc_basket_info = configd["CALCBASKETINFO"]
+    if minmax:
+        min_max_cols = configd["BASKETMINMAXCOLS"]
+    else:
+        min_max_cols = []
     ms1vals = _average_data_rows(
-        cc_df, configd["MS1COLS"], calc_basket_info=calc_basket_info
+        cc_df,
+        configd["MS1COLS"],
+        minmaxcols=min_max_cols,
+        calc_basket_info=calc_basket_info,
     )
     return ms1vals
 
 
 def collapse_connected_components(
-    ccs: Set, df: pd.DataFrame, configd: Dict, min_reps: int
+    ccs: Set, df: pd.DataFrame, configd: Dict, min_reps: int, minmax: bool = False
 ) -> pd.DataFrame:
     """
     Takes the connected components from the overlapping hyperrectangles and averages (mean)
@@ -210,7 +225,7 @@ def collapse_connected_components(
         ccs (set): connected component subgraph dataframe indices
         df (pd.DataFrame): the dataframe which the connected component subgraphs were calculated from
         min_reps (int): Minimum number of files needed in subgraph to be used
-
+        minmax (bool): Whether to compute min max of configd["BASKETMINMAXCOLS"]
     Returns:
         pd.DataFrame: newdata frame with data cols and file name col.
     """
@@ -225,11 +240,14 @@ def collapse_connected_components(
         uni_files = set(cc_df[FILENAMECOL].values)
         if len(uni_files) >= min_reps:
             file_col.append("|".join(uni_files))
-            avgd = _combine_rows(cc_df, configd)
+            avgd = _combine_rows(cc_df, configd, minmax=minmax)
             data.append(avgd)
         else:
             continue
     cols = datacols[:]  # copy list
+    if minmax:
+        for mmcol in configd["BASKETMINMAXCOLS"]:
+            cols += [f"Min{mmcol}", f"Max{mmcol}"]
     if calc_basket_info:
         cols += ["BasketInfo"]
 
@@ -303,7 +321,7 @@ def mzml_to_df(mzml_path: Path, configd: Dict) -> pd.DataFrame:
     """Read MS data from mzML file and return a DataFrame."""
     run = pymzml.run.Reader(str(mzml_path))
     df = _run2df(run)
-    fname = Path(mzml_path).stem
+    fname = Path(mzml_path).name
     logger.debug(f"{configd['FILENAMECOL']} -> {fname}")
     df[configd["FILENAMECOL"]] = fname
     logger.debug("Loaded file: %s", mzml_path)
