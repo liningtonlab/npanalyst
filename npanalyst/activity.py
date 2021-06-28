@@ -216,7 +216,7 @@ def create_association_network(
         activity_scores.append(act)
         clust = scores[i].cluster
         # TODO: verify this is the correct intention of filtering
-        if act > act_thresh and abs(clust) > clust_thresh:
+        if act >= act_thresh and clust >= clust_thresh:
             samples.update(bask["samples"])
             for samp in bask["samples"]:
                 edges.append((bid, samp))
@@ -234,13 +234,13 @@ def create_association_network(
 
     # Construct graph
     G = nx.Graph()
-    for samp in samples:
+    for samp in sorted(list(samples)):
         G.add_node(samp, type_="sample")
 
-    for b in basket_info:
+    for b in sorted(list(basket_info)):
         G.add_node(b.id, **b._asdict(), type_="basket")
 
-    for e in edges:
+    for e in sorted(list(edges)):
         G.add_edge(*e)
 
     return G
@@ -297,7 +297,8 @@ def save_association_network(
 
     logger.debug("Precomputing network layout")
     # Pre-calculate and add layout
-    pos = nx.spring_layout(G)
+    # use random_state to always produce same positions
+    pos = nx.spring_layout(G, seed=np.random.RandomState(42))
     for node, (x, y) in pos.items():
         G.nodes[node]["x"] = float(x)
         G.nodes[node]["y"] = float(y)
@@ -339,13 +340,13 @@ def save_table_output(
 
 
 def save_communities(
-    communites: List[community_detection.Community],
+    communities: List[community_detection.Community],
     output_dir: Path,
     include_web_output: bool,
 ) -> None:
     root_com_dir = output_dir / "communities"
     root_com_dir.mkdir(exist_ok=True)
-    for idc, comm in enumerate(communites):
+    for idc, comm in enumerate(communities):
         com_dir = root_com_dir / str(idc)
         com_dir.mkdir(
             exist_ok=True,

@@ -171,10 +171,10 @@ def import_data(input_file: Path, output_dir: Path, mstype: str) -> None:
     """
     # Extra guard - probably unnecessary
     assert mstype in ("gnps", "mzmine")
-    if mstype == "gnps":
+    if mstype.lower() == "gnps":
         logger.info(f"Importing molecular network from {input_file}")
         basket_df = convert.gnps(input_file)
-    elif mstype == "mzmine":
+    elif mstype.lower() == "mzmine":
         logger.info(f"Importing MZmine features from {input_file}")
         basket_df = convert.mzmine(input_file)
     # create the basketed.csv file
@@ -200,7 +200,7 @@ def bioactivity_mapping(
     logger.info("Computing activity and cluster scores")
     scores = activity.score_baskets(baskets, activity_df)
     basket_df = activity.create_basket_table(baskets, scores)
-    G = activity.create_association_network(baskets, scores)
+    G = activity.create_association_network(baskets, scores, configd)
     logger.info("Computing network communities")
     G, communities = create_communitites(G, activity_df, basket_df)
     logger.info("Saving output files")
@@ -223,11 +223,11 @@ def create_communitites(
     newly annotated network and a list of Community named tuples for export
     """
     logger.info("Building communities ...")
-    communities = community_detection.louvain(G)
+    communities = community_detection.louvain(G, random_state=np.random.RandomState(42)) # set seed to 42 for reproducible community detection
     # Add the community number as a new attribute ('community') to each sample and basket node
     community_detection.add_community_as_node_attribute(G, communities)
     community_df = community_detection.community_assignment_df(G)
-    communities = community_detection.detect_communities(
+    communities = community_detection.conserve_communities(
         activity_df, community_df, basket_df, G
     )
     return G, communities
