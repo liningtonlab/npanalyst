@@ -59,7 +59,7 @@ def cli():
     "-w",
     help="Number of parallel workers",
     type=int,
-    default=-1,
+    default=-2,
     show_default=True,
 )
 @click.option(
@@ -286,7 +286,7 @@ def run_activity_command(
     output_path: Optional[Path] = None,
     config: Optional[Path] = None,
 ):
-    """Run activity integration from standard input format.
+    """Run activity integration from standard input.
 
     Input format is ~= to basketed format.
 
