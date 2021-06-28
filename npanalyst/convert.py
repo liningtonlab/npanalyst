@@ -54,8 +54,9 @@ def gnps(input_file: Path) -> pd.DataFrame:
         "PrecMz": float(precmz),
         "RetTime": float(rt),
         "PrecIntensity": float(inten),
-        "Sample": samples,
-        "freq": len(samples.split("|")),
+        "MaxPrecIntensity": float(inten),
+        "MinPrecIntensity": float(inten),
+        "UniqueFiles": samples,
     }
     try:
         G = nx.read_graphml(input_file)
@@ -69,11 +70,13 @@ def gnps(input_file: Path) -> pd.DataFrame:
         # TODO: determine if this is consistent for all GNPS networks
         # may need a try except or more robust solution
         # NOTE: I have manually tested one classic MN and one FBMN input
+        inten = ndata.get("sum(precursor intensity)")
         baskets.append(
             create_row(
                 ndata.get("precursor mass"),
                 ndata.get("RTMean"),
-                ndata.get("sum(precursor intensity)"),
+                # Mean, Max, Min Itensity all the same from GNPS -> 0.0
+                inten,
                 ndata.get("UniqueFileSources"),
             )
         )

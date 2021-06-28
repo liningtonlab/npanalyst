@@ -20,7 +20,9 @@ Score = namedtuple("Score", "activity cluster")
 
 
 def filenames2samples(filenames: str, all_samples: List) -> List:
-    """Aligns activity sames to filenames string for each basketed feature"""
+    """Aligns activity sames to filenames string for each basketed feature
+    #NOTE: This function matches case sensitive for samples and filenames.
+    """
     delims = "[_.-]"
     found_samples = set()
     match = re.findall(f"{delims}?({'|'.join(all_samples)}){delims}", filenames)

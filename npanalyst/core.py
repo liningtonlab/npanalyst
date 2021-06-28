@@ -202,7 +202,7 @@ def bioactivity_mapping(
     baskets = activity.load_basket_data(basket_path, activity_df, configd)
     logger.info("Computing activity and cluster scores")
     scores = activity.score_baskets(baskets, activity_df)
-    basket_df = activity.create_basket_table(baskets, scores)
+    basket_df = activity.create_feature_table(baskets, scores)
     G = activity.create_association_network(baskets, scores, configd)
     logger.info("Computing network communities")
     G, communities = create_communitites(G, activity_df, basket_df)
