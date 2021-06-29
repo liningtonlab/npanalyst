@@ -25,7 +25,9 @@ def filenames2samples(filenames: str, all_samples: List) -> List:
     """
     delims = "[_.-]"
     found_samples = set()
-    match = re.findall(f"{delims}?({'|'.join(all_samples)}){delims}", filenames)
+    # Regex may start with delimeters and MUST end with either delimiters or
+    # end of word boundary (non-capturing regex to avoid tuple in set)
+    match = re.findall(f"{delims}?({'|'.join(all_samples)})(?:{delims}|\b)", filenames)
     if match:
         found_samples.update(match)
     return sorted(list(found_samples))
