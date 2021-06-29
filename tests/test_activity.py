@@ -1,10 +1,18 @@
-from logging import exception
 from npanalyst import activity
 
 
 def test_filenames2samples_sees_all_relevant():
     samples = ["Sample1", "Sample2", "Sample3"]
     filelist = "Sample1-1.mzml|Sample2-2.mzml|Sample3-3.mzml"
+    expected = ["Sample1", "Sample2", "Sample3"]
+    assert (
+        activity.filenames2samples(filenames=filelist, all_samples=samples) == expected
+    )
+
+
+def test_filenames2samples_sees_all_relevant():
+    samples = ["Sample1", "Sample2", "Sample3"]
+    filelist = "Sample1|Sample2|Sample3"
     expected = ["Sample1", "Sample2", "Sample3"]
     assert (
         activity.filenames2samples(filenames=filelist, all_samples=samples) == expected
