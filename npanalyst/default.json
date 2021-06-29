@@ -21,7 +21,7 @@
         "RequiredReplicates": 1
     },
     "NetworkInfo": {
-        "ActivityThreshold": 3,
-        "ClusterThreshold": 0
+        "ActivityThreshold": 2,
+        "ClusterThreshold": 0.3
     }
 }

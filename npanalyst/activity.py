@@ -79,9 +79,11 @@ def load_basket_data(
     cols_to_keep = list(set(MS1COLS + [FILENAMECOL]))
     ms1df = df[cols_to_keep].copy(deep=True)
     baskets = []
+
     for bd in ms1df.to_dict("records"):
         bd["samples"] = filenames2samples(bd[FILENAMECOL], activity_samples)
         baskets.append(bd)
+
     return baskets
 
 
@@ -123,7 +125,7 @@ def create_feature_table(baskets: List[Dict], scores: List[Score]) -> pd.DataFra
 
     Args:
         baskets (list): List of basketed data loaded with load_baskets
-        scored (Score): Score namedtuple from score_baskets
+        scores (Score): Score namedtuple from score_baskets
     """
     logger.debug("Generating tabular output...")
     data = []
@@ -235,14 +237,22 @@ def create_association_network(
 
     # Construct graph
     G = nx.Graph()
-    for samp in sorted(list(samples)):
+    for samp in sorted(samples):
         G.add_node(samp, type_="sample")
 
-    for b in sorted(list(basket_info)):
+    for b in sorted(basket_info):
         G.add_node(b.id, **b._asdict(), type_="basket")
 
-    for e in sorted(list(edges)):
+    for e in sorted(edges):
         G.add_edge(*e)
+
+    logger.debug("Precomputing network layout")
+    # Pre-calculate and add layout
+    # use random_state to always produce same positions
+    pos = nx.spring_layout(G, seed=np.random.RandomState(42))
+    for node, (x, y) in pos.items():
+        G.nodes[node]["x"] = float(x)
+        G.nodes[node]["y"] = float(y)
 
     return G
 
@@ -295,17 +305,8 @@ def save_association_network(
 ) -> None:
     """Save network output(s) to specified output directory"""
     outfile_gml = output_dir.joinpath("network.graphml").resolve()
-
-    logger.debug("Precomputing network layout")
-    # Pre-calculate and add layout
-    # use random_state to always produce same positions
-    pos = nx.spring_layout(G, seed=np.random.RandomState(42))
-    for node, (x, y) in pos.items():
-        G.nodes[node]["x"] = float(x)
-        G.nodes[node]["y"] = float(y)
     logger.debug(f"Saving {outfile_gml}")
     logger.debug(nx.info(G))
-
     nx.write_graphml(G, outfile_gml, prettyprint=True)
 
     if include_web_output:

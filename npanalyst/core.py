@@ -172,18 +172,18 @@ def import_data(input_file: Path, output_dir: Path, mstype: str) -> None:
 
     Saves the CSV files as `output_dir/basketed.csv`.
     """
-    # Extra guard - probably unnecessary
-    assert mstype in ("gnps", "mzmine")
     if mstype.lower() == "gnps":
         logger.info(f"Importing molecular network from {input_file}")
         basket_df = convert.gnps(input_file)
     elif mstype.lower() == "mzmine":
         logger.info(f"Importing MZmine features from {input_file}")
         basket_df = convert.mzmine(input_file)
+
     # create the basketed.csv file
     logger.info(f"Found a total of {len(basket_df)} basketed features")
     logger.info("Saving output file")
     output_dir.mkdir(exist_ok=True, parents=True)
+
     # Sort baskets by RT then MZ
     basket_df.sort_values(["RetTime", "PrecMz"], inplace=True)
     basket_df.to_csv(output_dir.joinpath("basketed.csv"), index=False)
@@ -200,12 +200,15 @@ def bioactivity_mapping(
     logger.debug("Loading baskets and activity data")
     activity_df = activity.load_activity_data(activity_path)
     baskets = activity.load_basket_data(basket_path, activity_df, configd)
+
     logger.info("Computing activity and cluster scores")
     scores = activity.score_baskets(baskets, activity_df)
     basket_df = activity.create_feature_table(baskets, scores)
     G = activity.create_association_network(baskets, scores, configd)
+
     logger.info("Computing network communities")
     G, communities = create_communitites(G, activity_df, basket_df)
+
     logger.info("Saving output files")
     output_dir.mkdir(exist_ok=True, parents=True)
     activity.save_table_output(basket_df, output_dir)
@@ -229,6 +232,7 @@ def create_communitites(
     communities = community_detection.louvain(
         G, random_state=np.random.RandomState(42)
     )  # set seed to 42 for reproducible community detection
+
     # Add the community number as a new attribute ('community') to each sample and basket node
     community_detection.add_community_as_node_attribute(G, communities)
     community_df = community_detection.community_assignment_df(G)
