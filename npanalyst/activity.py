@@ -241,7 +241,7 @@ def create_association_network(
 
     # Construct graph
     G = nx.Graph()
-    for samp in sorted(samples):
+    for samp in sorted(list(samples)):
         G.add_node(samp, type_="sample")
 
     for b in sorted(basket_info):
