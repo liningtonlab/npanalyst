@@ -3,8 +3,8 @@ from typing import Optional
 
 import click
 
-from npanalyst import __version__ as VERSION, exceptions
-from npanalyst import core
+from npanalyst import __version__ as VERSION
+from npanalyst import core, configuration
 from npanalyst.logging import setup_logging, get_logger
 
 logger = get_logger()
@@ -99,7 +99,7 @@ def run_replicate(
     if not output_path.exists():
         output_path.mkdir(parents=True)
     setup_logging(verbose=verbose, fpath=output_path / "npanalyst.log")
-    configd = core.load_config(config_path=config)
+    configd = configuration.load_config(config_path=config)
     core.process_replicates(
         input_path,
         output_path,
@@ -165,7 +165,7 @@ def run_basketing(
     if not output_path.exists():
         output_path.mkdir(parents=True)
     setup_logging(verbose=verbose, fpath=output_path / "npanalyst.log")
-    configd = core.load_config(config_path=config)
+    configd = configuration.load_config(config_path=config)
     core.basket_replicated(input_path, output_path, configd)
 
 
@@ -316,7 +316,7 @@ def run_activity(
     if not output_path.exists():
         output_path.mkdir(parents=True)
     setup_logging(verbose=verbose, fpath=output_path / "npanalyst.log")
-    configd = core.load_config(config_path=config)
+    configd = configuration.load_config(config_path=config)
     core.bioactivity_mapping(
         basket_path=input_path,
         output_dir=output_path,
