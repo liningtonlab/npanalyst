@@ -106,7 +106,7 @@ def mzmine(input_file: Path) -> pd.DataFrame:
     df = pd.read_csv(input_file)
     # TODO: determine if this is consistent for MZmine inputs
     data_cols = ["row m/z", "row retention time", "row identity (main ID)"]
-    sample_cols = [x for x in df.columns if x not in data_cols]
+    sample_cols = [x for x in df.columns if "peak area" in x.lower()]
     # Unpivot MZmine input file, keeping index for groupby
     df1 = df.melt(id_vars=data_cols, value_vars=sample_cols, ignore_index=False)
     for _, group in df1.groupby(df1.index):
