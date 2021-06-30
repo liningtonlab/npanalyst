@@ -228,7 +228,7 @@ def run_import(
     if not output_path.exists():
         output_path.mkdir(parents=True)
     setup_logging(verbose=verbose, fpath=output_path / "npanalyst.log")
-    core.import_data(input_path, output_path, mstype.lower())
+    core.import_data(input_path, output_path, mstype)
 
 
 ############################

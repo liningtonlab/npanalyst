@@ -1,12 +1,10 @@
 from collections import defaultdict, namedtuple
 from typing import List, Dict
-
-import community as louvain_modularity
-import networkx as nx
-from networkx.generators.directed import random_k_out_graph
-from networkx.utils.decorators import random_state
 import pandas as pd
-import numpy as np
+
+import networkx as nx
+import community as louvain_modularity
+
 from scipy.cluster.hierarchy import leaves_list, linkage
 from scipy.spatial.distance import pdist
 from sklearn.preprocessing import StandardScaler
