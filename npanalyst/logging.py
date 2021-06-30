@@ -55,7 +55,7 @@ def setup_logging(
     logger.addHandler(ch)
     if fpath is not None:
         fh = logging.FileHandler(fpath, mode="a")
-        fh.setFormatter(formatter)
+        fh.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
         fh.setLevel(logging.DEBUG)
         logger.addHandler(fh)
     return logger
