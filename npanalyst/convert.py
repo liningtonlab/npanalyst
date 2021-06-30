@@ -1,3 +1,4 @@
+import re
 import tempfile
 from pathlib import Path
 
@@ -115,10 +116,9 @@ def mzmine(input_file: Path) -> pd.DataFrame:
         mean_inten = group_presence["value"].mean()
         max_inten = group_presence["value"].max()
         min_inten = group_presence["value"].min()
+        pa_pattern = re.compile(" peak area", re.IGNORECASE)
         samples = "|".join(
-            sorted(
-                x.replace(" Peak area", "") for x in group_presence["variable"].unique()
-            )
+            sorted(pa_pattern.sub("", x) for x in group_presence["variable"].unique())
         )
         baskets.append(create_row(mz, rt, mean_inten, max_inten, min_inten, samples))
     return pd.DataFrame(baskets)

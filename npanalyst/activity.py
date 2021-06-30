@@ -28,7 +28,7 @@ def filenames2samples(filenames: str, all_samples: List) -> List:
     # Regex may start with delimeters and MUST end with either delimiters or
     # end of word/string boundary or vertical bar (non-capturing regex to avoid tuple in set)
     match = re.findall(
-        f"{delims}?({'|'.join(all_samples)})(?:{delims}|\b|$|\\|)", filenames
+        f"(?:{delims})?({'|'.join(all_samples)})(?:{delims}|\\b|$|\\|)", filenames
     )
     if match:
         found_samples.update(match)
@@ -48,6 +48,7 @@ def get_samples_fps(fpd: pd.DataFrame, samples: List) -> np.ndarray:
         except KeyError as e:
             logger.warning(e)
     if not to_cat:
+        logger.error(f"Missing Samples {samples}")
         raise KeyError("No Fingerprints found...")
     return np.asarray(to_cat)
 
@@ -105,14 +106,20 @@ def load_activity_data(path: Path, samplecol: int = 0) -> pd.DataFrame:
 def score_basket(basket: Dict, activity_df: pd.DataFrame) -> Score:
     """Compute the activity and cluster score for a single basket"""
     samples = basket["samples"]
-    sfp = feature_synthetic_fp(activity_df, samples)
+    try:
+        sfp = feature_synthetic_fp(activity_df, samples)
+    except KeyError as e:
+        logger.warning(
+            f"No synthetic fingerprint available for basket - Files {basket['UniqueFiles']}"
+        )
+        return Score(0.0, 0.0)
     act_score = np.sum(sfp ** 2)
     clust_score = cluster_score(activity_df, samples)
     return Score(act_score, clust_score)
 
 
 def score_baskets(
-    baskets: List[Dict], activity_df: pd.DataFrame, max_workers=-1
+    baskets: List[Dict], activity_df: pd.DataFrame, max_workers=1
 ) -> List[Score]:
     """Compute the activity and cluster score for all baskets in a parallelized fashion."""
     scores = Parallel(n_jobs=max_workers, backend="multiprocessing")(
