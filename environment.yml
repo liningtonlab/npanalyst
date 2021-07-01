@@ -11,7 +11,7 @@ dependencies:
   - click
   - networkx
   - scikit-learn
-  - matplotlib
+  - matplotlib-base
   - python-louvain
   - pip:
       - rtree
