@@ -119,3 +119,4 @@ old_stuff/
 *.prof
 
 .vscode/
+/tests/integration/data/
