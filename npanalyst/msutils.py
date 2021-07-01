@@ -237,7 +237,7 @@ def collapse_connected_components(
     calc_basket_info = configd["CALCBASKETINFO"]
     for cc in ccs:
         cc_df = df.iloc[list(cc)]
-        uni_files = set(cc_df[FILENAMECOL].values)
+        uni_files = sorted(list(set(cc_df[FILENAMECOL].values)))
         if len(uni_files) >= min_reps:
             file_col.append("|".join(uni_files))
             avgd = _combine_rows(cc_df, configd, minmax=minmax)
