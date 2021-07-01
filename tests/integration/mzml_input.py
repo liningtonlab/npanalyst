@@ -4,11 +4,36 @@ from pathlib import Path
 from zipfile import ZipFile
 import shutil
 import pandas as pd
+import networkx as nx
 
-from npanalyst import configuration, core, cli
-import pprint
+from npanalyst import configuration, cli
 
 from pandas._testing import assert_frame_equal
+
+
+def graphml_assertion(reference_path, test_path):
+    G = nx.read_graphml(Path(reference_path))
+    attr_list = []
+    for node in G.nodes(data=True):
+        attr_list.append(node[1])
+
+    reference_graphml_df = pd.DataFrame(attr_list)
+
+    G = nx.read_graphml(Path(test_path))
+    attr_list = []
+    for node in G.nodes(data=True):
+        attr_list.append(node[1])
+
+    test_graphml_df = pd.DataFrame(attr_list)
+
+    assert_frame_equal(reference_graphml_df, test_graphml_df)
+
+
+def dataframe_assertion(reference_path, test_path):
+    result_table = pd.read_csv(reference_path)
+    test_table = pd.read_csv(Path(test_path))
+
+    assert_frame_equal(result_table, test_table)
 
 
 # # Define relative path to input files
@@ -27,10 +52,13 @@ OUTPUT_FILE_REPLICATED = HERE / "data/replicated_mzml_result.zip"
 OUTPUT_FILE_BASKETED = HERE / "data/basketed_mzml.csv"
 
 # Activity association network graphml
-OUTPUT_GRAPHML = HERE / "data/network.graphml"
+OUTPUT_GRAPHML = HERE / "data/network_mzml.graphml"
+
+# Feature table with assigned activity and cluster score
+OUTPUT_TABLE = HERE / "data/table_mzml.csv"
 
 # Community-related outputs: graphml, table output and assay table for heatmap generation
-OUTPUT_COMMUNITY = HERE / "data/community"
+OUTPUT_COMMUNITY = HERE / "data/communities"
 
 
 # INPUT_FILE_MZMLS = HERE / "data/small_test_input.zip"
@@ -67,9 +95,8 @@ def mzml_replicate_comparison():
     cli.run_replicate(input_path=Path(tmpdir, "mzml_files"),
                       output_path=Path(tmpdir),
                       workers=1,
-                      verbose=True,
+                      verbose=False,
                       config=None)
-
 
     # # Test length of generated replicated files (=925)
     length = len(os.listdir(Path(tmpdir, "replicated")))
@@ -82,18 +109,12 @@ def mzml_replicate_comparison():
     # # Catch all csv files from the expected results
     replicate_file_names = os.listdir(Path(tmpdir, "expected_replicated_results"))
 
-    # # Define the columns that shall be compared. For now the UniqueFiles entry is randomly ordered
-    # TODO: Either fix function that produces the replicated basketed files (most likely a set is used)
-    #  or reorder before testing. But requires to stringsplit the entry.
-    COLS = ['Unnamed: 0', 'PrecMz', 'RetTime', 'PrecIntensity', 'UniqueFiles']
-    COLS_TO_MISS = {'UniqueFiles'}
-
     # # Compare the expected replicated files with the produced files
     for rep in replicate_file_names:
-        result_file = pd.read_csv(Path(tmpdir,"expected_replicated_results", rep), usecols=list(set(COLS) - COLS_TO_MISS))
-        test_file = pd.read_csv(Path(tmpdir, "replicated", rep), usecols=list(set(COLS) - COLS_TO_MISS))
+        dataframe_assertion(reference_path=Path(tmpdir, "expected_replicated_results", rep),
+                            test_path=Path(tmpdir, "replicated", rep))
 
-        assert_frame_equal(result_file, test_file)
+
 
     # # Remove temporary folder. Windows would not delete all files.
     # # Python 3.11 seems to enable the ignore_errors function also for tempfile.TemporaryDirectory() which
@@ -114,14 +135,11 @@ def mzml_basket_building():
                       verbose=True,
                       config=None)
 
-    COLS = ['PrecMz', 'RetTime', 'PrecIntensity', 'UniqueFiles']
-    COLS_TO_MISS = {''}
+    # # Compare the expected basketed file with the produced file
+    dataframe_assertion(reference_path=Path(OUTPUT_FILE_BASKETED),
+                        test_path=Path(tmpdir, "basketed.csv"))
 
-    # # Compare the expected replicated files with the produced files
-    result_file = pd.read_csv(OUTPUT_FILE_BASKETED, usecols=list(set(COLS) - COLS_TO_MISS))
-    test_file = pd.read_csv(Path(tmpdir, "basketed.csv"), usecols=list(set(COLS) - COLS_TO_MISS))
-
-    assert_frame_equal(result_file, test_file)
+    shutil.rmtree(tmpdir, ignore_errors=True)
 
 
 def mzml_bioactivity_mapping():
@@ -129,33 +147,54 @@ def mzml_bioactivity_mapping():
     tmpdir = tempfile.mkdtemp()
 
     cli.run_activity(input_path=OUTPUT_FILE_BASKETED,
-                     output_path=tmpdir,
+                     output_path=Path(tmpdir),
                      activity_path=INPUT_FILE_ACTIVITY_FILE,
-                     verbose=True,
+                     verbose=False,
                      include_web_output=False,
                      config=None)
 
     # # Compare table output of the 9834 features
+    dataframe_assertion(reference_path=Path(OUTPUT_TABLE),
+                        test_path=Path(tmpdir, "table.csv"))
 
     # # Compare graphml file (connectivity,
-    # Compare graphml x y coordinates, activity / cluster score, name, type_
+    # Compare graphml x y coordinates, activity / cluster score, name, type_, etc.
+    graphml_assertion(reference_path=Path(OUTPUT_GRAPHML),
+                      test_path=Path(tmpdir, "network.graphml"))
 
-    # # Compare communities output folder
+
+    # # # Compare communities output folder
     # Count communities
+    nr_communities = len(os.listdir(Path(tmpdir, "communities")))
+    print(nr_communities)
+    assert nr_communities == 17
 
-    # # Go through all files and compare
+    # # Go through all community folders and compare
 
-    # tables
+    for community in [str(i) for i in range(17)]:
+        print("Community nr:" + community)
 
-    # assay data
+        # tables
+        dataframe_assertion(reference_path=Path(OUTPUT_COMMUNITY, community, "table.csv"),
+                            test_path=Path(tmpdir, "communities", community, "table.csv"))
 
-    # graphml files
+        # assay data
+        dataframe_assertion(reference_path=Path(OUTPUT_COMMUNITY, community, "assay.csv"),
+                            test_path=Path(tmpdir, "communities", community, "assay.csv"))
 
+        # graphml files
+
+        graphml_assertion(reference_path=Path(OUTPUT_COMMUNITY, community, "network.graphml"),
+                          test_path=Path(tmpdir, "communities", community, "network.graphml"))
+
+    # Remove temp folder
+    shutil.rmtree(tmpdir, ignore_errors=True)
 
 
 if __name__ == '__main__':
+    mzml_bioactivity_mapping()
 
-    mzml_replicate_comparison()
+
 
 
 
