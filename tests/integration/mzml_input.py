@@ -5,6 +5,7 @@ from zipfile import ZipFile
 import shutil
 import pandas as pd
 import networkx as nx
+import time
 
 from npanalyst import configuration, cli
 
@@ -12,12 +13,20 @@ from pandas._testing import assert_frame_equal
 
 
 def graphml_assertion(reference_path, test_path):
+    """This function converts the graphml files into a dataframe
+    with all the attributes. These dataframes are compared."""
     G = nx.read_graphml(Path(reference_path))
     attr_list = []
     for node in G.nodes(data=True):
         attr_list.append(node[1])
 
     reference_graphml_df = pd.DataFrame(attr_list)
+    # Sort index by "x" position and also sort columns
+    # This is only true for the community graphml files
+    # TODO: There seems to be random effect present, when the community graphs are produced.
+    #  The graphml files are per se identical, but the order changes.
+    reference_graphml_df.sort_values(by=["x"], inplace=True, ignore_index=True)
+    reference_graphml_df = reference_graphml_df.reindex(sorted(reference_graphml_df.columns), axis=1)
 
     G = nx.read_graphml(Path(test_path))
     attr_list = []
@@ -25,11 +34,15 @@ def graphml_assertion(reference_path, test_path):
         attr_list.append(node[1])
 
     test_graphml_df = pd.DataFrame(attr_list)
+    test_graphml_df.sort_values(by=["x"], inplace=True, ignore_index=True)
+    test_graphml_df = test_graphml_df.reindex(sorted(test_graphml_df.columns), axis=1)
 
     assert_frame_equal(reference_graphml_df, test_graphml_df)
 
 
 def dataframe_assertion(reference_path, test_path):
+    """This function reads the respective dataframe and compares
+    the two files."""
     result_table = pd.read_csv(reference_path)
     test_table = pd.read_csv(Path(test_path))
 
@@ -132,7 +145,7 @@ def mzml_basket_building():
 
     cli.run_basketing(input_path=Path(tmpdir),
                       output_path=Path(tmpdir),
-                      verbose=True,
+                      verbose=False,
                       config=None)
 
     # # Compare the expected basketed file with the produced file
@@ -157,22 +170,19 @@ def mzml_bioactivity_mapping():
     dataframe_assertion(reference_path=Path(OUTPUT_TABLE),
                         test_path=Path(tmpdir, "table.csv"))
 
-    # # Compare graphml file (connectivity,
-    # Compare graphml x y coordinates, activity / cluster score, name, type_, etc.
+    # Validate graphml x y coordinates, activity / cluster score, name, type_, etc.
     graphml_assertion(reference_path=Path(OUTPUT_GRAPHML),
                       test_path=Path(tmpdir, "network.graphml"))
 
-
-    # # # Compare communities output folder
+    # # Compare communities output folder
     # Count communities
     nr_communities = len(os.listdir(Path(tmpdir, "communities")))
-    print(nr_communities)
     assert nr_communities == 17
 
     # # Go through all community folders and compare
 
     for community in [str(i) for i in range(17)]:
-        print("Community nr:" + community)
+        print("Validate community nr:" + community)
 
         # tables
         dataframe_assertion(reference_path=Path(OUTPUT_COMMUNITY, community, "table.csv"),
@@ -192,8 +202,18 @@ def mzml_bioactivity_mapping():
 
 
 if __name__ == '__main__':
+
+    start = time.time()
+
+    config_parameter()
+
+    mzml_replicate_comparison()
+
+    mzml_basket_building()
+
     mzml_bioactivity_mapping()
 
+    print("This testing took: " + str(round((time.time() - start) / 60, 2)) + " minutes.")
 
 
 
