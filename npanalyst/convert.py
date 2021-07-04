@@ -99,8 +99,8 @@ def mzmine(input_file: Path) -> pd.DataFrame:
         "PrecMz": float(precmz),
         "RetTime": float(rt),
         "PrecIntensity": float(mean_inten),
-        "MaxPrecIntensity": float(max_inten),
         "MinPrecIntensity": float(min_inten),
+        "MaxPrecIntensity": float(max_inten),
         "UniqueFiles": samples,
     }
     df = pd.read_csv(input_file)
@@ -121,4 +121,5 @@ def mzmine(input_file: Path) -> pd.DataFrame:
             sorted(pa_pattern.sub("", x) for x in group_presence["variable"].unique())
         )
         baskets.append(create_row(mz, rt, mean_inten, max_inten, min_inten, samples))
+
     return pd.DataFrame(baskets)
