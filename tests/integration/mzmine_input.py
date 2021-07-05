@@ -5,12 +5,14 @@ import pandas as pd
 import time
 import re
 
-from npanalyst import configuration, cli
+from npanalyst import cli
 
 from pandas._testing import assert_frame_equal
 
 
 # Helper function
+# Note that the dataframe assertion function here is different from the other
+# test scenarios
 def dataframe_assertion(reference_path, test_path):
     """This function reads the respective dataframe and compares
     the two files."""
@@ -26,7 +28,7 @@ def dataframe_assertion(reference_path, test_path):
 # # Define relative path to input files
 HERE = Path(__file__).parent
 
-# MZmine csv export dataframe that is converted into the basketed format used ba NPAnalyst.
+# MZmine csv export dataframe that is converted into the basketed format used by NPAnalyst.
 INPUT_MZMINE_FILE ="data/mzmine_input.csv"
 
 # Basketed CSV file output
@@ -48,7 +50,7 @@ def mzmine_import():
         mstype="mzmine",
         verbose=False)
 
-    # # Prepare basketed_mzml.csv for comparison with basketed_mzmine.csv
+    # # Prepare basketed_mzml.csv for comparison with basketed.csv
     
     b_df = pd.read_csv(Path(OUTPUT_FILE_BASKETED))
 
