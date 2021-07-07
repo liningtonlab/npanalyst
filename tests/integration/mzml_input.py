@@ -4,11 +4,12 @@ from pathlib import Path
 from zipfile import ZipFile
 import shutil
 import pandas as pd
+import numpy as np
 import time
 
 from npanalyst import configuration, cli
 
-from pandas._testing import assert_frame_equal
+from pandas._testing import assert_series_equal
 
 
 # # Helper functions
@@ -18,12 +19,17 @@ def dataframe_assertion(reference_path, test_path):
     result_table = pd.read_csv(reference_path)
     # # This resorting is just a safe-guard to assure that rows are ordered properly and error messages are
     # # due to wrong values, not due to interchanged rows
-    result_table.sort_values(by=["UniqueFiles", "PrecMz", "RetTime"], ignore_index=True, inplace=True)
+    result_table.sort_values(
+        by=["UniqueFiles", "PrecMz", "RetTime"], ignore_index=True, inplace=True
+    )
 
     test_table = pd.read_csv(Path(test_path))
-    test_table.sort_values(by=["UniqueFiles", "PrecMz", "RetTime"], ignore_index=True, inplace=True)
-
-    assert_frame_equal(result_table, test_table)
+    test_table.sort_values(
+        by=["UniqueFiles", "PrecMz", "RetTime"], ignore_index=True, inplace=True
+    )
+    assert_series_equal(result_table["UniqueFiles"], test_table["UniqueFiles"])
+    assert np.sum(result_table["PrecMz"] - test_table["PrecMz"]) < 0.1
+    assert np.sum(result_table["RetTime"] - test_table["RetTime"]) < 0.1
 
 
 # # Define relative path to input files
@@ -48,8 +54,8 @@ def config_parameter():
     assert configd["ACTIVITYTHRESHOLD"] == 2
     assert configd["CLUSTERTHRESHOLD"] == 0.3
     assert configd["MINREPS"] == 2
-    assert configd["ERRORINFO"]["PrecMz"] == ('ppm', 30.0)
-    assert configd["ERRORINFO"]["RetTime"] == ('window', 0.03)
+    assert configd["ERRORINFO"]["PrecMz"] == ("ppm", 30.0)
+    assert configd["ERRORINFO"]["RetTime"] == ("window", 0.03)
 
 
 def mzml_replicate_comparison():
@@ -60,22 +66,24 @@ def mzml_replicate_comparison():
     tmpdir = tempfile.mkdtemp()
 
     # # Open and extract zip file that contains the 2775 mzML files
-    with ZipFile(Path(INPUT_MZML_FILES), 'r') as zip:
+    with ZipFile(Path(INPUT_MZML_FILES), "r") as zip:
         zip.extractall(Path(tmpdir, "mzml_files"))
 
     # # Perform replicate comparison
-    cli.run_replicate(input_path=Path(tmpdir, "mzml_files"),
-                      output_path=Path(tmpdir),
-                      workers=-2,
-                      verbose=False,
-                      config=None)
+    cli.run_replicate(
+        input_path=Path(tmpdir, "mzml_files"),
+        output_path=Path(tmpdir),
+        workers=-2,
+        verbose=False,
+        config=None,
+    )
 
     # # Test length of generated replicated files (=925)
     length = len(os.listdir(Path(tmpdir, "replicated")))
     assert length == 925
 
     # # Get replicated zip output file with expected output files and extract them
-    with ZipFile(Path(OUTPUT_FILE_REPLICATED), 'r') as zip:
+    with ZipFile(Path(OUTPUT_FILE_REPLICATED), "r") as zip:
         zip.extractall(Path(tmpdir, "expected_replicated_results"))
 
     # # Catch all csv files from the expected results
@@ -83,8 +91,10 @@ def mzml_replicate_comparison():
 
     # # Compare the expected replicated files with the produced files
     for rep in replicate_file_names:
-        dataframe_assertion(reference_path=Path(tmpdir, "expected_replicated_results", rep),
-                            test_path=Path(tmpdir, "replicated", rep))
+        dataframe_assertion(
+            reference_path=Path(tmpdir, "expected_replicated_results", rep),
+            test_path=Path(tmpdir, "replicated", rep),
+        )
 
     # # Remove temporary folder. Windows would not delete all files.
     # # Python 3.11 seems to enable the ignore_errors function also for tempfile.TemporaryDirectory() which
@@ -100,23 +110,24 @@ def mzml_basket_building():
     tmpdir = tempfile.mkdtemp()
 
     # # Get replicated zip output file with expected output files and extract them
-    with ZipFile(Path(OUTPUT_FILE_REPLICATED), 'r') as zip:
+    with ZipFile(Path(OUTPUT_FILE_REPLICATED), "r") as zip:
         zip.extractall(Path(tmpdir))
 
-    cli.run_basketing(input_path=Path(tmpdir),
-                      output_path=Path(tmpdir),
-                      verbose=False,
-                      config=None)
+    cli.run_basketing(
+        input_path=Path(tmpdir), output_path=Path(tmpdir), verbose=False, config=None
+    )
 
     # # Compare the expected basketed file with the produced file
-    dataframe_assertion(reference_path=Path(OUTPUT_FILE_BASKETED),
-                        test_path=Path(tmpdir, "basketed.csv"))
+    dataframe_assertion(
+        reference_path=Path(OUTPUT_FILE_BASKETED),
+        test_path=Path(tmpdir, "basketed.csv"),
+    )
 
     # # Remove the temp folder
     shutil.rmtree(tmpdir, ignore_errors=True)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     start = time.time()
 
@@ -126,13 +137,4 @@ if __name__ == '__main__':
 
     mzml_basket_building()
 
-    print("This testing took: " + str(round((time.time() - start) / 60, 2)) + " minutes.")
-
-
-
-
-
-
-
-
-
+    print(f"This testing took: {(time.time() - start) / 60:.2f} minutes.")
