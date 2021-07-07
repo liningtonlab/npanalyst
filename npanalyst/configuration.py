@@ -17,7 +17,7 @@ DEFAULT_CONFIG = {
         "MSLevel": 1,
     },
     "Tolerances": {"PrecMz": "ppm,30", "RetTime": "window,0.03", "PrecZ": "None,None"},
-    "ReplicateInfo": {"RequiredReplicates": 2},
+    "ReplicateInfo": {"RequiredReplicates": 2, "MinimumIntensity": 2e3},
     "BasketInfo": {
         "ColumnsToFeature": "PrecMz,RetTime,PrecIntensity,UniqueFiles",
         "MinMaxCols": "PrecIntensity",
@@ -62,6 +62,7 @@ def load_config(config_path: Optional[Path] = None) -> Dict:
         "BASKETMINMAXCOLS": config["BasketInfo"]["MinMaxCols"].split(","),
         "BASKETFEATURES": config["BasketInfo"]["ColumnsToFeature"].split(","),
         "MINREPS": int(config["ReplicateInfo"]["RequiredReplicates"]),
+        "MININTENSITY": int(config["ReplicateInfo"]["MinimumIntensity"]),
         "ACTIVITYTHRESHOLD": float(config["NetworkInfo"]["ActivityThreshold"]),
         "CLUSTERTHRESHOLD": float(config["NetworkInfo"]["ClusterThreshold"]),
     }

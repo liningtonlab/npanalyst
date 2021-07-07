@@ -274,7 +274,7 @@ def create_all_replicate_df(datadir: Path) -> pd.DataFrame:
     return pd.concat(dfs, sort=False)
 
 
-def _run2df(mzrun: pymzml.run.Reader) -> pd.DataFrame:
+def _run2df(mzrun: pymzml.run.Reader, configd: Dict) -> pd.DataFrame:
     """Convert pymyzml.run into DataFrame"""
     data = []
     specl = [s for s in mzrun if s]
@@ -310,6 +310,8 @@ def _run2df(mzrun: pymzml.run.Reader) -> pd.DataFrame:
             continue
 
         for mz, inte in specdata:
+            if inte < configd["MININTENSITY"]:
+                continue
             data.append([mz, inte, scantime, mslevel, mode])
     df = pd.DataFrame(
         data, columns=["PrecMz", "PrecIntensity", "RetTime", "mslevel", "mode"]
@@ -320,7 +322,7 @@ def _run2df(mzrun: pymzml.run.Reader) -> pd.DataFrame:
 def mzml_to_df(mzml_path: Path, configd: Dict) -> pd.DataFrame:
     """Read MS data from mzML file and return a DataFrame."""
     run = pymzml.run.Reader(str(mzml_path))
-    df = _run2df(run)
+    df = _run2df(run, configd)
     fname = Path(mzml_path).name
     logger.debug(f"{configd['FILENAMECOL']} -> {fname}")
     df[configd["FILENAMECOL"]] = fname

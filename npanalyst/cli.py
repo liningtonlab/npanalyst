@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from typing import Optional
 
@@ -26,6 +27,21 @@ logger = get_logger()
 def cli():
     """NPAnalyst CLI entrypoint"""
     click.echo("Welcome to NPAnalyst!")
+
+
+############################
+##      Get Config
+############################
+@cli.command("get_config")
+def get_config():
+    """Helper function to generate a config file"""
+    click.echo("Generating configuration file `./config.json`")
+    conf_path = Path() / "config.json"
+    if conf_path.exists():
+        click.echo("ERROR: File already exists.")
+        raise click.Abort()
+    with conf_path.open("w") as f:
+        f.write(json.dumps(configuration.load_raw_config(), indent=2))
 
 
 ############################
