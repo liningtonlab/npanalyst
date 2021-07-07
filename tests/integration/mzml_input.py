@@ -16,7 +16,12 @@ def dataframe_assertion(reference_path, test_path):
     """This function reads the respective dataframe and compares
     the two files."""
     result_table = pd.read_csv(reference_path)
+    # # This resorting is just a safe-guard to assure that rows are ordered properly and error messages are
+    # # due to wrong values, not due to interchanged rows
+    result_table.sort_values(by=["UniqueFiles", "PrecMz", "RetTime"], ignore_index=True, inplace=True)
+
     test_table = pd.read_csv(Path(test_path))
+    test_table.sort_values(by=["UniqueFiles", "PrecMz", "RetTime"], ignore_index=True, inplace=True)
 
     assert_frame_equal(result_table, test_table)
 
@@ -59,11 +64,9 @@ def mzml_replicate_comparison():
         zip.extractall(Path(tmpdir, "mzml_files"))
 
     # # Perform replicate comparison
-    # # Workers has to be set to 1, it would not run for more workers,
-    # # returns error that some workers try to attempt calculations before all of them done.
     cli.run_replicate(input_path=Path(tmpdir, "mzml_files"),
                       output_path=Path(tmpdir),
-                      workers=1,
+                      workers=-2,
                       verbose=False,
                       config=None)
 
@@ -86,7 +89,7 @@ def mzml_replicate_comparison():
     # # Remove temporary folder. Windows would not delete all files.
     # # Python 3.11 seems to enable the ignore_errors function also for tempfile.TemporaryDirectory() which
     # # is the nicer context manager option.
-    shutil.rmtree(tmpdir, ignore_errors=True)
+    # shutil.rmtree(tmpdir, ignore_errors=True)
 
 
 def mzml_basket_building():

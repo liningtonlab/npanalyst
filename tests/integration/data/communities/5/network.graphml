@@ -47,6 +47,12 @@
       <data key="d12">-0.3362599015235901</data>
       <data key="d13">5</data>
     </node>
+    <node id="RLUS-2135C">
+      <data key="d10">sample</data>
+      <data key="d11">-0.22810018062591553</data>
+      <data key="d12">-0.38671064376831055</data>
+      <data key="d13">5</data>
+    </node>
     <node id="4879">
       <data key="d0">4879</data>
       <data key="d1">2</data>
@@ -95,6 +101,12 @@
       <data key="d12">-0.3299846649169922</data>
       <data key="d13">5</data>
     </node>
+    <node id="RLUS-2132B">
+      <data key="d10">sample</data>
+      <data key="d11">-0.2748997211456299</data>
+      <data key="d12">-0.3535073697566986</data>
+      <data key="d13">5</data>
+    </node>
     <node id="2194">
       <data key="d0">2194</data>
       <data key="d1">3</data>
@@ -127,6 +139,12 @@
       <data key="d12">-0.37390100955963135</data>
       <data key="d13">5</data>
     </node>
+    <node id="RLUS-2132A">
+      <data key="d10">sample</data>
+      <data key="d11">-0.29228243231773376</data>
+      <data key="d12">-0.32344505190849304</data>
+      <data key="d13">5</data>
+    </node>
     <node id="4502">
       <data key="d0">4502</data>
       <data key="d1">2</data>
@@ -141,6 +159,12 @@
       <data key="d10">basket</data>
       <data key="d11">-0.24006853997707367</data>
       <data key="d12">-0.3582804203033447</data>
+      <data key="d13">5</data>
+    </node>
+    <node id="RLUS-2135B">
+      <data key="d10">sample</data>
+      <data key="d11">-0.26027560234069824</data>
+      <data key="d12">-0.3693388104438782</data>
       <data key="d13">5</data>
     </node>
     <node id="5920">
@@ -191,10 +215,10 @@
       <data key="d12">-0.3400254547595978</data>
       <data key="d13">5</data>
     </node>
-    <node id="RLUS-2135B">
+    <node id="RLUS-2132E">
       <data key="d10">sample</data>
-      <data key="d11">-0.26027560234069824</data>
-      <data key="d12">-0.3693388104438782</data>
+      <data key="d11">-0.2513522207736969</data>
+      <data key="d12">-0.4089946150779724</data>
       <data key="d13">5</data>
     </node>
     <node id="3750">
@@ -291,12 +315,6 @@
       <data key="d10">basket</data>
       <data key="d11">-0.23372894525527954</data>
       <data key="d12">-0.36152490973472595</data>
-      <data key="d13">5</data>
-    </node>
-    <node id="RLUS-2132B">
-      <data key="d10">sample</data>
-      <data key="d11">-0.2748997211456299</data>
-      <data key="d12">-0.3535073697566986</data>
       <data key="d13">5</data>
     </node>
     <node id="3884">
@@ -457,12 +475,6 @@
       <data key="d10">basket</data>
       <data key="d11">-0.2735445201396942</data>
       <data key="d12">-0.32284143567085266</data>
-      <data key="d13">5</data>
-    </node>
-    <node id="RLUS-2132E">
-      <data key="d10">sample</data>
-      <data key="d11">-0.2513522207736969</data>
-      <data key="d12">-0.4089946150779724</data>
       <data key="d13">5</data>
     </node>
     <node id="3649">
@@ -705,12 +717,6 @@
       <data key="d12">-0.36627480387687683</data>
       <data key="d13">5</data>
     </node>
-    <node id="RLUS-2132C">
-      <data key="d10">sample</data>
-      <data key="d11">-0.2096656858921051</data>
-      <data key="d12">-0.29623496532440186</data>
-      <data key="d13">5</data>
-    </node>
     <node id="4182">
       <data key="d0">4182</data>
       <data key="d1">3</data>
@@ -747,6 +753,12 @@
       <data key="d10">basket</data>
       <data key="d11">-0.2480708658695221</data>
       <data key="d12">-0.36688658595085144</data>
+      <data key="d13">5</data>
+    </node>
+    <node id="RLUS-2132D">
+      <data key="d10">sample</data>
+      <data key="d11">-0.163265660405159</data>
+      <data key="d12">-0.2750822603702545</data>
       <data key="d13">5</data>
     </node>
     <node id="4827">
@@ -811,12 +823,6 @@
       <data key="d10">basket</data>
       <data key="d11">-0.2508597671985626</data>
       <data key="d12">-0.36027511954307556</data>
-      <data key="d13">5</data>
-    </node>
-    <node id="RLUS-2135C">
-      <data key="d10">sample</data>
-      <data key="d11">-0.22810018062591553</data>
-      <data key="d12">-0.38671064376831055</data>
       <data key="d13">5</data>
     </node>
     <node id="4198">
@@ -979,10 +985,20 @@
       <data key="d12">-0.344866544008255</data>
       <data key="d13">5</data>
     </node>
-    <node id="RLUS-2132A">
-      <data key="d10">sample</data>
-      <data key="d11">-0.29228243231773376</data>
-      <data key="d12">-0.32344505190849304</data>
+    <node id="4470">
+      <data key="d0">4470</data>
+      <data key="d1">3</data>
+      <data key="d2">RLUS-2132B;RLUS-2132C;RLUS-2132E</data>
+      <data key="d3">620.2358</data>
+      <data key="d4">2.3069</data>
+      <data key="d5">149306.1111</data>
+      <data key="d6">92166.0</data>
+      <data key="d7">202131.0</data>
+      <data key="d8">6.33</data>
+      <data key="d9">0.78</data>
+      <data key="d10">basket</data>
+      <data key="d11">-0.23757325112819672</data>
+      <data key="d12">-0.37602317333221436</data>
       <data key="d13">5</data>
     </node>
     <node id="4344">
@@ -999,22 +1015,6 @@
       <data key="d10">basket</data>
       <data key="d11">-0.27783066034317017</data>
       <data key="d12">-0.31014615297317505</data>
-      <data key="d13">5</data>
-    </node>
-    <node id="4470">
-      <data key="d0">4470</data>
-      <data key="d1">3</data>
-      <data key="d2">RLUS-2132B;RLUS-2132C;RLUS-2132E</data>
-      <data key="d3">620.2358</data>
-      <data key="d4">2.3069</data>
-      <data key="d5">149306.1111</data>
-      <data key="d6">92166.0</data>
-      <data key="d7">202131.0</data>
-      <data key="d8">6.33</data>
-      <data key="d9">0.78</data>
-      <data key="d10">basket</data>
-      <data key="d11">-0.23757325112819672</data>
-      <data key="d12">-0.37602317333221436</data>
       <data key="d13">5</data>
     </node>
     <node id="5747">
@@ -1049,65 +1049,28 @@
       <data key="d12">-0.3433879315853119</data>
       <data key="d13">5</data>
     </node>
-    <node id="RLUS-2132D">
+    <node id="RLUS-2132C">
       <data key="d10">sample</data>
-      <data key="d11">-0.163265660405159</data>
-      <data key="d12">-0.2750822603702545</data>
+      <data key="d11">-0.2096656858921051</data>
+      <data key="d12">-0.29623496532440186</data>
       <data key="d13">5</data>
     </node>
     <edge source="4353" target="RLUS-2132B" />
     <edge source="4353" target="RLUS-2132C" />
     <edge source="6691" target="RLUS-2132B" />
     <edge source="6691" target="RLUS-2132C" />
+    <edge source="RLUS-2135C" target="3884" />
+    <edge source="RLUS-2135C" target="4198" />
+    <edge source="RLUS-2135C" target="4213" />
+    <edge source="RLUS-2135C" target="4388" />
+    <edge source="RLUS-2135C" target="4827" />
     <edge source="4879" target="RLUS-2132A" />
     <edge source="4879" target="RLUS-2132B" />
     <edge source="4368" target="RLUS-2132A" />
     <edge source="4368" target="RLUS-2132B" />
     <edge source="4496" target="RLUS-2132C" />
     <edge source="4496" target="RLUS-2132D" />
-    <edge source="2194" target="RLUS-2132A" />
-    <edge source="2194" target="RLUS-2132B" />
-    <edge source="2194" target="RLUS-2135A" />
-    <edge source="4756" target="RLUS-2132A" />
-    <edge source="4756" target="RLUS-2132B" />
-    <edge source="4502" target="RLUS-2132B" />
-    <edge source="4502" target="RLUS-2132C" />
-    <edge source="5920" target="RLUS-2132A" />
-    <edge source="5920" target="RLUS-2132B" />
-    <edge source="5920" target="RLUS-2132C" />
-    <edge source="4771" target="RLUS-2132A" />
-    <edge source="4771" target="RLUS-2132B" />
-    <edge source="4771" target="RLUS-2135A" />
-    <edge source="4388" target="RLUS-2132B" />
-    <edge source="4388" target="RLUS-2132C" />
-    <edge source="4388" target="RLUS-2132D" />
-    <edge source="4388" target="RLUS-2135B" />
-    <edge source="4388" target="RLUS-2135C" />
-    <edge source="RLUS-2135B" target="3410" />
-    <edge source="RLUS-2135B" target="3649" />
-    <edge source="RLUS-2135B" target="3650" />
-    <edge source="RLUS-2135B" target="3654" />
-    <edge source="RLUS-2135B" target="3882" />
-    <edge source="RLUS-2135B" target="3884" />
-    <edge source="RLUS-2135B" target="3887" />
-    <edge source="RLUS-2135B" target="4164" />
-    <edge source="RLUS-2135B" target="4198" />
-    <edge source="RLUS-2135B" target="4213" />
-    <edge source="RLUS-2135B" target="4341" />
-    <edge source="3750" target="RLUS-2132B" />
-    <edge source="3750" target="RLUS-2132C" />
-    <edge source="4902" target="RLUS-2132B" />
-    <edge source="4902" target="RLUS-2132C" />
-    <edge source="5284" target="RLUS-2132B" />
-    <edge source="5284" target="RLUS-2132C" />
-    <edge source="5289" target="RLUS-2132A" />
-    <edge source="5289" target="RLUS-2132B" />
-    <edge source="5289" target="RLUS-2132C" />
-    <edge source="3882" target="RLUS-2132A" />
-    <edge source="3882" target="RLUS-2132B" />
-    <edge source="3882" target="RLUS-2135A" />
-    <edge source="4778" target="RLUS-2132B" />
-    <edge source="4778" target="RLUS-2132C" />
+    <edge source="RLUS-2132B" target="2194" />
     <edge source="RLUS-2132B" target="3042" />
     <edge source="RLUS-2132B" target="3410" />
     <edge source="RLUS-2132B" target="3579" />
@@ -1116,7 +1079,9 @@
     <edge source="RLUS-2132B" target="3654" />
     <edge source="RLUS-2132B" target="3665" />
     <edge source="RLUS-2132B" target="3680" />
+    <edge source="RLUS-2132B" target="3750" />
     <edge source="RLUS-2132B" target="3787" />
+    <edge source="RLUS-2132B" target="3882" />
     <edge source="RLUS-2132B" target="3884" />
     <edge source="RLUS-2132B" target="3887" />
     <edge source="RLUS-2132B" target="4016" />
@@ -1131,95 +1096,130 @@
     <edge source="RLUS-2132B" target="4211" />
     <edge source="RLUS-2132B" target="4300" />
     <edge source="RLUS-2132B" target="4341" />
+    <edge source="RLUS-2132B" target="4388" />
     <edge source="RLUS-2132B" target="4420" />
     <edge source="RLUS-2132B" target="4470" />
+    <edge source="RLUS-2132B" target="4502" />
     <edge source="RLUS-2132B" target="4534" />
     <edge source="RLUS-2132B" target="4557" />
     <edge source="RLUS-2132B" target="4699" />
     <edge source="RLUS-2132B" target="4720" />
+    <edge source="RLUS-2132B" target="4756" />
+    <edge source="RLUS-2132B" target="4771" />
+    <edge source="RLUS-2132B" target="4778" />
     <edge source="RLUS-2132B" target="4781" />
     <edge source="RLUS-2132B" target="4852" />
+    <edge source="RLUS-2132B" target="4902" />
     <edge source="RLUS-2132B" target="4943" />
     <edge source="RLUS-2132B" target="4948" />
     <edge source="RLUS-2132B" target="5043" />
     <edge source="RLUS-2132B" target="5098" />
     <edge source="RLUS-2132B" target="5173" />
     <edge source="RLUS-2132B" target="5178" />
-    <edge source="3884" target="RLUS-2132A" />
-    <edge source="3884" target="RLUS-2132E" />
-    <edge source="3884" target="RLUS-2135C" />
-    <edge source="4781" target="RLUS-2132A" />
-    <edge source="3887" target="RLUS-2132A" />
+    <edge source="RLUS-2132B" target="5284" />
+    <edge source="RLUS-2132B" target="5289" />
+    <edge source="RLUS-2132B" target="5920" />
+    <edge source="2194" target="RLUS-2132A" />
+    <edge source="2194" target="RLUS-2135A" />
+    <edge source="4756" target="RLUS-2132A" />
+    <edge source="RLUS-2132A" target="3042" />
+    <edge source="RLUS-2132A" target="3410" />
+    <edge source="RLUS-2132A" target="3649" />
+    <edge source="RLUS-2132A" target="3650" />
+    <edge source="RLUS-2132A" target="3654" />
+    <edge source="RLUS-2132A" target="3665" />
+    <edge source="RLUS-2132A" target="3680" />
+    <edge source="RLUS-2132A" target="3787" />
+    <edge source="RLUS-2132A" target="3882" />
+    <edge source="RLUS-2132A" target="3884" />
+    <edge source="RLUS-2132A" target="3887" />
+    <edge source="RLUS-2132A" target="4019" />
+    <edge source="RLUS-2132A" target="4028" />
+    <edge source="RLUS-2132A" target="4164" />
+    <edge source="RLUS-2132A" target="4182" />
+    <edge source="RLUS-2132A" target="4210" />
+    <edge source="RLUS-2132A" target="4213" />
+    <edge source="RLUS-2132A" target="4341" />
+    <edge source="RLUS-2132A" target="4344" />
+    <edge source="RLUS-2132A" target="4420" />
+    <edge source="RLUS-2132A" target="4534" />
+    <edge source="RLUS-2132A" target="4771" />
+    <edge source="RLUS-2132A" target="4781" />
+    <edge source="RLUS-2132A" target="4852" />
+    <edge source="RLUS-2132A" target="4943" />
+    <edge source="RLUS-2132A" target="5104" />
+    <edge source="RLUS-2132A" target="5173" />
+    <edge source="RLUS-2132A" target="5178" />
+    <edge source="RLUS-2132A" target="5289" />
+    <edge source="RLUS-2132A" target="5920" />
+    <edge source="4502" target="RLUS-2132C" />
+    <edge source="RLUS-2135B" target="3410" />
+    <edge source="RLUS-2135B" target="3649" />
+    <edge source="RLUS-2135B" target="3650" />
+    <edge source="RLUS-2135B" target="3654" />
+    <edge source="RLUS-2135B" target="3882" />
+    <edge source="RLUS-2135B" target="3884" />
+    <edge source="RLUS-2135B" target="3887" />
+    <edge source="RLUS-2135B" target="4164" />
+    <edge source="RLUS-2135B" target="4198" />
+    <edge source="RLUS-2135B" target="4213" />
+    <edge source="RLUS-2135B" target="4341" />
+    <edge source="RLUS-2135B" target="4388" />
+    <edge source="5920" target="RLUS-2132C" />
+    <edge source="4771" target="RLUS-2135A" />
+    <edge source="4388" target="RLUS-2132C" />
+    <edge source="4388" target="RLUS-2132D" />
+    <edge source="RLUS-2132E" target="3650" />
+    <edge source="RLUS-2132E" target="3884" />
+    <edge source="RLUS-2132E" target="4470" />
+    <edge source="3750" target="RLUS-2132C" />
+    <edge source="4902" target="RLUS-2132C" />
+    <edge source="5284" target="RLUS-2132C" />
+    <edge source="5289" target="RLUS-2132C" />
+    <edge source="3882" target="RLUS-2135A" />
+    <edge source="4778" target="RLUS-2132C" />
     <edge source="3887" target="RLUS-2132C" />
     <edge source="3887" target="RLUS-2135A" />
     <edge source="4016" target="RLUS-2132C" />
-    <edge source="4019" target="RLUS-2132A" />
     <edge source="5043" target="RLUS-2132C" />
-    <edge source="5173" target="RLUS-2132A" />
-    <edge source="4534" target="RLUS-2132A" />
     <edge source="4534" target="RLUS-2135A" />
-    <edge source="5178" target="RLUS-2132A" />
-    <edge source="4028" target="RLUS-2132A" />
     <edge source="4028" target="RLUS-2132C" />
-    <edge source="RLUS-2132E" target="3650" />
-    <edge source="RLUS-2132E" target="4470" />
-    <edge source="3649" target="RLUS-2132A" />
     <edge source="3649" target="RLUS-2132C" />
     <edge source="3649" target="RLUS-2135A" />
-    <edge source="3650" target="RLUS-2132A" />
     <edge source="3650" target="RLUS-2132D" />
     <edge source="3650" target="RLUS-2135A" />
     <edge source="4675" target="RLUS-2132C" />
     <edge source="4675" target="RLUS-2132D" />
-    <edge source="4164" target="RLUS-2132A" />
     <edge source="4164" target="RLUS-2132C" />
-    <edge source="4420" target="RLUS-2132A" />
-    <edge source="3654" target="RLUS-2132A" />
-    <edge source="3787" target="RLUS-2132A" />
     <edge source="3787" target="RLUS-2132C" />
     <edge source="4300" target="RLUS-2132C" />
     <edge source="4557" target="RLUS-2132C" />
     <edge source="5709" target="RLUS-2132D" />
-    <edge source="4943" target="RLUS-2132A" />
-    <edge source="3665" target="RLUS-2132A" />
-    <edge source="3410" target="RLUS-2132A" />
     <edge source="3410" target="RLUS-2135A" />
     <edge source="4178" target="RLUS-2132C" />
     <edge source="4948" target="RLUS-2132C" />
-    <edge source="RLUS-2132C" target="3042" />
-    <edge source="RLUS-2132C" target="3579" />
-    <edge source="RLUS-2132C" target="4196" />
-    <edge source="RLUS-2132C" target="4198" />
-    <edge source="RLUS-2132C" target="4211" />
-    <edge source="RLUS-2132C" target="4213" />
-    <edge source="RLUS-2132C" target="4341" />
-    <edge source="RLUS-2132C" target="4344" />
-    <edge source="RLUS-2132C" target="4463" />
-    <edge source="RLUS-2132C" target="4470" />
-    <edge source="RLUS-2132C" target="4699" />
-    <edge source="RLUS-2132C" target="4720" />
-    <edge source="RLUS-2132C" target="4827" />
-    <edge source="RLUS-2132C" target="5098" />
-    <edge source="RLUS-2132C" target="5104" />
-    <edge source="RLUS-2132C" target="5747" />
-    <edge source="4182" target="RLUS-2132A" />
     <edge source="4182" target="RLUS-2135A" />
     <edge source="RLUS-2135A" target="3042" />
     <edge source="RLUS-2135A" target="4213" />
     <edge source="RLUS-2135A" target="4341" />
-    <edge source="4827" target="RLUS-2135C" />
-    <edge source="3680" target="RLUS-2132A" />
-    <edge source="3042" target="RLUS-2132A" />
-    <edge source="RLUS-2135C" target="4198" />
-    <edge source="RLUS-2135C" target="4213" />
-    <edge source="4463" target="RLUS-2132D" />
-    <edge source="5104" target="RLUS-2132A" />
-    <edge source="4210" target="RLUS-2132A" />
-    <edge source="4852" target="RLUS-2132A" />
-    <edge source="4213" target="RLUS-2132A" />
-    <edge source="4213" target="RLUS-2132D" />
-    <edge source="4341" target="RLUS-2132A" />
-    <edge source="RLUS-2132A" target="4344" />
-    <edge source="5747" target="RLUS-2132D" />
+    <edge source="4699" target="RLUS-2132C" />
+    <edge source="RLUS-2132D" target="4213" />
+    <edge source="RLUS-2132D" target="4463" />
+    <edge source="RLUS-2132D" target="5747" />
+    <edge source="4827" target="RLUS-2132C" />
+    <edge source="3042" target="RLUS-2132C" />
+    <edge source="4196" target="RLUS-2132C" />
+    <edge source="4198" target="RLUS-2132C" />
+    <edge source="5098" target="RLUS-2132C" />
+    <edge source="4463" target="RLUS-2132C" />
+    <edge source="4720" target="RLUS-2132C" />
+    <edge source="5104" target="RLUS-2132C" />
+    <edge source="4211" target="RLUS-2132C" />
+    <edge source="4213" target="RLUS-2132C" />
+    <edge source="4341" target="RLUS-2132C" />
+    <edge source="4470" target="RLUS-2132C" />
+    <edge source="4344" target="RLUS-2132C" />
+    <edge source="5747" target="RLUS-2132C" />
+    <edge source="3579" target="RLUS-2132C" />
   </graph>
 </graphml>

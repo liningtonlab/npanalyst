@@ -56,7 +56,7 @@ HERE = Path(__file__).parent
 INPUT_FILE_ACTIVITY_FILE = HERE / "data/Activity.csv"
 
 # Basketed CSV file output
-OUTPUT_FILE_BASKETED = HERE / "data/"
+OUTPUT_FILE_BASKETED = HERE / "data/basketed_mzml.csv"
 
 # Activity association network graphml
 OUTPUT_GRAPHML = HERE / "data/network_mzml.graphml"
@@ -68,7 +68,6 @@ OUTPUT_TABLE = HERE / "data/table_mzml.csv"
 OUTPUT_COMMUNITY = HERE / "data/communities"
 
 
-# # Test config settings (ms parameter and AS and CS threshold)
 def config_parameter():
     """This test shall guarantee that the loaded settings are identical to those, used to
     obtain the reference/ground truth results."""
@@ -83,12 +82,11 @@ def bioactivity_mapping():
     The network.graphml, the table.csv (features table) and the individual community-related files are
     compared through a dataframe-by-dataframe analysis."""
 
-
     # # Create temporary folder for result and test files
     tmpdir = tempfile.mkdtemp()
 
     # # Run activity readout mapper function
-    cli.run_activity(input_path=Path(OUTPUT_FILE_BASKETED, type),
+    cli.run_activity(input_path=Path(OUTPUT_FILE_BASKETED),
                      output_path=Path(tmpdir),
                      activity_path=INPUT_FILE_ACTIVITY_FILE,
                      verbose=False,
@@ -122,7 +120,6 @@ def bioactivity_mapping():
                             test_path=Path(tmpdir, "communities", community, "assay.csv"))
 
         # graphml files
-
         graphml_assertion(reference_path=Path(OUTPUT_COMMUNITY, community, "network.graphml"),
                           test_path=Path(tmpdir, "communities", community, "network.graphml"))
 

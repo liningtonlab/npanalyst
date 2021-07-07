@@ -9,14 +9,12 @@ from pandas._testing import assert_frame_equal
 
 
 # Helper function
-# Note that the dataframe assertion function here is different from the other
-# test scenarios
 def dataframe_assertion(reference_path, test_path):
     """This function reads the respective dataframe and compares
     the two files."""
     result_table = pd.read_csv(reference_path)
-    # # This resorting might be necessary, when the GNPS file gets bigger
-    # # For the test dataset it is not necessary
+    # # This resorting is just a safe-guard to assure that rows are ordered properly and error messages are
+    # # due to wrong values, not due to interchanged rows
     result_table.sort_values(by=["UniqueFiles", "PrecMz", "RetTime"], ignore_index=True, inplace=True)
 
     test_table = pd.read_csv(Path(test_path))
@@ -56,6 +54,7 @@ def gnps_import():
 
     # # Remove the temp folder
     shutil.rmtree(tmpdir, ignore_errors=True)
+
 
 if __name__ == '__main__':
 

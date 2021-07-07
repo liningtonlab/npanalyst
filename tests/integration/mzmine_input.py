@@ -11,8 +11,6 @@ from pandas._testing import assert_frame_equal
 
 
 # Helper function
-# Note that the dataframe assertion function here is different from the other
-# test scenarios
 def dataframe_assertion(reference_path, test_path):
     """This function reads the respective dataframe and compares
     the two files."""

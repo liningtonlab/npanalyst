@@ -15,10 +15,10 @@
   <key id="d1" for="node" attr.name="x" attr.type="double" />
   <key id="d0" for="node" attr.name="type_" attr.type="string" />
   <graph edgedefault="undirected">
-    <node id="RLUS-2067F">
+    <node id="RLUS-2101F">
       <data key="d0">sample</data>
-      <data key="d1">0.1007697656750679</data>
-      <data key="d2">-0.6720794439315796</data>
+      <data key="d1">0.09733393043279648</data>
+      <data key="d2">-0.6048465371131897</data>
       <data key="d3">7</data>
     </node>
     <node id="7940">
@@ -37,18 +37,6 @@
       <data key="d2">-0.5280011296272278</data>
       <data key="d3">7</data>
     </node>
-    <node id="RLUS-2101E">
-      <data key="d0">sample</data>
-      <data key="d1">0.030508171766996384</data>
-      <data key="d2">-0.5354353189468384</data>
-      <data key="d3">7</data>
-    </node>
-    <node id="RLUS-2101D">
-      <data key="d0">sample</data>
-      <data key="d1">0.004795580171048641</data>
-      <data key="d2">-0.4737725257873535</data>
-      <data key="d3">7</data>
-    </node>
     <node id="7706">
       <data key="d4">7706</data>
       <data key="d5">2</data>
@@ -65,10 +53,10 @@
       <data key="d2">-0.5296880602836609</data>
       <data key="d3">7</data>
     </node>
-    <node id="RLUS-2101F">
+    <node id="RLUS-2101D">
       <data key="d0">sample</data>
-      <data key="d1">0.09733393043279648</data>
-      <data key="d2">-0.6048465371131897</data>
+      <data key="d1">0.004795580171048641</data>
+      <data key="d2">-0.4737725257873535</data>
       <data key="d3">7</data>
     </node>
     <node id="8356">
@@ -103,6 +91,12 @@
       <data key="d2">-0.5451173186302185</data>
       <data key="d3">7</data>
     </node>
+    <node id="RLUS-2101B">
+      <data key="d0">sample</data>
+      <data key="d1">0.0066971564665436745</data>
+      <data key="d2">-0.6098385453224182</data>
+      <data key="d3">7</data>
+    </node>
     <node id="4652">
       <data key="d4">4652</data>
       <data key="d5">3</data>
@@ -133,6 +127,12 @@
       <data key="d0">basket</data>
       <data key="d1">0.0033266195096075535</data>
       <data key="d2">-0.5458768010139465</data>
+      <data key="d3">7</data>
+    </node>
+    <node id="RLUS-2101C">
+      <data key="d0">sample</data>
+      <data key="d1">-0.0026167193427681923</data>
+      <data key="d2">-0.5942474007606506</data>
       <data key="d3">7</data>
     </node>
     <node id="5169">
@@ -439,6 +439,12 @@
       <data key="d2">-0.5367503762245178</data>
       <data key="d3">7</data>
     </node>
+    <node id="RLUS-2067F">
+      <data key="d0">sample</data>
+      <data key="d1">0.1007697656750679</data>
+      <data key="d2">-0.6720794439315796</data>
+      <data key="d3">7</data>
+    </node>
     <node id="4562">
       <data key="d4">4562</data>
       <data key="d5">2</data>
@@ -631,12 +637,6 @@
       <data key="d2">-0.540835440158844</data>
       <data key="d3">7</data>
     </node>
-    <node id="RLUS-2101C">
-      <data key="d0">sample</data>
-      <data key="d1">-0.0026167193427681923</data>
-      <data key="d2">-0.5942474007606506</data>
-      <data key="d3">7</data>
-    </node>
     <node id="8296">
       <data key="d4">8296</data>
       <data key="d5">2</data>
@@ -813,6 +813,12 @@
       <data key="d2">-0.5497865080833435</data>
       <data key="d3">7</data>
     </node>
+    <node id="RLUS-2101E">
+      <data key="d0">sample</data>
+      <data key="d1">0.030508171766996384</data>
+      <data key="d2">-0.5354353189468384</data>
+      <data key="d3">7</data>
+    </node>
     <node id="8571">
       <data key="d4">8571</data>
       <data key="d5">2</data>
@@ -827,12 +833,6 @@
       <data key="d0">basket</data>
       <data key="d1">0.04867086187005043</data>
       <data key="d2">-0.5090376138687134</data>
-      <data key="d3">7</data>
-    </node>
-    <node id="RLUS-2101B">
-      <data key="d0">sample</data>
-      <data key="d1">0.0066971564665436745</data>
-      <data key="d2">-0.6098385453224182</data>
       <data key="d3">7</data>
     </node>
     <node id="5886">
@@ -851,48 +851,11 @@
       <data key="d2">-0.550272524356842</data>
       <data key="d3">7</data>
     </node>
-    <edge source="RLUS-2067F" target="6329" />
+    <edge source="RLUS-2101F" target="8376" />
     <edge source="7940" target="RLUS-2101D" />
     <edge source="7940" target="RLUS-2101E" />
-    <edge source="RLUS-2101E" target="3675" />
-    <edge source="RLUS-2101E" target="4543" />
-    <edge source="RLUS-2101E" target="4658" />
-    <edge source="RLUS-2101E" target="4703" />
-    <edge source="RLUS-2101E" target="4705" />
-    <edge source="RLUS-2101E" target="4930" />
-    <edge source="RLUS-2101E" target="5440" />
-    <edge source="RLUS-2101E" target="5740" />
-    <edge source="RLUS-2101E" target="5886" />
-    <edge source="RLUS-2101E" target="6329" />
-    <edge source="RLUS-2101E" target="6460" />
-    <edge source="RLUS-2101E" target="6573" />
-    <edge source="RLUS-2101E" target="7020" />
-    <edge source="RLUS-2101E" target="7093" />
-    <edge source="RLUS-2101E" target="7287" />
-    <edge source="RLUS-2101E" target="7463" />
-    <edge source="RLUS-2101E" target="7706" />
-    <edge source="RLUS-2101E" target="8296" />
-    <edge source="RLUS-2101E" target="8301" />
-    <edge source="RLUS-2101E" target="8305" />
-    <edge source="RLUS-2101E" target="8306" />
-    <edge source="RLUS-2101E" target="8356" />
-    <edge source="RLUS-2101E" target="8370" />
-    <edge source="RLUS-2101E" target="8376" />
-    <edge source="RLUS-2101E" target="8384" />
-    <edge source="RLUS-2101E" target="8386" />
-    <edge source="RLUS-2101E" target="8388" />
-    <edge source="RLUS-2101E" target="8395" />
-    <edge source="RLUS-2101E" target="8396" />
-    <edge source="RLUS-2101E" target="8406" />
-    <edge source="RLUS-2101E" target="8408" />
-    <edge source="RLUS-2101E" target="8409" />
-    <edge source="RLUS-2101E" target="8410" />
-    <edge source="RLUS-2101E" target="8411" />
-    <edge source="RLUS-2101E" target="8554" />
-    <edge source="RLUS-2101E" target="8555" />
-    <edge source="RLUS-2101E" target="8567" />
-    <edge source="RLUS-2101E" target="8568" />
-    <edge source="RLUS-2101E" target="8571" />
+    <edge source="7706" target="RLUS-2101D" />
+    <edge source="7706" target="RLUS-2101E" />
     <edge source="RLUS-2101D" target="3675" />
     <edge source="RLUS-2101D" target="3786" />
     <edge source="RLUS-2101D" target="4543" />
@@ -915,7 +878,6 @@
     <edge source="RLUS-2101D" target="7093" />
     <edge source="RLUS-2101D" target="7287" />
     <edge source="RLUS-2101D" target="7463" />
-    <edge source="RLUS-2101D" target="7706" />
     <edge source="RLUS-2101D" target="8296" />
     <edge source="RLUS-2101D" target="8301" />
     <edge source="RLUS-2101D" target="8305" />
@@ -939,22 +901,60 @@
     <edge source="RLUS-2101D" target="8567" />
     <edge source="RLUS-2101D" target="8568" />
     <edge source="RLUS-2101D" target="8571" />
-    <edge source="RLUS-2101F" target="8376" />
-    <edge source="4652" target="RLUS-2101B" />
+    <edge source="8356" target="RLUS-2101E" />
+    <edge source="7463" target="RLUS-2101E" />
+    <edge source="RLUS-2101B" target="4652" />
+    <edge source="RLUS-2101B" target="4658" />
+    <edge source="RLUS-2101B" target="4659" />
+    <edge source="RLUS-2101B" target="4660" />
+    <edge source="RLUS-2101B" target="4661" />
+    <edge source="RLUS-2101B" target="4700" />
     <edge source="4652" target="RLUS-2101C" />
-    <edge source="5169" target="RLUS-2101C" />
-    <edge source="4658" target="RLUS-2101B" />
-    <edge source="4658" target="RLUS-2101C" />
-    <edge source="4659" target="RLUS-2101B" />
-    <edge source="4659" target="RLUS-2101C" />
-    <edge source="4660" target="RLUS-2101B" />
-    <edge source="4660" target="RLUS-2101C" />
-    <edge source="4661" target="RLUS-2101B" />
-    <edge source="4661" target="RLUS-2101C" />
-    <edge source="3786" target="RLUS-2101C" />
-    <edge source="4562" target="RLUS-2101C" />
-    <edge source="4698" target="RLUS-2101C" />
-    <edge source="4700" target="RLUS-2101B" />
-    <edge source="4700" target="RLUS-2101C" />
+    <edge source="6573" target="RLUS-2101E" />
+    <edge source="RLUS-2101C" target="3786" />
+    <edge source="RLUS-2101C" target="4562" />
+    <edge source="RLUS-2101C" target="4658" />
+    <edge source="RLUS-2101C" target="4659" />
+    <edge source="RLUS-2101C" target="4660" />
+    <edge source="RLUS-2101C" target="4661" />
+    <edge source="RLUS-2101C" target="4698" />
+    <edge source="RLUS-2101C" target="4700" />
+    <edge source="RLUS-2101C" target="5169" />
+    <edge source="4658" target="RLUS-2101E" />
+    <edge source="7093" target="RLUS-2101E" />
+    <edge source="8370" target="RLUS-2101E" />
+    <edge source="8376" target="RLUS-2101E" />
+    <edge source="6329" target="RLUS-2067F" />
+    <edge source="6329" target="RLUS-2101E" />
+    <edge source="6460" target="RLUS-2101E" />
+    <edge source="4543" target="RLUS-2101E" />
+    <edge source="5440" target="RLUS-2101E" />
+    <edge source="8384" target="RLUS-2101E" />
+    <edge source="4930" target="RLUS-2101E" />
+    <edge source="8386" target="RLUS-2101E" />
+    <edge source="8388" target="RLUS-2101E" />
+    <edge source="8395" target="RLUS-2101E" />
+    <edge source="8396" target="RLUS-2101E" />
+    <edge source="8406" target="RLUS-2101E" />
+    <edge source="8408" target="RLUS-2101E" />
+    <edge source="8409" target="RLUS-2101E" />
+    <edge source="3675" target="RLUS-2101E" />
+    <edge source="8410" target="RLUS-2101E" />
+    <edge source="8411" target="RLUS-2101E" />
+    <edge source="4703" target="RLUS-2101E" />
+    <edge source="8567" target="RLUS-2101E" />
+    <edge source="4705" target="RLUS-2101E" />
+    <edge source="8296" target="RLUS-2101E" />
+    <edge source="8554" target="RLUS-2101E" />
+    <edge source="8555" target="RLUS-2101E" />
+    <edge source="5740" target="RLUS-2101E" />
+    <edge source="7020" target="RLUS-2101E" />
+    <edge source="8301" target="RLUS-2101E" />
+    <edge source="8305" target="RLUS-2101E" />
+    <edge source="8306" target="RLUS-2101E" />
+    <edge source="7287" target="RLUS-2101E" />
+    <edge source="8568" target="RLUS-2101E" />
+    <edge source="RLUS-2101E" target="5886" />
+    <edge source="RLUS-2101E" target="8571" />
   </graph>
 </graphml>

@@ -1,49 +1,49 @@
 <?xml version='1.0' encoding='utf-8'?>
 <graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
-  <key id="d13" for="node" attr.name="community" attr.type="int" />
-  <key id="d12" for="node" attr.name="y" attr.type="double" />
-  <key id="d11" for="node" attr.name="x" attr.type="double" />
-  <key id="d10" for="node" attr.name="type_" attr.type="string" />
-  <key id="d9" for="node" attr.name="cluster_score" attr.type="float" />
-  <key id="d8" for="node" attr.name="activity_score" attr.type="float" />
-  <key id="d7" for="node" attr.name="MaxPrecIntensity" attr.type="double" />
-  <key id="d6" for="node" attr.name="MinPrecIntensity" attr.type="double" />
-  <key id="d5" for="node" attr.name="PrecIntensity" attr.type="double" />
-  <key id="d4" for="node" attr.name="RetTime" attr.type="double" />
-  <key id="d3" for="node" attr.name="PrecMz" attr.type="double" />
-  <key id="d2" for="node" attr.name="samples" attr.type="string" />
-  <key id="d1" for="node" attr.name="freq" attr.type="int" />
-  <key id="d0" for="node" attr.name="id" attr.type="int" />
+  <key id="d13" for="node" attr.name="cluster_score" attr.type="float" />
+  <key id="d12" for="node" attr.name="activity_score" attr.type="float" />
+  <key id="d11" for="node" attr.name="MaxPrecIntensity" attr.type="double" />
+  <key id="d10" for="node" attr.name="MinPrecIntensity" attr.type="double" />
+  <key id="d9" for="node" attr.name="PrecIntensity" attr.type="double" />
+  <key id="d8" for="node" attr.name="RetTime" attr.type="double" />
+  <key id="d7" for="node" attr.name="PrecMz" attr.type="double" />
+  <key id="d6" for="node" attr.name="samples" attr.type="string" />
+  <key id="d5" for="node" attr.name="freq" attr.type="int" />
+  <key id="d4" for="node" attr.name="id" attr.type="int" />
+  <key id="d3" for="node" attr.name="community" attr.type="int" />
+  <key id="d2" for="node" attr.name="y" attr.type="double" />
+  <key id="d1" for="node" attr.name="x" attr.type="double" />
+  <key id="d0" for="node" attr.name="type_" attr.type="string" />
   <graph edgedefault="undirected">
-    <node id="880">
-      <data key="d0">880</data>
-      <data key="d1">2</data>
-      <data key="d2">SW218721-1;SW218722-1</data>
-      <data key="d3">293.1642</data>
-      <data key="d4">1.355</data>
-      <data key="d5">103377.5</data>
-      <data key="d6">95657.0</data>
-      <data key="d7">111098.0</data>
-      <data key="d8">3.75</data>
-      <data key="d9">0.53</data>
-      <data key="d10">basket</data>
-      <data key="d11">-0.8765925168991089</data>
-      <data key="d12">0.7587391138076782</data>
-      <data key="d13">16</data>
-    </node>
     <node id="SW218722-1">
-      <data key="d10">sample</data>
-      <data key="d11">-0.8481928706169128</data>
-      <data key="d12">0.7368456721305847</data>
-      <data key="d13">16</data>
+      <data key="d0">sample</data>
+      <data key="d1">-0.8481928706169128</data>
+      <data key="d2">0.7368456721305847</data>
+      <data key="d3">16</data>
     </node>
     <node id="SW218721-1">
-      <data key="d10">sample</data>
-      <data key="d11">-0.887154221534729</data>
-      <data key="d12">0.7473906874656677</data>
-      <data key="d13">16</data>
+      <data key="d0">sample</data>
+      <data key="d1">-0.887154221534729</data>
+      <data key="d2">0.7473906874656677</data>
+      <data key="d3">16</data>
     </node>
-    <edge source="880" target="SW218721-1" />
-    <edge source="880" target="SW218722-1" />
+    <node id="880">
+      <data key="d4">880</data>
+      <data key="d5">2</data>
+      <data key="d6">SW218721-1;SW218722-1</data>
+      <data key="d7">293.1642</data>
+      <data key="d8">1.355</data>
+      <data key="d9">103377.5</data>
+      <data key="d10">95657.0</data>
+      <data key="d11">111098.0</data>
+      <data key="d12">3.75</data>
+      <data key="d13">0.53</data>
+      <data key="d0">basket</data>
+      <data key="d1">-0.8765925168991089</data>
+      <data key="d2">0.7587391138076782</data>
+      <data key="d3">16</data>
+    </node>
+    <edge source="SW218722-1" target="880" />
+    <edge source="SW218721-1" target="880" />
   </graph>
 </graphml>

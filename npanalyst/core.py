@@ -43,7 +43,7 @@ def replicate_compare_sample(
     ndf = msutils.collapse_connected_components(
         con_comps, df, configd, configd["MINREPS"]
     )
-    ndf.to_csv(outputdir.joinpath("replicated").joinpath(f"{sample}_replicated.csv"))
+    ndf.to_csv(outputdir.joinpath("replicated").joinpath(f"{sample}_replicated.csv"), index=False)
     logger.debug(f"{sample} done processing - Found {len(ndf)} features.")
     gc.collect()  # attempt to fix rtree index memory leak...
 

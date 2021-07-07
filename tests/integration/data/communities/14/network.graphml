@@ -31,12 +31,6 @@
       <data key="d12">-0.45546844601631165</data>
       <data key="d13">14</data>
     </node>
-    <node id="RLUS-2214E">
-      <data key="d10">sample</data>
-      <data key="d11">0.48711007833480835</data>
-      <data key="d12">-0.2405642867088318</data>
-      <data key="d13">14</data>
-    </node>
     <node id="9156">
       <data key="d0">9156</data>
       <data key="d1">2</data>
@@ -85,10 +79,28 @@
       <data key="d12">-0.3029042184352875</data>
       <data key="d13">14</data>
     </node>
+    <node id="RLUS-2214E">
+      <data key="d10">sample</data>
+      <data key="d11">0.48711007833480835</data>
+      <data key="d12">-0.2405642867088318</data>
+      <data key="d13">14</data>
+    </node>
     <node id="RLUS-2105B">
       <data key="d10">sample</data>
       <data key="d11">0.30510154366493225</data>
       <data key="d12">-0.4711199700832367</data>
+      <data key="d13">14</data>
+    </node>
+    <node id="RLUS-2105E">
+      <data key="d10">sample</data>
+      <data key="d11">0.3485305607318878</data>
+      <data key="d12">-0.18692533671855927</data>
+      <data key="d13">14</data>
+    </node>
+    <node id="RLUS-2105D">
+      <data key="d10">sample</data>
+      <data key="d11">0.43391290307044983</data>
+      <data key="d12">-0.5191841125488281</data>
       <data key="d13">14</data>
     </node>
     <node id="9681">
@@ -123,12 +135,6 @@
       <data key="d12">-0.06493978947401047</data>
       <data key="d13">14</data>
     </node>
-    <node id="RLUS-2105D">
-      <data key="d10">sample</data>
-      <data key="d11">0.43391290307044983</data>
-      <data key="d12">-0.5191841125488281</data>
-      <data key="d13">14</data>
-    </node>
     <node id="4477">
       <data key="d0">4477</data>
       <data key="d1">2</data>
@@ -151,24 +157,18 @@
       <data key="d12">-0.4110214412212372</data>
       <data key="d13">14</data>
     </node>
-    <node id="RLUS-2105E">
-      <data key="d10">sample</data>
-      <data key="d11">0.3485305607318878</data>
-      <data key="d12">-0.18692533671855927</data>
-      <data key="d13">14</data>
-    </node>
     <edge source="4481" target="RLUS-2105B" />
     <edge source="4481" target="RLUS-2105C" />
-    <edge source="RLUS-2214E" target="9156" />
     <edge source="9156" target="RLUS-2105E" />
+    <edge source="9156" target="RLUS-2214E" />
     <edge source="3391" target="RLUS-2105B" />
     <edge source="3391" target="RLUS-2105C" />
     <edge source="9542" target="RLUS-2105C" />
     <edge source="9542" target="RLUS-2105E" />
     <edge source="RLUS-2105B" target="4477" />
+    <edge source="RLUS-2105E" target="9394" />
+    <edge source="RLUS-2105D" target="9681" />
     <edge source="9681" target="RLUS-2105C" />
-    <edge source="9681" target="RLUS-2105D" />
-    <edge source="9394" target="RLUS-2105E" />
     <edge source="4477" target="RLUS-2105C" />
   </graph>
 </graphml>
