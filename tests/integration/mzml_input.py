@@ -56,6 +56,7 @@ def config_parameter():
     assert configd["MINREPS"] == 2
     assert configd["ERRORINFO"]["PrecMz"] == ("ppm", 30.0)
     assert configd["ERRORINFO"]["RetTime"] == ("window", 0.03)
+    assert configd["MININTENSITY"] == 2e3
 
 
 def mzml_replicate_comparison():
