@@ -48,6 +48,8 @@ def setup_logging(
     level = logging.DEBUG if verbose else logging.INFO
 
     logger = get_logger(name=name)
+    if logger.hasHandlers():
+        return logger
     formatter = CustomFormatter()
     ch = logging.StreamHandler(stream=sys.stdout)
     ch.setFormatter(formatter)
