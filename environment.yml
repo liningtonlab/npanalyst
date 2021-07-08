@@ -13,6 +13,7 @@ dependencies:
   - scikit-learn
   - matplotlib-base
   - python-louvain
+  - pygraphviz
   - pip:
       - rtree
       - pymzml==2.4.5
