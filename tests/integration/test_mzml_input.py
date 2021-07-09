@@ -46,7 +46,7 @@ OUTPUT_FILE_BASKETED = HERE / "data/basketed_mzml.csv"
 
 
 # # Test config settings (ms parameter and AS and CS threshold)
-def config_parameter():
+def test_config_parameter():
     """This test shall guarantee that the loaded settings are identical to those, used to
     obtain the reference/ground truth results."""
     configd = configuration.load_config(config_path=None)
@@ -59,7 +59,7 @@ def config_parameter():
     assert configd["MININTENSITY"] == 2e3
 
 
-def mzml_replicate_comparison():
+def test_mzml_replicate_comparison():
     """Test for the replicate comparison step. The BioMAP mzML dataset is used to generate the
     replicate-compared csv files. A full dataframe by dataframe comparison is performed to ensure
     identical csv files."""
@@ -103,7 +103,7 @@ def mzml_replicate_comparison():
     # shutil.rmtree(tmpdir, ignore_errors=True)
 
 
-def mzml_basket_building():
+def test_mzml_basket_building():
     """Test for basket building step. A folder with expected replicate-compared output CSVs is used
     as the input. The resulting basket.csv file is compared to an expected output file. A full dataframe by dataframe
     comparison is performed to ensure identical csv files."""
@@ -128,14 +128,14 @@ def mzml_basket_building():
     shutil.rmtree(tmpdir, ignore_errors=True)
 
 
-if __name__ == "__main__":
-
-    start = time.time()
-
-    config_parameter()
-
-    mzml_replicate_comparison()
-
-    mzml_basket_building()
-
-    print(f"This testing took: {(time.time() - start) / 60:.2f} minutes.")
+# if __name__ == "__main__":
+#
+#     start = time.time()
+#
+#     test_mzml_basket_building()
+#
+#     test_mzml_replicate_comparison()
+#
+#     test_mzml_basket_building()
+#
+#     print(f"This testing took: {(time.time() - start) / 60:.2f} minutes.")
