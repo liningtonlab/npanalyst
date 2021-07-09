@@ -207,6 +207,16 @@ Basket = namedtuple(
 )
 
 
+def add_layout(G, algo="neato"):
+    # use random_state to always produce same positions
+    if algo == "spring":
+        pos = nx.spring_layout(G, seed=np.random.RandomState(42))
+    else:
+        pos = nx.nx_agraph.graphviz_layout(G, algo)
+    pos_dict = {k: {"x": v[0], "y": v[1]} for k, v in pos.items()}
+    nx.set_node_attributes(G, pos_dict)
+
+
 def create_association_network(
     baskets: List[Dict], scores: List[Score], configd: Dict
 ) -> nx.Graph:
@@ -259,54 +269,9 @@ def create_association_network(
 
     logger.debug("Precomputing network layout")
     # Pre-calculate and add layout
-    # use random_state to always produce same positions
-    pos = nx.spring_layout(G, seed=np.random.RandomState(42))
-    for node, (x, y) in pos.items():
-        G.nodes[node]["x"] = float(x)
-        G.nodes[node]["y"] = float(y)
+    add_layout(G, algo="neato")
 
     return G
-
-
-# def add_network_styling(G: nx.Graph) -> None:
-#     """Add's Nima's styling to graph inplace"""
-#         G.nodes[samp]["radius"] = 6
-#         G.nodes[samp]["depth"] = 0
-#         G.nodes[samp]["color"] = "rgb(51,51,51)"
-
-#         # set node size based on activity score value - should range between 3 to 10 like scatterplot
-#         # output_start + ((output_end - output_start) * (input - input_start)) / (input_end - input_start)
-#         node_size = round(
-#             3
-#             + ((10 - 3) * (G.nodes[b.id]["activity_score"] - min(activity_scores)))
-#             / (max(activity_scores) - min(activity_scores))
-#         )
-
-#         # G.nodes[b.id]['radius'] = 4
-#         G.nodes[b.id]["radius"] = node_size
-#         G.nodes[b.id]["depth"] = 1
-#         # G.nodes[b.id]['color'] = "rgb(97, 205, 187)"
-
-#         # colors are hard-coded - change this for future versions
-#         if G.nodes[b.id]["cluster_score"] > 0.75:
-#             color = "rgb(165,0,38)"  # red color
-#         elif G.nodes[b.id]["cluster_score"] > 0.5:
-#             color = "rgb(215,48,39)"
-#         elif G.nodes[b.id]["cluster_score"] > 0.25:
-#             color = "rgb(244,109,67)"
-#         elif G.nodes[b.id]["cluster_score"] > 0:
-#             color = "rgb(253,174,97)"
-#         elif G.nodes[b.id]["cluster_score"] > -0.25:
-#             color = "rgb(171,217,233)"
-#         elif G.nodes[b.id]["cluster_score"] > -0.5:
-#             color = "rbg(116,173,209)"
-#         elif G.nodes[b.id]["cluster_score"] > -0.75:
-#             color = "rgb(69,117,180)"
-#         else:
-#             color = "rgb(49,54,149)"  # blue color
-
-#         # set color for the basket node
-#         G.nodes[b.id]["color"] = color
 
 
 def save_association_network(
@@ -319,23 +284,15 @@ def save_association_network(
     logger.debug(f"Saving {outfile_gml}")
     logger.debug(nx.info(G))
     nx.write_graphml(G, outfile_gml, prettyprint=True)
-
     if include_web_output:
-        outfile_cyjs = output_dir.joinpath("network.cyjs").resolve()
-        data = nx.cytoscape_data(G)
-        # Old code for cytoscape JS positioning information
-        #     scale = len(G.nodes()) * 10
-        #     for node, ndata in G.nodes(data=True):
-
-        #         x = ndata["x"] * scale
-        #         y = ndata["x"] * scale
-        #         node_pos = {"x": x, "y": y}
-
-        # # for d in data["elements"]["nodes"]:
-        # #     posi = pos_dict.get(d.get("data").get("id"))
-        # #     d["position"] = posi
-        logger.debug(f"Saving {outfile_cyjs}")
-        with open(outfile_cyjs, "w") as fout:
+        outfile_json = output_dir.joinpath("network.json").resolve()
+        data = {"nodes": list(dict(G.nodes(data=True)).values())}
+        data["edges"] = [
+            {"source": e[0], "target": e[1], "id": f"e{idx}"}
+            for idx, e in enumerate(G.edges)
+        ]
+        logger.debug(f"Saving {outfile_json}")
+        with open(outfile_json, "w") as fout:
             fout.write(json.dumps(data, indent=2))
 
 
@@ -344,7 +301,6 @@ def save_table_output(
     output_dir: Path,
     fstem: str = "table",
     index: bool = False,
-    # include_web_output: bool,
 ) -> None:
     """Pandas To CSV is quite slow here..."""
     fpath = output_dir.joinpath(f"{fstem}.csv").resolve()
