@@ -25,7 +25,7 @@ def graphml_assertion(reference_path, test_path):
     # This is only true for the community graphml files
     # TODO: There seems to be random effect present, when the community graphs are produced.
     #  The graphml files are per se identical, but the order changes.
-    reference_graphml_df.sort_values(by=["x"], inplace=True, ignore_index=True)
+    reference_graphml_df.sort_values(by=["x", "y"], inplace=True, ignore_index=True)
     reference_graphml_df = reference_graphml_df.reindex(sorted(reference_graphml_df.columns), axis=1)
 
     G = nx.read_graphml(Path(test_path))
@@ -34,7 +34,7 @@ def graphml_assertion(reference_path, test_path):
         attr_list.append(node[1])
 
     test_graphml_df = pd.DataFrame(attr_list)
-    test_graphml_df.sort_values(by=["x"], inplace=True, ignore_index=True)
+    test_graphml_df.sort_values(by=["x", "y"], inplace=True, ignore_index=True)
     test_graphml_df = test_graphml_df.reindex(sorted(test_graphml_df.columns), axis=1)
 
     assert_frame_equal(reference_graphml_df, test_graphml_df)

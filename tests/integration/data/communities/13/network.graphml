@@ -27,8 +27,8 @@
       <data key="d8">10.62</data>
       <data key="d9">0.6</data>
       <data key="d10">basket</data>
-      <data key="d11">0.8218793272972107</data>
-      <data key="d12">-0.2858677804470062</data>
+      <data key="d11">1138.6</data>
+      <data key="d12">1214.5</data>
       <data key="d13">13</data>
     </node>
     <node id="4004">
@@ -43,8 +43,8 @@
       <data key="d8">10.62</data>
       <data key="d9">0.6</data>
       <data key="d10">basket</data>
-      <data key="d11">0.8366415500640869</data>
-      <data key="d12">-0.30356454849243164</data>
+      <data key="d11">1143.6</data>
+      <data key="d12">1180.5</data>
       <data key="d13">13</data>
     </node>
     <node id="5701">
@@ -59,8 +59,8 @@
       <data key="d8">13.31</data>
       <data key="d9">0.68</data>
       <data key="d10">basket</data>
-      <data key="d11">0.7963352203369141</data>
-      <data key="d12">-0.3232899308204651</data>
+      <data key="d11">1196.0</data>
+      <data key="d12">1311.4</data>
       <data key="d13">13</data>
     </node>
     <node id="4391">
@@ -75,8 +75,8 @@
       <data key="d8">10.62</data>
       <data key="d9">0.6</data>
       <data key="d10">basket</data>
-      <data key="d11">0.8224838376045227</data>
-      <data key="d12">-0.3209530711174011</data>
+      <data key="d11">1169.6</data>
+      <data key="d12">1141.7</data>
       <data key="d13">13</data>
     </node>
     <node id="4392">
@@ -91,30 +91,8 @@
       <data key="d8">10.62</data>
       <data key="d9">0.6</data>
       <data key="d10">basket</data>
-      <data key="d11">0.8293492794036865</data>
-      <data key="d12">-0.2836500406265259</data>
-      <data key="d13">13</data>
-    </node>
-    <node id="RLUS-2108C">
-      <data key="d10">sample</data>
-      <data key="d11">0.7710718512535095</data>
-      <data key="d12">-0.31522637605667114</data>
-      <data key="d13">13</data>
-    </node>
-    <node id="4554">
-      <data key="d0">4554</data>
-      <data key="d1">2</data>
-      <data key="d2">RLUS-2108D;RLUS-2108E</data>
-      <data key="d3">943.5025</data>
-      <data key="d4">2.3872</data>
-      <data key="d5">818178.25</data>
-      <data key="d6">310456.0</data>
-      <data key="d7">1325900.5</data>
-      <data key="d8">10.62</data>
-      <data key="d9">0.6</data>
-      <data key="d10">basket</data>
-      <data key="d11">0.8318460583686829</data>
-      <data key="d12">-0.2923561632633209</data>
+      <data key="d11">1283.6</data>
+      <data key="d12">1157.4</data>
       <data key="d13">13</data>
     </node>
     <node id="4681">
@@ -129,8 +107,30 @@
       <data key="d8">10.62</data>
       <data key="d9">0.6</data>
       <data key="d10">basket</data>
-      <data key="d11">0.8264431357383728</data>
-      <data key="d12">-0.29961642622947693</data>
+      <data key="d11">1286.4</data>
+      <data key="d12">1186.9</data>
+      <data key="d13">13</data>
+    </node>
+    <node id="4554">
+      <data key="d0">4554</data>
+      <data key="d1">2</data>
+      <data key="d2">RLUS-2108D;RLUS-2108E</data>
+      <data key="d3">943.5025</data>
+      <data key="d4">2.3872</data>
+      <data key="d5">818178.25</data>
+      <data key="d6">310456.0</data>
+      <data key="d7">1325900.5</data>
+      <data key="d8">10.62</data>
+      <data key="d9">0.6</data>
+      <data key="d10">basket</data>
+      <data key="d11">1173.3</data>
+      <data key="d12">1249.7</data>
+      <data key="d13">13</data>
+    </node>
+    <node id="RLUS-2108E">
+      <data key="d10">sample</data>
+      <data key="d11">1198.4</data>
+      <data key="d12">1174.1</data>
       <data key="d13">13</data>
     </node>
     <node id="4397">
@@ -145,8 +145,8 @@
       <data key="d8">10.62</data>
       <data key="d9">0.6</data>
       <data key="d10">basket</data>
-      <data key="d11">0.8182739019393921</data>
-      <data key="d12">-0.31378963589668274</data>
+      <data key="d11">1222.0</data>
+      <data key="d12">1128.0</data>
       <data key="d13">13</data>
     </node>
     <node id="5421">
@@ -161,30 +161,8 @@
       <data key="d8">10.62</data>
       <data key="d9">0.6</data>
       <data key="d10">basket</data>
-      <data key="d11">0.8321858644485474</data>
-      <data key="d12">-0.315070241689682</data>
-      <data key="d13">13</data>
-    </node>
-    <node id="5695">
-      <data key="d0">5695</data>
-      <data key="d1">2</data>
-      <data key="d2">RLUS-2108C;RLUS-2108D</data>
-      <data key="d3">242.0362</data>
-      <data key="d4">3.4231</data>
-      <data key="d5">231321.4167</data>
-      <data key="d6">179482.3333</data>
-      <data key="d7">283160.5</data>
-      <data key="d8">13.31</data>
-      <data key="d9">0.68</data>
-      <data key="d10">basket</data>
-      <data key="d11">0.7961306571960449</data>
-      <data key="d12">-0.31354182958602905</data>
-      <data key="d13">13</data>
-    </node>
-    <node id="RLUS-2108E">
-      <data key="d10">sample</data>
-      <data key="d11">0.8183416724205017</data>
-      <data key="d12">-0.2980926036834717</data>
+      <data key="d11">1142.9</data>
+      <data key="d12">1250.5</data>
       <data key="d13">13</data>
     </node>
     <node id="4819">
@@ -199,8 +177,14 @@
       <data key="d8">13.31</data>
       <data key="d9">0.68</data>
       <data key="d10">basket</data>
-      <data key="d11">0.7818785309791565</data>
-      <data key="d12">-0.3180144429206848</data>
+      <data key="d11">1222.4</data>
+      <data key="d12">1323.9</data>
+      <data key="d13">13</data>
+    </node>
+    <node id="RLUS-2108C">
+      <data key="d10">sample</data>
+      <data key="d11">1293.5</data>
+      <data key="d12">1340.0</data>
       <data key="d13">13</data>
     </node>
     <node id="4821">
@@ -215,8 +199,8 @@
       <data key="d8">13.31</data>
       <data key="d9">0.68</data>
       <data key="d10">basket</data>
-      <data key="d11">0.7880547642707825</data>
-      <data key="d12">-0.32791468501091003</data>
+      <data key="d11">1316.4</data>
+      <data key="d12">1240.6</data>
       <data key="d13">13</data>
     </node>
     <node id="8277">
@@ -231,8 +215,14 @@
       <data key="d8">10.62</data>
       <data key="d9">0.6</data>
       <data key="d10">basket</data>
-      <data key="d11">0.8268831968307495</data>
-      <data key="d12">-0.3092321455478668</data>
+      <data key="d11">1255.6</data>
+      <data key="d12">1141.0</data>
+      <data key="d13">13</data>
+    </node>
+    <node id="RLUS-2108D">
+      <data key="d10">sample</data>
+      <data key="d11">1227.7</data>
+      <data key="d12">1224.2</data>
       <data key="d13">13</data>
     </node>
     <node id="7415">
@@ -247,8 +237,8 @@
       <data key="d8">13.31</data>
       <data key="d9">0.68</data>
       <data key="d10">basket</data>
-      <data key="d11">0.7698918581008911</data>
-      <data key="d12">-0.3030964136123657</data>
+      <data key="d11">1316.0</data>
+      <data key="d12">1270.3</data>
       <data key="d13">13</data>
     </node>
     <node id="5694">
@@ -263,14 +253,24 @@
       <data key="d8">13.31</data>
       <data key="d9">0.68</data>
       <data key="d10">basket</data>
-      <data key="d11">0.7920269966125488</data>
-      <data key="d12">-0.303242564201355</data>
+      <data key="d11">1246.5</data>
+      <data key="d12">1298.3</data>
       <data key="d13">13</data>
     </node>
-    <node id="RLUS-2108D">
-      <data key="d10">sample</data>
-      <data key="d11">0.7785434126853943</data>
-      <data key="d12">-0.29031652212142944</data>
+    <node id="5695">
+      <data key="d0">5695</data>
+      <data key="d1">2</data>
+      <data key="d2">RLUS-2108C;RLUS-2108D</data>
+      <data key="d3">242.0362</data>
+      <data key="d4">3.4231</data>
+      <data key="d5">231321.4167</data>
+      <data key="d6">179482.3333</data>
+      <data key="d7">283160.5</data>
+      <data key="d8">13.31</data>
+      <data key="d9">0.68</data>
+      <data key="d10">basket</data>
+      <data key="d11">1281.9</data>
+      <data key="d12">1276.6</data>
       <data key="d13">13</data>
     </node>
     <edge source="4450" target="RLUS-2108D" />
@@ -283,25 +283,25 @@
     <edge source="4391" target="RLUS-2108E" />
     <edge source="4392" target="RLUS-2108D" />
     <edge source="4392" target="RLUS-2108E" />
-    <edge source="RLUS-2108C" target="4819" />
+    <edge source="4681" target="RLUS-2108D" />
+    <edge source="4681" target="RLUS-2108E" />
+    <edge source="4554" target="RLUS-2108D" />
+    <edge source="4554" target="RLUS-2108E" />
+    <edge source="RLUS-2108E" target="4397" />
+    <edge source="RLUS-2108E" target="5421" />
+    <edge source="RLUS-2108E" target="8277" />
+    <edge source="4397" target="RLUS-2108D" />
+    <edge source="5421" target="RLUS-2108D" />
+    <edge source="4819" target="RLUS-2108C" />
+    <edge source="4819" target="RLUS-2108D" />
     <edge source="RLUS-2108C" target="4821" />
     <edge source="RLUS-2108C" target="5694" />
     <edge source="RLUS-2108C" target="5695" />
     <edge source="RLUS-2108C" target="7415" />
-    <edge source="4554" target="RLUS-2108D" />
-    <edge source="4554" target="RLUS-2108E" />
-    <edge source="4681" target="RLUS-2108D" />
-    <edge source="4681" target="RLUS-2108E" />
-    <edge source="4397" target="RLUS-2108D" />
-    <edge source="4397" target="RLUS-2108E" />
-    <edge source="5421" target="RLUS-2108D" />
-    <edge source="5421" target="RLUS-2108E" />
-    <edge source="5695" target="RLUS-2108D" />
-    <edge source="RLUS-2108E" target="8277" />
-    <edge source="4819" target="RLUS-2108D" />
     <edge source="4821" target="RLUS-2108D" />
     <edge source="8277" target="RLUS-2108D" />
-    <edge source="7415" target="RLUS-2108D" />
-    <edge source="5694" target="RLUS-2108D" />
+    <edge source="RLUS-2108D" target="5694" />
+    <edge source="RLUS-2108D" target="5695" />
+    <edge source="RLUS-2108D" target="7415" />
   </graph>
 </graphml>
