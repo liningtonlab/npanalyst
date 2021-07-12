@@ -10,8 +10,6 @@ import pandas as pd
 
 import re
 
-# from networkx.readwrite import json_graph
-
 from npanalyst.logging import get_logger
 
 logger = get_logger()
@@ -259,7 +257,7 @@ def create_association_network(
     # Construct graph
     G = nx.Graph()
     for samp in sorted(list(samples)):
-        G.add_node(samp, type_="sample")
+        G.add_node(samp, id=samp, type_="sample")
 
     for b in sorted(basket_info):
         G.add_node(b.id, **b._asdict(), type_="basket")
