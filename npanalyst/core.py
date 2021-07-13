@@ -162,9 +162,10 @@ def bioactivity_mapping(
     activity.save_association_network(
         G, output_dir, include_web_output=include_web_output
     )
-    activity.save_communities(
-        communities, output_dir, include_web_output=include_web_output
-    )
+    if communities is not None:
+        activity.save_communities(
+            communities, output_dir, include_web_output=include_web_output
+        )
 
 
 def create_communitites(
@@ -181,9 +182,14 @@ def create_communitites(
     )  # set seed to 42 for reproducible community detection
 
     # Add the community number as a new attribute ('community') to each sample and basket node
-    community_detection.add_community_as_node_attribute(G, communities)
-    community_df = community_detection.community_assignment_df(G)
-    communities = community_detection.conserve_communities(
-        activity_df, community_df, basket_df, G
-    )
+    # if there are less than 2 communities, skip those steps.
+    if len(communities) >= 2:
+        community_detection.add_community_as_node_attribute(G, communities)
+        community_df = community_detection.community_assignment_df(G)
+        communities = community_detection.conserve_communities(
+            activity_df, community_df, basket_df, G
+        )
+    else:
+        communities = None
+
     return G, communities

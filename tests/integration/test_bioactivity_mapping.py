@@ -25,7 +25,7 @@ def graphml_assertion(reference_path, test_path):
     # This is only true for the community graphml files
     # TODO: There seems to be random effect present, when the community graphs are produced.
     #  The graphml files are per se identical, but the order changes.
-    reference_graphml_df.sort_values(by=["x"], inplace=True, ignore_index=True)
+    reference_graphml_df.sort_values(by=["x", "y"], inplace=True, ignore_index=True)
     reference_graphml_df = reference_graphml_df.reindex(sorted(reference_graphml_df.columns), axis=1)
 
     G = nx.read_graphml(Path(test_path))
@@ -34,7 +34,7 @@ def graphml_assertion(reference_path, test_path):
         attr_list.append(node[1])
 
     test_graphml_df = pd.DataFrame(attr_list)
-    test_graphml_df.sort_values(by=["x"], inplace=True, ignore_index=True)
+    test_graphml_df.sort_values(by=["x", "y"], inplace=True, ignore_index=True)
     test_graphml_df = test_graphml_df.reindex(sorted(test_graphml_df.columns), axis=1)
 
     assert_frame_equal(reference_graphml_df, test_graphml_df)
@@ -68,7 +68,7 @@ OUTPUT_TABLE = HERE / "data/table_mzml.csv"
 OUTPUT_COMMUNITY = HERE / "data/communities"
 
 
-def config_parameter():
+def test_config_parameter():
     """This test shall guarantee that the loaded settings are identical to those, used to
     obtain the reference/ground truth results."""
     configd = configuration.load_config(config_path=None)
@@ -77,7 +77,7 @@ def config_parameter():
     assert configd["CLUSTERTHRESHOLD"] == 0.3
 
 
-def bioactivity_mapping():
+def test_bioactivity_mapping():
     """Test for bioactivity mapping function. A pre-built basketed.csv file is used as the input file.
     The network.graphml, the table.csv (features table) and the individual community-related files are
     compared through a dataframe-by-dataframe analysis."""
@@ -127,12 +127,12 @@ def bioactivity_mapping():
     shutil.rmtree(tmpdir, ignore_errors=True)
 
 
-if __name__ == '__main__':
-
-    start = time.time()
-
-    config_parameter()
-
-    bioactivity_mapping()
-
-    print("This testing took: " + str(round((time.time() - start) / 60, 2)) + " minutes.")
+# if __name__ == '__main__':
+#
+#     start = time.time()
+#
+#     test_config_parameter()
+#
+#     test_bioactivity_mapping()
+#
+#     print("This testing took: " + str(round((time.time() - start) / 60, 2)) + " minutes.")

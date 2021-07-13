@@ -33,7 +33,7 @@ INPUT_GNPS_FILE ="data/GNPS_input.graphml"
 OUTPUT_FILE_BASKETED = HERE / "data/GNPS_expected_basketed.csv"
 
 
-def gnps_import():
+def test_gnps_import():
     """Test the import function for GNPS graphml files. An exhaustive dataframe-by-dataframe comparison
     is performed."""
 
@@ -56,10 +56,10 @@ def gnps_import():
     shutil.rmtree(tmpdir, ignore_errors=True)
 
 
-if __name__ == '__main__':
-
-    start = time.time()
-
-    gnps_import()
-
-    print("This testing took: " + str(round((time.time() - start) / 60, 2)) + " minutes.")
+# if __name__ == '__main__':
+#
+#     start = time.time()
+#
+#     test_gnps_import()
+#
+#     print("This testing took: " + str(round((time.time() - start) / 60, 2)) + " minutes.")

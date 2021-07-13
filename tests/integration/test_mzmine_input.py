@@ -33,7 +33,7 @@ INPUT_MZMINE_FILE ="data/mzmine_input.csv"
 OUTPUT_FILE_BASKETED = HERE / "data/basketed_mzml.csv"
 
 
-def mzmine_import():
+def test_mzmine_import():
     """Test the import function for MZmine csv files. An exhaustive dataframe-by-dataframe comparison
     is performed."""
 
@@ -72,10 +72,10 @@ def mzmine_import():
     shutil.rmtree(tmpdir, ignore_errors=True)
 
 
-if __name__ == '__main__':
-
-    start = time.time()
-
-    mzmine_import()
-
-    print("This testing took: " + str(round((time.time() - start) / 60, 2)) + " minutes.")
+# if __name__ == '__main__':
+#
+#     start = time.time()
+#
+#     test_mzmine_import()
+#
+#     print("This testing took: " + str(round((time.time() - start) / 60, 2)) + " minutes.")
