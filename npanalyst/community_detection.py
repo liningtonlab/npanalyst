@@ -182,3 +182,24 @@ def louvain(g, weight="weight", resolution=1.0, random_state=None):
         (list(c) for c in coms_to_node.values()), key=len, reverse=True
     )
     return list(coms_louvain)
+
+
+def assign_basket_table(
+    basket_df: pd.DataFrame, community_df: pd.DataFrame
+) -> pd.DataFrame:
+    """
+    Takes the basket table (basket_df) and the community table (community_df),
+    """
+    # filter for basketted features and make then int64 for merging
+    cdf_baskets = community_df[community_df["type"] == "basket"].copy()
+    cdf_baskets["node"] = cdf_baskets.node.astype("int64")
+    # outer joing data to add communites to basket DF deleting node column after
+    df1 = pd.merge(
+        basket_df,
+        cdf_baskets[["node", "community"]],
+        left_on="BasketID",
+        right_on="node",
+        how="outer",
+    )
+    del df1["node"]
+    return df1

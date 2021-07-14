@@ -154,7 +154,12 @@ def bioactivity_mapping(
     G = activity.create_association_network(baskets, scores, configd)
 
     logger.info("Computing network communities")
-    G, communities = create_communitites(G, activity_df, basket_df)
+    if len(G.nodes) == 0:
+        logger.warning("Empty network - no communities can be created")
+        basket_df["community"] = np.nan
+        communities = []
+    else:
+        G, basket_df, communities = create_communitites(G, activity_df, basket_df)
 
     logger.info("Saving output files")
     output_dir.mkdir(exist_ok=True, parents=True)
@@ -162,7 +167,7 @@ def bioactivity_mapping(
     activity.save_association_network(
         G, output_dir, include_web_output=include_web_output
     )
-    if communities is not None:
+    if len(communities) != 0:
         activity.save_communities(
             communities, output_dir, include_web_output=include_web_output
         )
@@ -172,24 +177,23 @@ def create_communitites(
     G: nx.Graph,
     activity_df: pd.DataFrame,
     basket_df: pd.DataFrame,
-) -> Tuple[nx.Graph, List[community_detection.Community]]:
+) -> Tuple[nx.Graph, pd.DataFrame, List[community_detection.Community]]:
     """Detect communities in compound activity mapping association network and returns
-    newly annotated network and a list of Community named tuples for export
+    newly annotated network, basket table, and a list of Community named tuples for export
     """
     logger.info("Building communities ...")
-    communities = community_detection.louvain(
+    detected_communities = community_detection.louvain(
         G, random_state=np.random.RandomState(42)
     )  # set seed to 42 for reproducible community detection
 
     # Add the community number as a new attribute ('community') to each sample and basket node
-    # if there are less than 2 communities, skip those steps.
-    if len(communities) >= 2:
-        community_detection.add_community_as_node_attribute(G, communities)
-        community_df = community_detection.community_assignment_df(G)
-        communities = community_detection.conserve_communities(
-            activity_df, community_df, basket_df, G
-        )
-    else:
-        communities = None
+    community_detection.add_community_as_node_attribute(G, detected_communities)
+    community_df = community_detection.community_assignment_df(G)
+    communities = community_detection.conserve_communities(
+        activity_df, community_df, basket_df, G
+    )
 
-    return G, communities
+    # Add communities to basket table
+    basket_df = community_detection.assign_basket_table(basket_df, community_df)
+
+    return G, basket_df, communities
