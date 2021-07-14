@@ -15,10 +15,14 @@ def dataframe_assertion(reference_path, test_path):
     """This function reads the respective dataframe and compares
     the two files."""
     result_table = pd.read_csv(reference_path)
-    result_table.sort_values(by=["UniqueFiles", "PrecMz", "RetTime"], ignore_index=True, inplace=True)
+    result_table.sort_values(
+        by=["UniqueFiles", "PrecMz", "RetTime"], ignore_index=True, inplace=True
+    )
 
     test_table = pd.read_csv(Path(test_path))
-    test_table.sort_values(by=["UniqueFiles", "PrecMz", "RetTime"], ignore_index=True, inplace=True)
+    test_table.sort_values(
+        by=["UniqueFiles", "PrecMz", "RetTime"], ignore_index=True, inplace=True
+    )
 
     assert_frame_equal(result_table, test_table)
 
@@ -27,7 +31,7 @@ def dataframe_assertion(reference_path, test_path):
 HERE = Path(__file__).parent
 
 # MZmine csv export dataframe that is converted into the basketed format used by NPAnalyst.
-INPUT_MZMINE_FILE ="data/mzmine_input.csv"
+INPUT_MZMINE_FILE = HERE / "data/mzmine_input.csv"
 
 # Basketed CSV file output
 OUTPUT_FILE_BASKETED = HERE / "data/basketed_mzml.csv"
@@ -46,15 +50,20 @@ def test_mzmine_import():
         input_path=Path(INPUT_MZMINE_FILE),
         output_path=Path(tmpdir),
         mstype="mzmine",
-        verbose=False)
+        verbose=False,
+    )
 
     # # Prepare basketed_mzml.csv for comparison with basketed.csv
-    
+
     b_df = pd.read_csv(Path(OUTPUT_FILE_BASKETED))
 
     # Rename lengthy file names from mzML output.
-    b_df["UniqueFiles"] = b_df["UniqueFiles"].apply(lambda x: re.sub(r"_iDTs_cppis_..mzML", ".raw", x))
-    b_df["UniqueFiles"] = b_df["UniqueFiles"].apply(lambda x: "|".join(sorted(list(set(x.split("|"))))))
+    b_df["UniqueFiles"] = b_df["UniqueFiles"].apply(
+        lambda x: re.sub(r"_iDTs_cppis_..mzML", ".raw", x)
+    )
+    b_df["UniqueFiles"] = b_df["UniqueFiles"].apply(
+        lambda x: "|".join(sorted(list(set(x.split("|")))))
+    )
 
     # Exchange intensities for plain 1s. This is only important for the mock MZmine table
     # that was generated from a basketed file.
@@ -65,8 +74,10 @@ def test_mzmine_import():
     b_df.to_csv(Path(tmpdir, "exp_basketed.csv"), index=False)
 
     # # Compare the expected basketed file with the produced file
-    dataframe_assertion(reference_path=Path(tmpdir, "exp_basketed.csv"),
-                        test_path=Path(tmpdir, "basketed.csv"))
+    dataframe_assertion(
+        reference_path=Path(tmpdir, "exp_basketed.csv"),
+        test_path=Path(tmpdir, "basketed.csv"),
+    )
 
     # # Remove the temp folder
     shutil.rmtree(tmpdir, ignore_errors=True)

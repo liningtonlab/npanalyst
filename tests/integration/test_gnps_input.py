@@ -15,10 +15,14 @@ def dataframe_assertion(reference_path, test_path):
     result_table = pd.read_csv(reference_path)
     # # This resorting is just a safe-guard to assure that rows are ordered properly and error messages are
     # # due to wrong values, not due to interchanged rows
-    result_table.sort_values(by=["UniqueFiles", "PrecMz", "RetTime"], ignore_index=True, inplace=True)
+    result_table.sort_values(
+        by=["UniqueFiles", "PrecMz", "RetTime"], ignore_index=True, inplace=True
+    )
 
     test_table = pd.read_csv(Path(test_path))
-    test_table.sort_values(by=["UniqueFiles", "PrecMz", "RetTime"], ignore_index=True, inplace=True)
+    test_table.sort_values(
+        by=["UniqueFiles", "PrecMz", "RetTime"], ignore_index=True, inplace=True
+    )
 
     assert_frame_equal(result_table, test_table)
 
@@ -27,7 +31,7 @@ def dataframe_assertion(reference_path, test_path):
 HERE = Path(__file__).parent
 
 # GNPS graphml file that is converted into the basketed format used by NPAnalyst.
-INPUT_GNPS_FILE ="data/GNPS_input.graphml"
+INPUT_GNPS_FILE = HERE / "data/GNPS_input.graphml"
 
 # Basketed CSV file output
 OUTPUT_FILE_BASKETED = HERE / "data/GNPS_expected_basketed.csv"
@@ -46,11 +50,14 @@ def test_gnps_import():
         input_path=Path(INPUT_GNPS_FILE),
         output_path=Path(tmpdir),
         mstype="gnps",
-        verbose=False)
+        verbose=False,
+    )
 
     # # Compare the expected basketed file with the produced file
-    dataframe_assertion(reference_path=Path(OUTPUT_FILE_BASKETED),
-                        test_path=Path(tmpdir, "basketed.csv"))
+    dataframe_assertion(
+        reference_path=Path(OUTPUT_FILE_BASKETED),
+        test_path=Path(tmpdir, "basketed.csv"),
+    )
 
     # # Remove the temp folder
     shutil.rmtree(tmpdir, ignore_errors=True)
