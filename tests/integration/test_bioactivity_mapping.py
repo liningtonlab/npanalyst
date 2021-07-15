@@ -23,8 +23,10 @@ def graphml_assertion(reference_path, test_path):
     reference_graphml_df = pd.DataFrame(attr_list)
     # Remove x and y position before comparing dataframes
     reference_graphml_df = reference_graphml_df.drop(["x", "y"], axis=1)
-    reference_graphml_df.sort_values(by=["MaxPrecIntensity"], inplace=True, ignore_index=True)
-    reference_graphml_df = reference_graphml_df.reindex(sorted(reference_graphml_df.columns), axis=1)
+    reference_graphml_df.sort_values(by=["id"], inplace=True, ignore_index=True)
+    reference_graphml_df = reference_graphml_df.reindex(
+        sorted(reference_graphml_df.columns), axis=1
+    )
 
     G = nx.read_graphml(Path(test_path))
     attr_list = []
@@ -34,7 +36,7 @@ def graphml_assertion(reference_path, test_path):
     test_graphml_df = pd.DataFrame(attr_list)
     # Remove x and y position before comparing dataframes
     test_graphml_df = test_graphml_df.drop(["x", "y"], axis=1)
-    test_graphml_df.sort_values(by=["MaxPrecIntensity"], inplace=True, ignore_index=True)
+    test_graphml_df.sort_values(by=["id"], inplace=True, ignore_index=True)
     test_graphml_df = test_graphml_df.reindex(sorted(test_graphml_df.columns), axis=1)
 
     assert_frame_equal(reference_graphml_df, test_graphml_df)
@@ -82,27 +84,31 @@ def test_bioactivity_mapping():
     The network.graphml, the table.csv (features table) and the individual community-related files are
     compared through a dataframe-by-dataframe analysis."""
 
-    # # Create temporary folder for result and test files
+    # Create temporary folder for result and test files
     tmpdir = tempfile.mkdtemp()
 
-    # # Run activity readout mapper function
-    cli.run_activity(input_path=Path(OUTPUT_FILE_BASKETED),
-                     output_path=Path(tmpdir),
-                     activity_path=INPUT_FILE_ACTIVITY_FILE,
-                     verbose=False,
-                     include_web_output=False,
-                     config=None)
+    # Run activity readout mapper function
+    cli.run_activity(
+        input_path=Path(OUTPUT_FILE_BASKETED),
+        output_path=Path(tmpdir),
+        activity_path=INPUT_FILE_ACTIVITY_FILE,
+        verbose=False,
+        include_web_output=False,
+        config=None,
+    )
 
-    # # Compare table output of the 9834 features
-    dataframe_assertion(reference_path=Path(OUTPUT_TABLE),
-                        test_path=Path(tmpdir, "table.csv"))
+    # Compare table output of the 9834 features
+    dataframe_assertion(
+        reference_path=Path(OUTPUT_TABLE), test_path=Path(tmpdir, "table.csv")
+    )
 
-    # # Validate graphml x y coordinates, activity / cluster score, name, type_, etc.
-    graphml_assertion(reference_path=Path(OUTPUT_GRAPHML),
-                      test_path=Path(tmpdir, "network.graphml"))
+    # Validate graphml x y coordinates, activity / cluster score, name, type_, etc.
+    graphml_assertion(
+        reference_path=Path(OUTPUT_GRAPHML), test_path=Path(tmpdir, "network.graphml")
+    )
 
-    # # Compare communities output folder
-    # # Count communities
+    # Compare communities output folder
+    # Count communities
     nr_communities = len(os.listdir(Path(tmpdir, "communities")))
     assert nr_communities == 17
 
@@ -112,27 +118,16 @@ def test_bioactivity_mapping():
         print("Validate community nr:" + community)
 
         # tables
-        dataframe_assertion(reference_path=Path(OUTPUT_COMMUNITY, community, "table.csv"),
-                            test_path=Path(tmpdir, "communities", community, "table.csv"))
-
-        # assay data
-        dataframe_assertion(reference_path=Path(OUTPUT_COMMUNITY, community, "assay.csv"),
-                            test_path=Path(tmpdir, "communities", community, "assay.csv"))
+        dataframe_assertion(
+            reference_path=Path(OUTPUT_COMMUNITY, community, "table.csv"),
+            test_path=Path(tmpdir, "communities", community, "table.csv"),
+        )
 
         # graphml files
-        graphml_assertion(reference_path=Path(OUTPUT_COMMUNITY, community, "network.graphml"),
-                          test_path=Path(tmpdir, "communities", community, "network.graphml"))
+        graphml_assertion(
+            reference_path=Path(OUTPUT_COMMUNITY, community, "network.graphml"),
+            test_path=Path(tmpdir, "communities", community, "network.graphml"),
+        )
 
-    # # Remove temp folder
+    # Remove temp folder
     shutil.rmtree(tmpdir, ignore_errors=True)
-
-
-# if __name__ == '__main__':
-#
-#     start = time.time()
-#
-#     test_config_parameter()
-#
-#     test_bioactivity_mapping()
-#
-#     print("This testing took: " + str(round((time.time() - start) / 60, 2)) + " minutes.")
