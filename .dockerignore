@@ -1,0 +1,7 @@
+ExampleFiles/
+cytoscape/
+.*
+LICENSE
+README.md
+.git/
+.gitignore
