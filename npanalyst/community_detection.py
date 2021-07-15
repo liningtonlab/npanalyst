@@ -53,11 +53,10 @@ def community_assignment_df(
     :return: Dataframe with node, community and type information.
     """
     community_df = pd.DataFrame(
-        {
-            "node": list(graph.nodes()),
-            "community": [*nx.get_node_attributes(graph, community_key).values()],
-            "type": [*nx.get_node_attributes(graph, type_key).values()],
-        }
+        [
+            {"node": n, "community": nd[community_key], "type": nd[type_key]}
+            for n, nd in graph.nodes(data=True)
+        ]
     )
 
     return community_df

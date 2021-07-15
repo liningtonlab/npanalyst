@@ -233,7 +233,7 @@ def create_association_network(
 
     # Need to remove basket ids that were removed during the automatic cutoff threshold
     for i, bask in enumerate(baskets):
-        bid = i
+        bid = str(i)
         act = scores[i].activity
         activity_scores.append(act)
         clust = scores[i].cluster
@@ -260,7 +260,7 @@ def create_association_network(
         G.add_node(samp, id=samp, type_="sample")
 
     for b in sorted(basket_info):
-        G.add_node(b.id, **b._asdict(), type_="basket")
+        G.add_node(str(b.id), **b._asdict(), type_="basket")
 
     for e in sorted(edges):
         G.add_edge(*e)

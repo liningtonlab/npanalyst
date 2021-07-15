@@ -86,6 +86,7 @@ def test_bioactivity_mapping():
 
     # Create temporary folder for result and test files
     tmpdir = tempfile.mkdtemp()
+    print(tmpdir)
 
     # Run activity readout mapper function
     cli.run_activity(
@@ -110,11 +111,10 @@ def test_bioactivity_mapping():
     # Compare communities output folder
     # Count communities
     nr_communities = len(os.listdir(Path(tmpdir, "communities")))
-    assert nr_communities == 17
+    assert nr_communities == 18
 
     # # Go through all community folders and compare
-
-    for community in [str(i) for i in range(17)]:
+    for community in [str(i) for i in range(18)]:
         print("Validate community nr:" + community)
 
         # tables
