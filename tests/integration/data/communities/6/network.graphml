@@ -15,219 +15,6 @@
   <key id="d1" for="node" attr.name="freq" attr.type="int" />
   <key id="d0" for="node" attr.name="id" attr.type="string" />
   <graph edgedefault="undirected">
-    <node id="4120">
-      <data key="d0">4120</data>
-      <data key="d1">2</data>
-      <data key="d2">SW218717-1;SW218756-1</data>
-      <data key="d3">319.1662</data>
-      <data key="d4">2.0833</data>
-      <data key="d5">106021.5</data>
-      <data key="d6">95700.3333</data>
-      <data key="d7">116342.6667</data>
-      <data key="d8">3.25</data>
-      <data key="d9">0.42</data>
-      <data key="d10">basket</data>
-      <data key="d11">828.98</data>
-      <data key="d12">273.76</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="4277">
-      <data key="d0">4277</data>
-      <data key="d1">2</data>
-      <data key="d2">SW218717-1;SW218718-1</data>
-      <data key="d3">319.2358</data>
-      <data key="d4">2.1765</data>
-      <data key="d5">79722.75</data>
-      <data key="d6">31963.0</data>
-      <data key="d7">127482.5</data>
-      <data key="d8">3.25</data>
-      <data key="d9">0.42</data>
-      <data key="d10">basket</data>
-      <data key="d11">755.46</data>
-      <data key="d12">163.37</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="3757">
-      <data key="d0">3757</data>
-      <data key="d1">2</data>
-      <data key="d2">RLUS-2124A;SW218716-1</data>
-      <data key="d3">587.5514</data>
-      <data key="d4">1.9605</data>
-      <data key="d5">72238.625</data>
-      <data key="d6">71317.0</data>
-      <data key="d7">73160.25</data>
-      <data key="d8">3.75</data>
-      <data key="d9">0.32</data>
-      <data key="d10">basket</data>
-      <data key="d11">673.07</data>
-      <data key="d12">199.09</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="4027">
-      <data key="d0">4027</data>
-      <data key="d1">8</data>
-      <data key="d2">RLUS-2058B;RLUS-2065B;RLUS-2124A;RLUS-2124B;RLUS-2124C;RLUS-2124D;RLUS-2155B;RLUS-2210B</data>
-      <data key="d3">355.5889</data>
-      <data key="d4">2.0567</data>
-      <data key="d5">56071.2</data>
-      <data key="d6">29618.5</data>
-      <data key="d7">100014.0</data>
-      <data key="d8">2.47</data>
-      <data key="d9">0.37</data>
-      <data key="d10">basket</data>
-      <data key="d11">783.29</data>
-      <data key="d12">357.46</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="3926">
-      <data key="d0">3926</data>
-      <data key="d1">4</data>
-      <data key="d2">RLUS-2065B;RLUS-2124A;RLUS-2124B;RLUS-2210B</data>
-      <data key="d3">687.2324</data>
-      <data key="d4">2.0215</data>
-      <data key="d5">313544.7917</data>
-      <data key="d6">131560.0</data>
-      <data key="d7">647777.0</data>
-      <data key="d8">3.25</data>
-      <data key="d9">0.38</data>
-      <data key="d10">basket</data>
-      <data key="d11">800.36</data>
-      <data key="d12">285.94</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="643">
-      <data key="d0">643</data>
-      <data key="d1">4</data>
-      <data key="d2">SW218754-1;SW218755-1;SW218885-1;SW218886-1</data>
-      <data key="d3">361.2458</data>
-      <data key="d4">0.5429</data>
-      <data key="d5">171331.6667</data>
-      <data key="d6">85035.0</data>
-      <data key="d7">312835.0</data>
-      <data key="d8">2.25</data>
-      <data key="d9">0.55</data>
-      <data key="d10">basket</data>
-      <data key="d11">766.18</data>
-      <data key="d12">367.92</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="3907">
-      <data key="d0">3907</data>
-      <data key="d1">4</data>
-      <data key="d2">RLUS-2065B;RLUS-2124A;RLUS-2124B;RLUS-2210B</data>
-      <data key="d3">688.2357</data>
-      <data key="d4">2.0117</data>
-      <data key="d5">40123.375</data>
-      <data key="d6">15110.5</data>
-      <data key="d7">83777.6667</data>
-      <data key="d8">3.25</data>
-      <data key="d9">0.38</data>
-      <data key="d10">basket</data>
-      <data key="d11">788.0</data>
-      <data key="d12">293.45</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="4073">
-      <data key="d0">4073</data>
-      <data key="d1">5</data>
-      <data key="d2">RLUS-2124A;RLUS-2124B;RLUS-2124C;RLUS-2155B;RLUS-2210B</data>
-      <data key="d3">330.1327</data>
-      <data key="d4">2.067</data>
-      <data key="d5">64593.9</data>
-      <data key="d6">41775.5</data>
-      <data key="d7">117210.5</data>
-      <data key="d8">3.52</data>
-      <data key="d9">0.46</data>
-      <data key="d10">basket</data>
-      <data key="d11">783.82</data>
-      <data key="d12">305.85</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="4124">
-      <data key="d0">4124</data>
-      <data key="d1">2</data>
-      <data key="d2">SW218717-1;SW218756-1</data>
-      <data key="d3">519.3501</data>
-      <data key="d4">2.0863</data>
-      <data key="d5">91392.6667</data>
-      <data key="d6">91263.3333</data>
-      <data key="d7">91522.0</data>
-      <data key="d8">3.25</data>
-      <data key="d9">0.42</data>
-      <data key="d10">basket</data>
-      <data key="d11">814.86</data>
-      <data key="d12">285.09</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="SW218885-1">
-      <data key="d0">SW218885-1</data>
-      <data key="d10">sample</data>
-      <data key="d11">719.57</data>
-      <data key="d12">415.98</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="RLUS-2126C">
-      <data key="d0">RLUS-2126C</data>
-      <data key="d10">sample</data>
-      <data key="d11">909.31</data>
-      <data key="d12">182.6</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="4058">
-      <data key="d0">4058</data>
-      <data key="d1">10</data>
-      <data key="d2">RLUS-2065B;RLUS-2124A;RLUS-2124B;RLUS-2155B;RLUS-2210B;SW218716-1;SW218717-1;SW218718-1;SW218755-1;SW218856-1</data>
-      <data key="d3">602.7758</data>
-      <data key="d4">2.0641</data>
-      <data key="d5">42901.8833</data>
-      <data key="d6">12004.5</data>
-      <data key="d7">105528.0</data>
-      <data key="d8">2.13</data>
-      <data key="d9">0.44</data>
-      <data key="d10">basket</data>
-      <data key="d11">781.66</data>
-      <data key="d12">326.06</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="4125">
-      <data key="d0">4125</data>
-      <data key="d1">2</data>
-      <data key="d2">RLUS-2065B;RLUS-2124C</data>
-      <data key="d3">319.1201</data>
-      <data key="d4">2.0867</data>
-      <data key="d5">10222.25</data>
-      <data key="d6">7104.5</data>
-      <data key="d7">13340.0</data>
-      <data key="d8">3.25</data>
-      <data key="d9">0.42</data>
-      <data key="d10">basket</data>
-      <data key="d11">664.71</data>
-      <data key="d12">204.95</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="4118">
-      <data key="d0">4118</data>
-      <data key="d1">2</data>
-      <data key="d2">RLUS-2065B;SW218716-1</data>
-      <data key="d3">585.3418</data>
-      <data key="d4">2.0825</data>
-      <data key="d5">67490.5</data>
-      <data key="d6">37448.0</data>
-      <data key="d7">97533.0</data>
-      <data key="d8">2.0</data>
-      <data key="d9">1.0</data>
-      <data key="d10">basket</data>
-      <data key="d11">651.89</data>
-      <data key="d12">208.41</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="RLUS-2179B">
-      <data key="d0">RLUS-2179B</data>
-      <data key="d10">sample</data>
-      <data key="d11">714.62</data>
-      <data key="d12">275.83</data>
-      <data key="d13">6</data>
-    </node>
     <node id="4065">
       <data key="d0">4065</data>
       <data key="d1">7</data>
@@ -244,82 +31,6 @@
       <data key="d12">342.24</data>
       <data key="d13">6</data>
     </node>
-    <node id="4232">
-      <data key="d0">4232</data>
-      <data key="d1">2</data>
-      <data key="d2">SW218717-1;SW218718-1</data>
-      <data key="d3">603.4075</data>
-      <data key="d4">2.1505</data>
-      <data key="d5">60685.0</data>
-      <data key="d6">49427.5</data>
-      <data key="d7">71942.5</data>
-      <data key="d8">3.25</data>
-      <data key="d9">0.42</data>
-      <data key="d10">basket</data>
-      <data key="d11">732.43</data>
-      <data key="d12">167.75</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="4261">
-      <data key="d0">4261</data>
-      <data key="d1">2</data>
-      <data key="d2">RLUS-2065B;SW218716-1</data>
-      <data key="d3">399.2203</data>
-      <data key="d4">2.166</data>
-      <data key="d5">40763.5</data>
-      <data key="d6">29217.0</data>
-      <data key="d7">52310.0</data>
-      <data key="d8">2.0</data>
-      <data key="d9">1.0</data>
-      <data key="d10">basket</data>
-      <data key="d11">626.45</data>
-      <data key="d12">224.62</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="SW218717-1">
-      <data key="d0">SW218717-1</data>
-      <data key="d10">sample</data>
-      <data key="d11">746.72</data>
-      <data key="d12">260.66</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="SW218857-1">
-      <data key="d0">SW218857-1</data>
-      <data key="d10">sample</data>
-      <data key="d11">936.07</data>
-      <data key="d12">190.86</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="RLUS-2058B">
-      <data key="d0">RLUS-2058B</data>
-      <data key="d10">sample</data>
-      <data key="d11">825.89</data>
-      <data key="d12">219.68</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="SW218886-1">
-      <data key="d0">SW218886-1</data>
-      <data key="d10">sample</data>
-      <data key="d11">721.4</data>
-      <data key="d12">424.45</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="4279">
-      <data key="d0">4279</data>
-      <data key="d1">3</data>
-      <data key="d2">RLUS-2065B;SW218716-1;SW218717-1</data>
-      <data key="d3">483.2448</data>
-      <data key="d4">2.1771</data>
-      <data key="d5">147835.6667</data>
-      <data key="d6">96175.5</data>
-      <data key="d7">176386.0</data>
-      <data key="d8">2.0</data>
-      <data key="d9">1.0</data>
-      <data key="d10">basket</data>
-      <data key="d11">708.67</data>
-      <data key="d12">190.75</data>
-      <data key="d13">6</data>
-    </node>
     <node id="RLUS-2052B">
       <data key="d0">RLUS-2052B</data>
       <data key="d10">sample</data>
@@ -327,52 +38,18 @@
       <data key="d12">340.69</data>
       <data key="d13">6</data>
     </node>
-    <node id="4295">
-      <data key="d0">4295</data>
-      <data key="d1">4</data>
-      <data key="d2">RLUS-2065B;SW218716-1;SW218717-1;SW218718-1</data>
-      <data key="d3">584.3306</data>
-      <data key="d4">2.1889</data>
-      <data key="d5">124425.3333</data>
-      <data key="d6">107271.3333</data>
-      <data key="d7">154659.0</data>
-      <data key="d8">2.31</data>
-      <data key="d9">0.71</data>
-      <data key="d10">basket</data>
-      <data key="d11">701.98</data>
-      <data key="d12">196.2</data>
+    <node id="RLUS-2155B">
+      <data key="d0">RLUS-2155B</data>
+      <data key="d10">sample</data>
+      <data key="d11">712.52</data>
+      <data key="d12">291.93</data>
       <data key="d13">6</data>
     </node>
-    <node id="95">
-      <data key="d0">95</data>
-      <data key="d1">2</data>
-      <data key="d2">SW218755-1;SW218885-1</data>
-      <data key="d3">302.204</data>
-      <data key="d4">0.5305</data>
-      <data key="d5">27249.75</data>
-      <data key="d6">18347.5</data>
-      <data key="d7">36152.0</data>
-      <data key="d8">2.25</data>
-      <data key="d9">0.33</data>
-      <data key="d10">basket</data>
-      <data key="d11">756.63</data>
-      <data key="d12">342.79</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="3746">
-      <data key="d0">3746</data>
-      <data key="d1">17</data>
-      <data key="d2">RLUS-2046B;RLUS-2065B;RLUS-2124A;RLUS-2124C;RLUS-2124D;RLUS-2124E;RLUS-2155B;RLUS-2179B;RLUS-2210B;SW218716-1;SW218717-1;SW218718-1;SW218754-1;SW218755-1;SW218856-1;SW218885-1;SW218886-1</data>
-      <data key="d3">320.6277</data>
-      <data key="d4">1.9588</data>
-      <data key="d5">157683.7353</data>
-      <data key="d6">44628.5</data>
-      <data key="d7">514820.0</data>
-      <data key="d8">2.34</data>
-      <data key="d9">0.46</data>
-      <data key="d10">basket</data>
-      <data key="d11">752.81</data>
-      <data key="d12">370.89</data>
+    <node id="SW218885-1">
+      <data key="d0">SW218885-1</data>
+      <data key="d10">sample</data>
+      <data key="d11">719.57</data>
+      <data key="d12">415.98</data>
       <data key="d13">6</data>
     </node>
     <node id="3945">
@@ -391,263 +68,6 @@
       <data key="d12">242.93</data>
       <data key="d13">6</data>
     </node>
-    <node id="4116">
-      <data key="d0">4116</data>
-      <data key="d1">5</data>
-      <data key="d2">RLUS-2126C;SW218717-1;SW218718-1;SW218756-1;SW218857-1</data>
-      <data key="d3">319.2334</data>
-      <data key="d4">2.0814</data>
-      <data key="d5">101005.4</data>
-      <data key="d6">25656.5</data>
-      <data key="d7">191286.0</data>
-      <data key="d8">2.08</data>
-      <data key="d9">0.51</data>
-      <data key="d10">basket</data>
-      <data key="d11">842.91</data>
-      <data key="d12">264.62</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="4311">
-      <data key="d0">4311</data>
-      <data key="d1">2</data>
-      <data key="d2">RLUS-2065B;SW218717-1</data>
-      <data key="d3">606.3122</data>
-      <data key="d4">2.1932</data>
-      <data key="d5">38592.4167</data>
-      <data key="d6">38482.3333</data>
-      <data key="d7">38702.5</data>
-      <data key="d8">2.0</data>
-      <data key="d9">1.0</data>
-      <data key="d10">basket</data>
-      <data key="d11">686.36</data>
-      <data key="d12">198.71</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="RLUS-2124C">
-      <data key="d0">RLUS-2124C</data>
-      <data key="d10">sample</data>
-      <data key="d11">691.62</data>
-      <data key="d12">318.39</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="RLUS-2124B">
-      <data key="d0">RLUS-2124B</data>
-      <data key="d10">sample</data>
-      <data key="d11">694.14</data>
-      <data key="d12">306.56</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="4054">
-      <data key="d0">4054</data>
-      <data key="d1">3</data>
-      <data key="d2">RLUS-2065B;RLUS-2124A;RLUS-2124B</data>
-      <data key="d3">602.675</data>
-      <data key="d4">2.0635</data>
-      <data key="d5">59786.8333</data>
-      <data key="d6">32242.5</data>
-      <data key="d7">106441.0</data>
-      <data key="d8">4.11</data>
-      <data key="d9">0.49</data>
-      <data key="d10">basket</data>
-      <data key="d11">645.28</data>
-      <data key="d12">223.29</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="3752">
-      <data key="d0">3752</data>
-      <data key="d1">10</data>
-      <data key="d2">RLUS-2065B;RLUS-2124A;RLUS-2124B;RLUS-2210B;SW218716-1;SW218717-1;SW218718-1;SW218754-1;SW218885-1;SW218886-1</data>
-      <data key="d3">588.3477</data>
-      <data key="d4">1.9595</data>
-      <data key="d5">282873.75</data>
-      <data key="d6">117058.0</data>
-      <data key="d7">605868.0</data>
-      <data key="d8">2.13</data>
-      <data key="d9">0.44</data>
-      <data key="d10">basket</data>
-      <data key="d11">766.75</data>
-      <data key="d12">354.48</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="3751">
-      <data key="d0">3751</data>
-      <data key="d1">4</data>
-      <data key="d2">RLUS-2065B;RLUS-2124A;RLUS-2124B;SW218716-1</data>
-      <data key="d3">322.1258</data>
-      <data key="d4">1.9594</data>
-      <data key="d5">72956.875</data>
-      <data key="d6">31386.5</data>
-      <data key="d7">117958.5</data>
-      <data key="d8">3.19</data>
-      <data key="d9">0.54</data>
-      <data key="d10">basket</data>
-      <data key="d11">622.16</data>
-      <data key="d12">242.87</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="4255">
-      <data key="d0">4255</data>
-      <data key="d1">6</data>
-      <data key="d2">RLUS-2065B;SW218716-1;SW218717-1;SW218718-1;SW218754-1;SW218755-1</data>
-      <data key="d3">599.3403</data>
-      <data key="d4">2.1623</data>
-      <data key="d5">135394.1944</data>
-      <data key="d6">31988.6667</data>
-      <data key="d7">235396.6667</data>
-      <data key="d8">2.92</data>
-      <data key="d9">0.62</data>
-      <data key="d10">basket</data>
-      <data key="d11">764.25</data>
-      <data key="d12">309.49</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="4283">
-      <data key="d0">4283</data>
-      <data key="d1">2</data>
-      <data key="d2">SW218717-1;SW218718-1</data>
-      <data key="d3">519.3505</data>
-      <data key="d4">2.1819</data>
-      <data key="d5">85538.4167</data>
-      <data key="d6">49395.5</data>
-      <data key="d7">121681.3333</data>
-      <data key="d8">3.25</data>
-      <data key="d9">0.42</data>
-      <data key="d10">basket</data>
-      <data key="d11">744.13</data>
-      <data key="d12">165.21</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="3761">
-      <data key="d0">3761</data>
-      <data key="d1">5</data>
-      <data key="d2">RLUS-2065B;RLUS-2124A;RLUS-2124B;RLUS-2210B;SW218886-1</data>
-      <data key="d3">643.2644</data>
-      <data key="d4">1.9609</data>
-      <data key="d5">112133.2</data>
-      <data key="d6">43832.5</data>
-      <data key="d7">222479.5</data>
-      <data key="d8">2.36</data>
-      <data key="d9">0.34</data>
-      <data key="d10">basket</data>
-      <data key="d11">736.9</data>
-      <data key="d12">366.56</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="1916">
-      <data key="d0">1916</data>
-      <data key="d1">2</data>
-      <data key="d2">SW218755-1;SW218886-1</data>
-      <data key="d3">583.3424</data>
-      <data key="d4">1.6182</data>
-      <data key="d5">108291.9167</data>
-      <data key="d6">93645.5</data>
-      <data key="d7">122938.3333</data>
-      <data key="d8">2.25</data>
-      <data key="d9">0.33</data>
-      <data key="d10">basket</data>
-      <data key="d11">750.63</data>
-      <data key="d12">362.14</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="3749">
-      <data key="d0">3749</data>
-      <data key="d1">13</data>
-      <data key="d2">RLUS-2065B;RLUS-2124A;RLUS-2124B;RLUS-2124C;RLUS-2210B;SW218716-1;SW218717-1;SW218718-1;SW218754-1;SW218755-1;SW218885-1;SW218886-1;SW218952-1</data>
-      <data key="d3">387.2232</data>
-      <data key="d4">1.9592</data>
-      <data key="d5">222265.0385</data>
-      <data key="d6">60065.0</data>
-      <data key="d7">549132.3333</data>
-      <data key="d8">2.27</data>
-      <data key="d9">0.45</data>
-      <data key="d10">basket</data>
-      <data key="d11">772.16</data>
-      <data key="d12">350.07</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="RLUS-2124A">
-      <data key="d0">RLUS-2124A</data>
-      <data key="d10">sample</data>
-      <data key="d11">697.29</data>
-      <data key="d12">305.54</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="SW218718-1">
-      <data key="d0">SW218718-1</data>
-      <data key="d10">sample</data>
-      <data key="d11">740.7</data>
-      <data key="d12">265.61</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="4122">
-      <data key="d0">4122</data>
-      <data key="d1">2</data>
-      <data key="d2">SW218717-1;SW218756-1</data>
-      <data key="d3">690.3025</data>
-      <data key="d4">2.085</data>
-      <data key="d5">80158.25</data>
-      <data key="d6">47596.0</data>
-      <data key="d7">112720.5</data>
-      <data key="d8">3.25</data>
-      <data key="d9">0.42</data>
-      <data key="d10">basket</data>
-      <data key="d11">821.94</data>
-      <data key="d12">276.48</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="RLUS-2194B">
-      <data key="d0">RLUS-2194B</data>
-      <data key="d10">sample</data>
-      <data key="d11">625.84</data>
-      <data key="d12">332.06</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="SW218716-1">
-      <data key="d0">SW218716-1</data>
-      <data key="d10">sample</data>
-      <data key="d11">703.09</data>
-      <data key="d12">279.98</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="SW218952-1">
-      <data key="d0">SW218952-1</data>
-      <data key="d10">sample</data>
-      <data key="d11">764.25</data>
-      <data key="d12">230.2</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="2566">
-      <data key="d0">2566</data>
-      <data key="d1">2</data>
-      <data key="d2">RLUS-2065B;SW218717-1</data>
-      <data key="d3">585.3606</data>
-      <data key="d4">1.7178</data>
-      <data key="d5">74423.25</data>
-      <data key="d6">56558.0</data>
-      <data key="d7">92288.5</data>
-      <data key="d8">2.0</data>
-      <data key="d9">1.0</data>
-      <data key="d10">basket</data>
-      <data key="d11">693.44</data>
-      <data key="d12">193.74</data>
-      <data key="d13">6</data>
-    </node>
-    <node id="4266">
-      <data key="d0">4266</data>
-      <data key="d1">4</data>
-      <data key="d2">RLUS-2065B;SW218716-1;SW218717-1;SW218755-1</data>
-      <data key="d3">621.3221</data>
-      <data key="d4">2.1683</data>
-      <data key="d5">27140.5</data>
-      <data key="d6">17508.0</data>
-      <data key="d7">46500.5</data>
-      <data key="d8">2.25</data>
-      <data key="d9">0.74</data>
-      <data key="d10">basket</data>
-      <data key="d11">757.57</data>
-      <data key="d12">311.05</data>
-      <data key="d13">6</data>
-    </node>
     <node id="3980">
       <data key="d0">3980</data>
       <data key="d1">4</data>
@@ -664,20 +84,27 @@
       <data key="d12">292.79</data>
       <data key="d13">6</data>
     </node>
-    <node id="4296">
-      <data key="d0">4296</data>
-      <data key="d1">2</data>
-      <data key="d2">RLUS-2065B;SW218716-1</data>
-      <data key="d3">652.2653</data>
+    <node id="4295">
+      <data key="d0">4295</data>
+      <data key="d1">4</data>
+      <data key="d2">RLUS-2065B;SW218716-1;SW218717-1;SW218718-1</data>
+      <data key="d3">584.3306</data>
       <data key="d4">2.1889</data>
-      <data key="d5">37686.4167</data>
-      <data key="d6">30050.3333</data>
-      <data key="d7">45322.5</data>
-      <data key="d8">2.0</data>
-      <data key="d9">1.0</data>
+      <data key="d5">124425.3333</data>
+      <data key="d6">107271.3333</data>
+      <data key="d7">154659.0</data>
+      <data key="d8">2.31</data>
+      <data key="d9">0.71</data>
       <data key="d10">basket</data>
-      <data key="d11">641.16</data>
-      <data key="d12">214.09</data>
+      <data key="d11">701.98</data>
+      <data key="d12">196.2</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="SW218886-1">
+      <data key="d0">SW218886-1</data>
+      <data key="d10">sample</data>
+      <data key="d11">721.4</data>
+      <data key="d12">424.45</data>
       <data key="d13">6</data>
     </node>
     <node id="3959">
@@ -696,11 +123,114 @@
       <data key="d12">235.84</data>
       <data key="d13">6</data>
     </node>
-    <node id="RLUS-2155B">
-      <data key="d0">RLUS-2155B</data>
+    <node id="4261">
+      <data key="d0">4261</data>
+      <data key="d1">2</data>
+      <data key="d2">RLUS-2065B;SW218716-1</data>
+      <data key="d3">399.2203</data>
+      <data key="d4">2.166</data>
+      <data key="d5">40763.5</data>
+      <data key="d6">29217.0</data>
+      <data key="d7">52310.0</data>
+      <data key="d8">2.0</data>
+      <data key="d9">1.0</data>
+      <data key="d10">basket</data>
+      <data key="d11">626.45</data>
+      <data key="d12">224.62</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="RLUS-2058B">
+      <data key="d0">RLUS-2058B</data>
       <data key="d10">sample</data>
-      <data key="d11">712.52</data>
-      <data key="d12">291.93</data>
+      <data key="d11">825.89</data>
+      <data key="d12">219.68</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="4054">
+      <data key="d0">4054</data>
+      <data key="d1">3</data>
+      <data key="d2">RLUS-2065B;RLUS-2124A;RLUS-2124B</data>
+      <data key="d3">602.675</data>
+      <data key="d4">2.0635</data>
+      <data key="d5">59786.8333</data>
+      <data key="d6">32242.5</data>
+      <data key="d7">106441.0</data>
+      <data key="d8">4.11</data>
+      <data key="d9">0.49</data>
+      <data key="d10">basket</data>
+      <data key="d11">645.28</data>
+      <data key="d12">223.29</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="SW218717-1">
+      <data key="d0">SW218717-1</data>
+      <data key="d10">sample</data>
+      <data key="d11">746.72</data>
+      <data key="d12">260.66</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="1916">
+      <data key="d0">1916</data>
+      <data key="d1">2</data>
+      <data key="d2">SW218755-1;SW218886-1</data>
+      <data key="d3">583.3424</data>
+      <data key="d4">1.6182</data>
+      <data key="d5">108291.9167</data>
+      <data key="d6">93645.5</data>
+      <data key="d7">122938.3333</data>
+      <data key="d8">2.25</data>
+      <data key="d9">0.33</data>
+      <data key="d10">basket</data>
+      <data key="d11">750.63</data>
+      <data key="d12">362.14</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="3757">
+      <data key="d0">3757</data>
+      <data key="d1">2</data>
+      <data key="d2">RLUS-2124A;SW218716-1</data>
+      <data key="d3">587.5514</data>
+      <data key="d4">1.9605</data>
+      <data key="d5">72238.625</data>
+      <data key="d6">71317.0</data>
+      <data key="d7">73160.25</data>
+      <data key="d8">3.75</data>
+      <data key="d9">0.32</data>
+      <data key="d10">basket</data>
+      <data key="d11">673.07</data>
+      <data key="d12">199.09</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="4279">
+      <data key="d0">4279</data>
+      <data key="d1">3</data>
+      <data key="d2">RLUS-2065B;SW218716-1;SW218717-1</data>
+      <data key="d3">483.2448</data>
+      <data key="d4">2.1771</data>
+      <data key="d5">147835.6667</data>
+      <data key="d6">96175.5</data>
+      <data key="d7">176386.0</data>
+      <data key="d8">2.0</data>
+      <data key="d9">1.0</data>
+      <data key="d10">basket</data>
+      <data key="d11">708.67</data>
+      <data key="d12">190.75</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="4277">
+      <data key="d0">4277</data>
+      <data key="d1">2</data>
+      <data key="d2">SW218717-1;SW218718-1</data>
+      <data key="d3">319.2358</data>
+      <data key="d4">2.1765</data>
+      <data key="d5">79722.75</data>
+      <data key="d6">31963.0</data>
+      <data key="d7">127482.5</data>
+      <data key="d8">3.25</data>
+      <data key="d9">0.42</data>
+      <data key="d10">basket</data>
+      <data key="d11">755.46</data>
+      <data key="d12">163.37</data>
       <data key="d13">6</data>
     </node>
     <node id="4009">
@@ -719,20 +249,36 @@
       <data key="d12">208.36</data>
       <data key="d13">6</data>
     </node>
-    <node id="4069">
-      <data key="d0">4069</data>
-      <data key="d1">10</data>
-      <data key="d2">RLUS-2046B;RLUS-2052B;RLUS-2065B;RLUS-2065C;RLUS-2124A;RLUS-2124B;RLUS-2124C;RLUS-2124E;RLUS-2194B;RLUS-2210B</data>
-      <data key="d3">659.2771</data>
-      <data key="d4">2.066</data>
-      <data key="d5">72250.1333</data>
-      <data key="d6">23229.5</data>
-      <data key="d7">173408.0</data>
-      <data key="d8">2.57</data>
-      <data key="d9">0.37</data>
+    <node id="2566">
+      <data key="d0">2566</data>
+      <data key="d1">2</data>
+      <data key="d2">RLUS-2065B;SW218717-1</data>
+      <data key="d3">585.3606</data>
+      <data key="d4">1.7178</data>
+      <data key="d5">74423.25</data>
+      <data key="d6">56558.0</data>
+      <data key="d7">92288.5</data>
+      <data key="d8">2.0</data>
+      <data key="d9">1.0</data>
       <data key="d10">basket</data>
-      <data key="d11">709.46</data>
-      <data key="d12">394.18</data>
+      <data key="d11">693.44</data>
+      <data key="d12">193.74</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="3749">
+      <data key="d0">3749</data>
+      <data key="d1">13</data>
+      <data key="d2">RLUS-2065B;RLUS-2124A;RLUS-2124B;RLUS-2124C;RLUS-2210B;SW218716-1;SW218717-1;SW218718-1;SW218754-1;SW218755-1;SW218885-1;SW218886-1;SW218952-1</data>
+      <data key="d3">387.2232</data>
+      <data key="d4">1.9592</data>
+      <data key="d5">222265.0385</data>
+      <data key="d6">60065.0</data>
+      <data key="d7">549132.3333</data>
+      <data key="d8">2.27</data>
+      <data key="d9">0.45</data>
+      <data key="d10">basket</data>
+      <data key="d11">772.16</data>
+      <data key="d12">350.07</data>
       <data key="d13">6</data>
     </node>
     <node id="881">
@@ -751,6 +297,59 @@
       <data key="d12">166.05</data>
       <data key="d13">6</data>
     </node>
+    <node id="RLUS-2124C">
+      <data key="d0">RLUS-2124C</data>
+      <data key="d10">sample</data>
+      <data key="d11">691.62</data>
+      <data key="d12">318.39</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="RLUS-2065B">
+      <data key="d0">RLUS-2065B</data>
+      <data key="d10">sample</data>
+      <data key="d11">696.4</data>
+      <data key="d12">293.12</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="4027">
+      <data key="d0">4027</data>
+      <data key="d1">8</data>
+      <data key="d2">RLUS-2058B;RLUS-2065B;RLUS-2124A;RLUS-2124B;RLUS-2124C;RLUS-2124D;RLUS-2155B;RLUS-2210B</data>
+      <data key="d3">355.5889</data>
+      <data key="d4">2.0567</data>
+      <data key="d5">56071.2</data>
+      <data key="d6">29618.5</data>
+      <data key="d7">100014.0</data>
+      <data key="d8">2.47</data>
+      <data key="d9">0.37</data>
+      <data key="d10">basket</data>
+      <data key="d11">783.29</data>
+      <data key="d12">357.46</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="RLUS-2126C">
+      <data key="d0">RLUS-2126C</data>
+      <data key="d10">sample</data>
+      <data key="d11">909.31</data>
+      <data key="d12">182.6</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="4296">
+      <data key="d0">4296</data>
+      <data key="d1">2</data>
+      <data key="d2">RLUS-2065B;SW218716-1</data>
+      <data key="d3">652.2653</data>
+      <data key="d4">2.1889</data>
+      <data key="d5">37686.4167</data>
+      <data key="d6">30050.3333</data>
+      <data key="d7">45322.5</data>
+      <data key="d8">2.0</data>
+      <data key="d9">1.0</data>
+      <data key="d10">basket</data>
+      <data key="d11">641.16</data>
+      <data key="d12">214.09</data>
+      <data key="d13">6</data>
+    </node>
     <node id="4288">
       <data key="d0">4288</data>
       <data key="d1">2</data>
@@ -765,6 +364,139 @@
       <data key="d10">basket</data>
       <data key="d11">766.23</data>
       <data key="d12">161.99</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="SW218857-1">
+      <data key="d0">SW218857-1</data>
+      <data key="d10">sample</data>
+      <data key="d11">936.07</data>
+      <data key="d12">190.86</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="4255">
+      <data key="d0">4255</data>
+      <data key="d1">6</data>
+      <data key="d2">RLUS-2065B;SW218716-1;SW218717-1;SW218718-1;SW218754-1;SW218755-1</data>
+      <data key="d3">599.3403</data>
+      <data key="d4">2.1623</data>
+      <data key="d5">135394.1944</data>
+      <data key="d6">31988.6667</data>
+      <data key="d7">235396.6667</data>
+      <data key="d8">2.92</data>
+      <data key="d9">0.62</data>
+      <data key="d10">basket</data>
+      <data key="d11">764.25</data>
+      <data key="d12">309.49</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="4116">
+      <data key="d0">4116</data>
+      <data key="d1">5</data>
+      <data key="d2">RLUS-2126C;SW218717-1;SW218718-1;SW218756-1;SW218857-1</data>
+      <data key="d3">319.2334</data>
+      <data key="d4">2.0814</data>
+      <data key="d5">101005.4</data>
+      <data key="d6">25656.5</data>
+      <data key="d7">191286.0</data>
+      <data key="d8">2.08</data>
+      <data key="d9">0.51</data>
+      <data key="d10">basket</data>
+      <data key="d11">842.91</data>
+      <data key="d12">264.62</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="4124">
+      <data key="d0">4124</data>
+      <data key="d1">2</data>
+      <data key="d2">SW218717-1;SW218756-1</data>
+      <data key="d3">519.3501</data>
+      <data key="d4">2.0863</data>
+      <data key="d5">91392.6667</data>
+      <data key="d6">91263.3333</data>
+      <data key="d7">91522.0</data>
+      <data key="d8">3.25</data>
+      <data key="d9">0.42</data>
+      <data key="d10">basket</data>
+      <data key="d11">814.86</data>
+      <data key="d12">285.09</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="RLUS-2179A">
+      <data key="d0">RLUS-2179A</data>
+      <data key="d10">sample</data>
+      <data key="d11">669.16</data>
+      <data key="d12">89.0</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="4069">
+      <data key="d0">4069</data>
+      <data key="d1">10</data>
+      <data key="d2">RLUS-2046B;RLUS-2052B;RLUS-2065B;RLUS-2065C;RLUS-2124A;RLUS-2124B;RLUS-2124C;RLUS-2124E;RLUS-2194B;RLUS-2210B</data>
+      <data key="d3">659.2771</data>
+      <data key="d4">2.066</data>
+      <data key="d5">72250.1333</data>
+      <data key="d6">23229.5</data>
+      <data key="d7">173408.0</data>
+      <data key="d8">2.57</data>
+      <data key="d9">0.37</data>
+      <data key="d10">basket</data>
+      <data key="d11">709.46</data>
+      <data key="d12">394.18</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="3751">
+      <data key="d0">3751</data>
+      <data key="d1">4</data>
+      <data key="d2">RLUS-2065B;RLUS-2124A;RLUS-2124B;SW218716-1</data>
+      <data key="d3">322.1258</data>
+      <data key="d4">1.9594</data>
+      <data key="d5">72956.875</data>
+      <data key="d6">31386.5</data>
+      <data key="d7">117958.5</data>
+      <data key="d8">3.19</data>
+      <data key="d9">0.54</data>
+      <data key="d10">basket</data>
+      <data key="d11">622.16</data>
+      <data key="d12">242.87</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="4311">
+      <data key="d0">4311</data>
+      <data key="d1">2</data>
+      <data key="d2">RLUS-2065B;SW218717-1</data>
+      <data key="d3">606.3122</data>
+      <data key="d4">2.1932</data>
+      <data key="d5">38592.4167</data>
+      <data key="d6">38482.3333</data>
+      <data key="d7">38702.5</data>
+      <data key="d8">2.0</data>
+      <data key="d9">1.0</data>
+      <data key="d10">basket</data>
+      <data key="d11">686.36</data>
+      <data key="d12">198.71</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="3752">
+      <data key="d0">3752</data>
+      <data key="d1">10</data>
+      <data key="d2">RLUS-2065B;RLUS-2124A;RLUS-2124B;RLUS-2210B;SW218716-1;SW218717-1;SW218718-1;SW218754-1;SW218885-1;SW218886-1</data>
+      <data key="d3">588.3477</data>
+      <data key="d4">1.9595</data>
+      <data key="d5">282873.75</data>
+      <data key="d6">117058.0</data>
+      <data key="d7">605868.0</data>
+      <data key="d8">2.13</data>
+      <data key="d9">0.44</data>
+      <data key="d10">basket</data>
+      <data key="d11">766.75</data>
+      <data key="d12">354.48</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="SW218718-1">
+      <data key="d0">SW218718-1</data>
+      <data key="d10">sample</data>
+      <data key="d11">740.7</data>
+      <data key="d12">265.61</data>
       <data key="d13">6</data>
     </node>
     <node id="3743">
@@ -783,6 +515,203 @@
       <data key="d12">230.77</data>
       <data key="d13">6</data>
     </node>
+    <node id="3907">
+      <data key="d0">3907</data>
+      <data key="d1">4</data>
+      <data key="d2">RLUS-2065B;RLUS-2124A;RLUS-2124B;RLUS-2210B</data>
+      <data key="d3">688.2357</data>
+      <data key="d4">2.0117</data>
+      <data key="d5">40123.375</data>
+      <data key="d6">15110.5</data>
+      <data key="d7">83777.6667</data>
+      <data key="d8">3.25</data>
+      <data key="d9">0.38</data>
+      <data key="d10">basket</data>
+      <data key="d11">788.0</data>
+      <data key="d12">293.45</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="643">
+      <data key="d0">643</data>
+      <data key="d1">4</data>
+      <data key="d2">SW218754-1;SW218755-1;SW218885-1;SW218886-1</data>
+      <data key="d3">361.2458</data>
+      <data key="d4">0.5429</data>
+      <data key="d5">171331.6667</data>
+      <data key="d6">85035.0</data>
+      <data key="d7">312835.0</data>
+      <data key="d8">2.25</data>
+      <data key="d9">0.55</data>
+      <data key="d10">basket</data>
+      <data key="d11">766.18</data>
+      <data key="d12">367.92</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="3926">
+      <data key="d0">3926</data>
+      <data key="d1">4</data>
+      <data key="d2">RLUS-2065B;RLUS-2124A;RLUS-2124B;RLUS-2210B</data>
+      <data key="d3">687.2324</data>
+      <data key="d4">2.0215</data>
+      <data key="d5">313544.7917</data>
+      <data key="d6">131560.0</data>
+      <data key="d7">647777.0</data>
+      <data key="d8">3.25</data>
+      <data key="d9">0.38</data>
+      <data key="d10">basket</data>
+      <data key="d11">800.36</data>
+      <data key="d12">285.94</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="4058">
+      <data key="d0">4058</data>
+      <data key="d1">10</data>
+      <data key="d2">RLUS-2065B;RLUS-2124A;RLUS-2124B;RLUS-2155B;RLUS-2210B;SW218716-1;SW218717-1;SW218718-1;SW218755-1;SW218856-1</data>
+      <data key="d3">602.7758</data>
+      <data key="d4">2.0641</data>
+      <data key="d5">42901.8833</data>
+      <data key="d6">12004.5</data>
+      <data key="d7">105528.0</data>
+      <data key="d8">2.13</data>
+      <data key="d9">0.44</data>
+      <data key="d10">basket</data>
+      <data key="d11">781.66</data>
+      <data key="d12">326.06</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="4118">
+      <data key="d0">4118</data>
+      <data key="d1">2</data>
+      <data key="d2">RLUS-2065B;SW218716-1</data>
+      <data key="d3">585.3418</data>
+      <data key="d4">2.0825</data>
+      <data key="d5">67490.5</data>
+      <data key="d6">37448.0</data>
+      <data key="d7">97533.0</data>
+      <data key="d8">2.0</data>
+      <data key="d9">1.0</data>
+      <data key="d10">basket</data>
+      <data key="d11">651.89</data>
+      <data key="d12">208.41</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="4125">
+      <data key="d0">4125</data>
+      <data key="d1">2</data>
+      <data key="d2">RLUS-2065B;RLUS-2124C</data>
+      <data key="d3">319.1201</data>
+      <data key="d4">2.0867</data>
+      <data key="d5">10222.25</data>
+      <data key="d6">7104.5</data>
+      <data key="d7">13340.0</data>
+      <data key="d8">3.25</data>
+      <data key="d9">0.42</data>
+      <data key="d10">basket</data>
+      <data key="d11">664.71</data>
+      <data key="d12">204.95</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="4283">
+      <data key="d0">4283</data>
+      <data key="d1">2</data>
+      <data key="d2">SW218717-1;SW218718-1</data>
+      <data key="d3">519.3505</data>
+      <data key="d4">2.1819</data>
+      <data key="d5">85538.4167</data>
+      <data key="d6">49395.5</data>
+      <data key="d7">121681.3333</data>
+      <data key="d8">3.25</data>
+      <data key="d9">0.42</data>
+      <data key="d10">basket</data>
+      <data key="d11">744.13</data>
+      <data key="d12">165.21</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="RLUS-2179B">
+      <data key="d0">RLUS-2179B</data>
+      <data key="d10">sample</data>
+      <data key="d11">714.62</data>
+      <data key="d12">275.83</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="4232">
+      <data key="d0">4232</data>
+      <data key="d1">2</data>
+      <data key="d2">SW218717-1;SW218718-1</data>
+      <data key="d3">603.4075</data>
+      <data key="d4">2.1505</data>
+      <data key="d5">60685.0</data>
+      <data key="d6">49427.5</data>
+      <data key="d7">71942.5</data>
+      <data key="d8">3.25</data>
+      <data key="d9">0.42</data>
+      <data key="d10">basket</data>
+      <data key="d11">732.43</data>
+      <data key="d12">167.75</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="3746">
+      <data key="d0">3746</data>
+      <data key="d1">17</data>
+      <data key="d2">RLUS-2046B;RLUS-2065B;RLUS-2124A;RLUS-2124C;RLUS-2124D;RLUS-2124E;RLUS-2155B;RLUS-2179B;RLUS-2210B;SW218716-1;SW218717-1;SW218718-1;SW218754-1;SW218755-1;SW218856-1;SW218885-1;SW218886-1</data>
+      <data key="d3">320.6277</data>
+      <data key="d4">1.9588</data>
+      <data key="d5">157683.7353</data>
+      <data key="d6">44628.5</data>
+      <data key="d7">514820.0</data>
+      <data key="d8">2.34</data>
+      <data key="d9">0.46</data>
+      <data key="d10">basket</data>
+      <data key="d11">752.81</data>
+      <data key="d12">370.89</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="RLUS-2124B">
+      <data key="d0">RLUS-2124B</data>
+      <data key="d10">sample</data>
+      <data key="d11">694.14</data>
+      <data key="d12">306.56</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="95">
+      <data key="d0">95</data>
+      <data key="d1">2</data>
+      <data key="d2">SW218755-1;SW218885-1</data>
+      <data key="d3">302.204</data>
+      <data key="d4">0.5305</data>
+      <data key="d5">27249.75</data>
+      <data key="d6">18347.5</data>
+      <data key="d7">36152.0</data>
+      <data key="d8">2.25</data>
+      <data key="d9">0.33</data>
+      <data key="d10">basket</data>
+      <data key="d11">756.63</data>
+      <data key="d12">342.79</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="RLUS-2124A">
+      <data key="d0">RLUS-2124A</data>
+      <data key="d10">sample</data>
+      <data key="d11">697.29</data>
+      <data key="d12">305.54</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="4120">
+      <data key="d0">4120</data>
+      <data key="d1">2</data>
+      <data key="d2">SW218717-1;SW218756-1</data>
+      <data key="d3">319.1662</data>
+      <data key="d4">2.0833</data>
+      <data key="d5">106021.5</data>
+      <data key="d6">95700.3333</data>
+      <data key="d7">116342.6667</data>
+      <data key="d8">3.25</data>
+      <data key="d9">0.42</data>
+      <data key="d10">basket</data>
+      <data key="d11">828.98</data>
+      <data key="d12">273.76</data>
+      <data key="d13">6</data>
+    </node>
     <node id="SW218856-1">
       <data key="d0">SW218856-1</data>
       <data key="d10">sample</data>
@@ -790,158 +719,229 @@
       <data key="d12">287.11</data>
       <data key="d13">6</data>
     </node>
-    <node id="RLUS-2065B">
-      <data key="d0">RLUS-2065B</data>
+    <node id="SW218716-1">
+      <data key="d0">SW218716-1</data>
       <data key="d10">sample</data>
-      <data key="d11">696.4</data>
-      <data key="d12">293.12</data>
+      <data key="d11">703.09</data>
+      <data key="d12">279.98</data>
       <data key="d13">6</data>
     </node>
-    <node id="RLUS-2179A">
-      <data key="d0">RLUS-2179A</data>
+    <node id="SW218952-1">
+      <data key="d0">SW218952-1</data>
       <data key="d10">sample</data>
-      <data key="d11">669.16</data>
-      <data key="d12">89.0</data>
+      <data key="d11">764.25</data>
+      <data key="d12">230.2</data>
       <data key="d13">6</data>
     </node>
-    <edge source="4120" target="SW218717-1" />
-    <edge source="4277" target="SW218717-1" />
-    <edge source="4277" target="SW218718-1" />
-    <edge source="3757" target="RLUS-2124A" />
-    <edge source="3757" target="SW218716-1" />
-    <edge source="4027" target="RLUS-2058B" />
-    <edge source="4027" target="RLUS-2065B" />
-    <edge source="4027" target="RLUS-2124A" />
-    <edge source="4027" target="RLUS-2124B" />
-    <edge source="4027" target="RLUS-2124C" />
-    <edge source="4027" target="RLUS-2155B" />
-    <edge source="3926" target="RLUS-2065B" />
-    <edge source="3926" target="RLUS-2124A" />
-    <edge source="3926" target="RLUS-2124B" />
-    <edge source="643" target="SW218885-1" />
-    <edge source="643" target="SW218886-1" />
-    <edge source="3907" target="RLUS-2065B" />
-    <edge source="3907" target="RLUS-2124A" />
-    <edge source="3907" target="RLUS-2124B" />
-    <edge source="4073" target="RLUS-2124A" />
-    <edge source="4073" target="RLUS-2124B" />
-    <edge source="4073" target="RLUS-2124C" />
-    <edge source="4073" target="RLUS-2155B" />
-    <edge source="4124" target="SW218717-1" />
-    <edge source="SW218885-1" target="3746" />
-    <edge source="SW218885-1" target="3749" />
-    <edge source="SW218885-1" target="3752" />
-    <edge source="SW218885-1" target="95" />
-    <edge source="RLUS-2126C" target="4116" />
-    <edge source="4058" target="RLUS-2065B" />
-    <edge source="4058" target="RLUS-2124A" />
-    <edge source="4058" target="RLUS-2124B" />
-    <edge source="4058" target="RLUS-2155B" />
-    <edge source="4058" target="SW218716-1" />
-    <edge source="4058" target="SW218717-1" />
-    <edge source="4058" target="SW218718-1" />
-    <edge source="4058" target="SW218856-1" />
-    <edge source="4125" target="RLUS-2065B" />
-    <edge source="4125" target="RLUS-2124C" />
-    <edge source="4118" target="RLUS-2065B" />
-    <edge source="4118" target="SW218716-1" />
-    <edge source="RLUS-2179B" target="3746" />
-    <edge source="RLUS-2179B" target="881" />
+    <node id="4122">
+      <data key="d0">4122</data>
+      <data key="d1">2</data>
+      <data key="d2">SW218717-1;SW218756-1</data>
+      <data key="d3">690.3025</data>
+      <data key="d4">2.085</data>
+      <data key="d5">80158.25</data>
+      <data key="d6">47596.0</data>
+      <data key="d7">112720.5</data>
+      <data key="d8">3.25</data>
+      <data key="d9">0.42</data>
+      <data key="d10">basket</data>
+      <data key="d11">821.94</data>
+      <data key="d12">276.48</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="4266">
+      <data key="d0">4266</data>
+      <data key="d1">4</data>
+      <data key="d2">RLUS-2065B;SW218716-1;SW218717-1;SW218755-1</data>
+      <data key="d3">621.3221</data>
+      <data key="d4">2.1683</data>
+      <data key="d5">27140.5</data>
+      <data key="d6">17508.0</data>
+      <data key="d7">46500.5</data>
+      <data key="d8">2.25</data>
+      <data key="d9">0.74</data>
+      <data key="d10">basket</data>
+      <data key="d11">757.57</data>
+      <data key="d12">311.05</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="4073">
+      <data key="d0">4073</data>
+      <data key="d1">5</data>
+      <data key="d2">RLUS-2124A;RLUS-2124B;RLUS-2124C;RLUS-2155B;RLUS-2210B</data>
+      <data key="d3">330.1327</data>
+      <data key="d4">2.067</data>
+      <data key="d5">64593.9</data>
+      <data key="d6">41775.5</data>
+      <data key="d7">117210.5</data>
+      <data key="d8">3.52</data>
+      <data key="d9">0.46</data>
+      <data key="d10">basket</data>
+      <data key="d11">783.82</data>
+      <data key="d12">305.85</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="RLUS-2194B">
+      <data key="d0">RLUS-2194B</data>
+      <data key="d10">sample</data>
+      <data key="d11">625.84</data>
+      <data key="d12">332.06</data>
+      <data key="d13">6</data>
+    </node>
+    <node id="3761">
+      <data key="d0">3761</data>
+      <data key="d1">5</data>
+      <data key="d2">RLUS-2065B;RLUS-2124A;RLUS-2124B;RLUS-2210B;SW218886-1</data>
+      <data key="d3">643.2644</data>
+      <data key="d4">1.9609</data>
+      <data key="d5">112133.2</data>
+      <data key="d6">43832.5</data>
+      <data key="d7">222479.5</data>
+      <data key="d8">2.36</data>
+      <data key="d9">0.34</data>
+      <data key="d10">basket</data>
+      <data key="d11">736.9</data>
+      <data key="d12">366.56</data>
+      <data key="d13">6</data>
+    </node>
     <edge source="4065" target="RLUS-2124B" />
     <edge source="4065" target="SW218716-1" />
     <edge source="4065" target="SW218717-1" />
     <edge source="4065" target="SW218718-1" />
     <edge source="4065" target="SW218856-1" />
     <edge source="4065" target="SW218886-1" />
-    <edge source="4232" target="SW218717-1" />
-    <edge source="4232" target="SW218718-1" />
-    <edge source="4261" target="RLUS-2065B" />
-    <edge source="4261" target="SW218716-1" />
-    <edge source="SW218717-1" target="2566" />
-    <edge source="SW218717-1" target="3746" />
-    <edge source="SW218717-1" target="3749" />
-    <edge source="SW218717-1" target="3752" />
-    <edge source="SW218717-1" target="4116" />
-    <edge source="SW218717-1" target="4122" />
-    <edge source="SW218717-1" target="4255" />
-    <edge source="SW218717-1" target="4266" />
-    <edge source="SW218717-1" target="4279" />
-    <edge source="SW218717-1" target="4283" />
-    <edge source="SW218717-1" target="4288" />
-    <edge source="SW218717-1" target="4295" />
-    <edge source="SW218717-1" target="4311" />
-    <edge source="SW218857-1" target="4116" />
+    <edge source="RLUS-2052B" target="4069" />
+    <edge source="RLUS-2155B" target="3746" />
+    <edge source="RLUS-2155B" target="4027" />
+    <edge source="RLUS-2155B" target="4058" />
+    <edge source="RLUS-2155B" target="4073" />
+    <edge source="SW218885-1" target="3746" />
+    <edge source="SW218885-1" target="3749" />
+    <edge source="SW218885-1" target="3752" />
+    <edge source="SW218885-1" target="643" />
+    <edge source="SW218885-1" target="95" />
+    <edge source="3945" target="RLUS-2065B" />
+    <edge source="3945" target="RLUS-2124B" />
+    <edge source="3980" target="RLUS-2065B" />
+    <edge source="3980" target="RLUS-2124B" />
+    <edge source="3980" target="RLUS-2124C" />
+    <edge source="4295" target="RLUS-2065B" />
+    <edge source="4295" target="SW218716-1" />
+    <edge source="4295" target="SW218717-1" />
+    <edge source="4295" target="SW218718-1" />
     <edge source="SW218886-1" target="1916" />
     <edge source="SW218886-1" target="3746" />
     <edge source="SW218886-1" target="3749" />
     <edge source="SW218886-1" target="3752" />
     <edge source="SW218886-1" target="3761" />
-    <edge source="4279" target="RLUS-2065B" />
-    <edge source="4279" target="SW218716-1" />
-    <edge source="RLUS-2052B" target="4069" />
-    <edge source="4295" target="RLUS-2065B" />
-    <edge source="4295" target="SW218716-1" />
-    <edge source="4295" target="SW218718-1" />
-    <edge source="3746" target="RLUS-2065B" />
-    <edge source="3746" target="RLUS-2124A" />
-    <edge source="3746" target="RLUS-2124C" />
-    <edge source="3746" target="RLUS-2155B" />
-    <edge source="3746" target="SW218716-1" />
-    <edge source="3746" target="SW218718-1" />
-    <edge source="3746" target="SW218856-1" />
-    <edge source="3945" target="RLUS-2065B" />
-    <edge source="3945" target="RLUS-2124B" />
-    <edge source="4116" target="SW218718-1" />
-    <edge source="4311" target="RLUS-2065B" />
-    <edge source="RLUS-2124C" target="3749" />
-    <edge source="RLUS-2124C" target="3980" />
-    <edge source="RLUS-2124C" target="4069" />
-    <edge source="RLUS-2124B" target="3743" />
-    <edge source="RLUS-2124B" target="3749" />
-    <edge source="RLUS-2124B" target="3751" />
-    <edge source="RLUS-2124B" target="3752" />
-    <edge source="RLUS-2124B" target="3761" />
-    <edge source="RLUS-2124B" target="3959" />
-    <edge source="RLUS-2124B" target="3980" />
-    <edge source="RLUS-2124B" target="4009" />
-    <edge source="RLUS-2124B" target="4054" />
-    <edge source="RLUS-2124B" target="4069" />
+    <edge source="SW218886-1" target="643" />
+    <edge source="3959" target="RLUS-2065B" />
+    <edge source="3959" target="RLUS-2124A" />
+    <edge source="3959" target="RLUS-2124B" />
+    <edge source="4261" target="RLUS-2065B" />
+    <edge source="4261" target="SW218716-1" />
+    <edge source="RLUS-2058B" target="4027" />
     <edge source="4054" target="RLUS-2065B" />
     <edge source="4054" target="RLUS-2124A" />
-    <edge source="3752" target="RLUS-2065B" />
-    <edge source="3752" target="RLUS-2124A" />
-    <edge source="3752" target="SW218716-1" />
-    <edge source="3752" target="SW218718-1" />
-    <edge source="3751" target="RLUS-2065B" />
-    <edge source="3751" target="RLUS-2124A" />
-    <edge source="3751" target="SW218716-1" />
-    <edge source="4255" target="RLUS-2065B" />
-    <edge source="4255" target="SW218716-1" />
-    <edge source="4255" target="SW218718-1" />
-    <edge source="4283" target="SW218718-1" />
-    <edge source="3761" target="RLUS-2065B" />
-    <edge source="3761" target="RLUS-2124A" />
+    <edge source="4054" target="RLUS-2124B" />
+    <edge source="SW218717-1" target="2566" />
+    <edge source="SW218717-1" target="3746" />
+    <edge source="SW218717-1" target="3749" />
+    <edge source="SW218717-1" target="3752" />
+    <edge source="SW218717-1" target="4058" />
+    <edge source="SW218717-1" target="4116" />
+    <edge source="SW218717-1" target="4120" />
+    <edge source="SW218717-1" target="4122" />
+    <edge source="SW218717-1" target="4124" />
+    <edge source="SW218717-1" target="4232" />
+    <edge source="SW218717-1" target="4255" />
+    <edge source="SW218717-1" target="4266" />
+    <edge source="SW218717-1" target="4277" />
+    <edge source="SW218717-1" target="4279" />
+    <edge source="SW218717-1" target="4283" />
+    <edge source="SW218717-1" target="4288" />
+    <edge source="SW218717-1" target="4311" />
+    <edge source="3757" target="RLUS-2124A" />
+    <edge source="3757" target="SW218716-1" />
+    <edge source="4279" target="RLUS-2065B" />
+    <edge source="4279" target="SW218716-1" />
+    <edge source="4277" target="SW218718-1" />
+    <edge source="4009" target="RLUS-2124A" />
+    <edge source="4009" target="RLUS-2124B" />
+    <edge source="2566" target="RLUS-2065B" />
     <edge source="3749" target="RLUS-2065B" />
     <edge source="3749" target="RLUS-2124A" />
+    <edge source="3749" target="RLUS-2124B" />
+    <edge source="3749" target="RLUS-2124C" />
     <edge source="3749" target="SW218716-1" />
     <edge source="3749" target="SW218718-1" />
     <edge source="3749" target="SW218952-1" />
-    <edge source="RLUS-2124A" target="3743" />
-    <edge source="RLUS-2124A" target="3959" />
-    <edge source="RLUS-2124A" target="4009" />
-    <edge source="RLUS-2124A" target="4069" />
-    <edge source="SW218718-1" target="4288" />
-    <edge source="RLUS-2194B" target="4069" />
-    <edge source="SW218716-1" target="3743" />
-    <edge source="SW218716-1" target="4266" />
-    <edge source="SW218716-1" target="4296" />
-    <edge source="2566" target="RLUS-2065B" />
-    <edge source="4266" target="RLUS-2065B" />
-    <edge source="3980" target="RLUS-2065B" />
-    <edge source="4296" target="RLUS-2065B" />
-    <edge source="3959" target="RLUS-2065B" />
-    <edge source="4069" target="RLUS-2065B" />
     <edge source="881" target="RLUS-2179A" />
-    <edge source="3743" target="RLUS-2065B" />
+    <edge source="881" target="RLUS-2179B" />
+    <edge source="RLUS-2124C" target="3746" />
+    <edge source="RLUS-2124C" target="4027" />
+    <edge source="RLUS-2124C" target="4069" />
+    <edge source="RLUS-2124C" target="4073" />
+    <edge source="RLUS-2124C" target="4125" />
+    <edge source="RLUS-2065B" target="3743" />
+    <edge source="RLUS-2065B" target="3746" />
+    <edge source="RLUS-2065B" target="3751" />
+    <edge source="RLUS-2065B" target="3752" />
+    <edge source="RLUS-2065B" target="3761" />
+    <edge source="RLUS-2065B" target="3907" />
+    <edge source="RLUS-2065B" target="3926" />
+    <edge source="RLUS-2065B" target="4027" />
+    <edge source="RLUS-2065B" target="4058" />
+    <edge source="RLUS-2065B" target="4069" />
+    <edge source="RLUS-2065B" target="4118" />
+    <edge source="RLUS-2065B" target="4125" />
+    <edge source="RLUS-2065B" target="4255" />
+    <edge source="RLUS-2065B" target="4266" />
+    <edge source="RLUS-2065B" target="4296" />
+    <edge source="RLUS-2065B" target="4311" />
+    <edge source="4027" target="RLUS-2124A" />
+    <edge source="4027" target="RLUS-2124B" />
+    <edge source="RLUS-2126C" target="4116" />
+    <edge source="4296" target="SW218716-1" />
+    <edge source="4288" target="SW218718-1" />
+    <edge source="SW218857-1" target="4116" />
+    <edge source="4255" target="SW218716-1" />
+    <edge source="4255" target="SW218718-1" />
+    <edge source="4116" target="SW218718-1" />
+    <edge source="4069" target="RLUS-2124A" />
+    <edge source="4069" target="RLUS-2124B" />
+    <edge source="4069" target="RLUS-2194B" />
+    <edge source="3751" target="RLUS-2124A" />
+    <edge source="3751" target="RLUS-2124B" />
+    <edge source="3751" target="SW218716-1" />
+    <edge source="3752" target="RLUS-2124A" />
+    <edge source="3752" target="RLUS-2124B" />
+    <edge source="3752" target="SW218716-1" />
+    <edge source="3752" target="SW218718-1" />
+    <edge source="SW218718-1" target="3746" />
+    <edge source="SW218718-1" target="4058" />
+    <edge source="SW218718-1" target="4232" />
+    <edge source="SW218718-1" target="4283" />
+    <edge source="3743" target="RLUS-2124A" />
+    <edge source="3743" target="RLUS-2124B" />
+    <edge source="3743" target="SW218716-1" />
+    <edge source="3907" target="RLUS-2124A" />
+    <edge source="3907" target="RLUS-2124B" />
+    <edge source="3926" target="RLUS-2124A" />
+    <edge source="3926" target="RLUS-2124B" />
+    <edge source="4058" target="RLUS-2124A" />
+    <edge source="4058" target="RLUS-2124B" />
+    <edge source="4058" target="SW218716-1" />
+    <edge source="4058" target="SW218856-1" />
+    <edge source="4118" target="SW218716-1" />
+    <edge source="RLUS-2179B" target="3746" />
+    <edge source="3746" target="RLUS-2124A" />
+    <edge source="3746" target="SW218716-1" />
+    <edge source="3746" target="SW218856-1" />
+    <edge source="RLUS-2124B" target="3761" />
+    <edge source="RLUS-2124B" target="4073" />
+    <edge source="RLUS-2124A" target="3761" />
+    <edge source="RLUS-2124A" target="4073" />
+    <edge source="SW218716-1" target="4266" />
   </graph>
 </graphml>

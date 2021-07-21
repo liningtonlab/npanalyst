@@ -115,9 +115,11 @@ def conserve_communities(
 
         # create a table for scatterplot
         basketids = [
-            nid for nid, ndata in graph.nodes(data=True) if ndata["type_"] == "basket"
+            nid
+            for nid, ndata in subgraph.nodes(data=True)
+            if ndata["type_"] == "basket"
         ]
-        output_table = basket_df[basket_df["BasketID"].isin(basketids)]
+        output_table = basket_df[basket_df["BasketID"].isin(map(int, basketids))]
         communities.append(
             Community(graph=subgraph, table=output_table, assay=assay_df_subset)
         )
