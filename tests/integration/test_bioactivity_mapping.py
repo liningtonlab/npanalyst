@@ -111,10 +111,10 @@ def test_bioactivity_mapping():
     # Compare communities output folder
     # Count communities
     nr_communities = len(os.listdir(Path(tmpdir, "communities")))
-    assert nr_communities == 18
+    assert nr_communities == 19
 
     # # Go through all community folders and compare
-    for community in [str(i) for i in range(18)]:
+    for community in [str(i) for i in range(19)]:
         print("Validate community nr:" + community)
 
         # tables
