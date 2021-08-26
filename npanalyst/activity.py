@@ -314,7 +314,7 @@ def save_communities(
     root_com_dir = output_dir / "communities"
     root_com_dir.mkdir(exist_ok=True)
     for idc, comm in enumerate(communities):
-        com_dir = root_com_dir / str(idc)
+        com_dir = root_com_dir / str(idc + 1)
         com_dir.mkdir(
             exist_ok=True,
         )

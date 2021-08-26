@@ -1,0 +1,84 @@
+<?xml version='1.0' encoding='utf-8'?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+  <key id="d13" for="node" attr.name="community" attr.type="int" />
+  <key id="d12" for="node" attr.name="y" attr.type="double" />
+  <key id="d11" for="node" attr.name="x" attr.type="double" />
+  <key id="d10" for="node" attr.name="type_" attr.type="string" />
+  <key id="d9" for="node" attr.name="cluster_score" attr.type="float" />
+  <key id="d8" for="node" attr.name="activity_score" attr.type="float" />
+  <key id="d7" for="node" attr.name="MaxPrecIntensity" attr.type="double" />
+  <key id="d6" for="node" attr.name="MinPrecIntensity" attr.type="double" />
+  <key id="d5" for="node" attr.name="PrecIntensity" attr.type="double" />
+  <key id="d4" for="node" attr.name="RetTime" attr.type="double" />
+  <key id="d3" for="node" attr.name="PrecMz" attr.type="double" />
+  <key id="d2" for="node" attr.name="samples" attr.type="string" />
+  <key id="d1" for="node" attr.name="freq" attr.type="int" />
+  <key id="d0" for="node" attr.name="id" attr.type="string" />
+  <graph edgedefault="undirected">
+    <node id="4845">
+      <data key="d0">4845</data>
+      <data key="d1">2</data>
+      <data key="d2">RLUS-2204C;RLUS-2204D</data>
+      <data key="d3">582.3659</data>
+      <data key="d4">2.686</data>
+      <data key="d5">459008.6667</data>
+      <data key="d6">170356.3333</data>
+      <data key="d7">747661.0</data>
+      <data key="d8">3.75</data>
+      <data key="d9">0.61</data>
+      <data key="d10">basket</data>
+      <data key="d11">977.22</data>
+      <data key="d12">937.09</data>
+      <data key="d13">18</data>
+    </node>
+    <node id="9619">
+      <data key="d0">9619</data>
+      <data key="d1">4</data>
+      <data key="d2">RLUS-2053E;RLUS-2068C;RLUS-2193F;RLUS-2204C</data>
+      <data key="d3">663.4586</data>
+      <data key="d4">5.993</data>
+      <data key="d5">4079706.0</data>
+      <data key="d6">2664236.0</data>
+      <data key="d7">6014890.5</data>
+      <data key="d8">3.25</data>
+      <data key="d9">0.69</data>
+      <data key="d10">basket</data>
+      <data key="d11">1029.2</data>
+      <data key="d12">1117.5</data>
+      <data key="d13">18</data>
+    </node>
+    <node id="RLUS-2193F">
+      <data key="d0">RLUS-2193F</data>
+      <data key="d10">sample</data>
+      <data key="d11">1053.5</data>
+      <data key="d12">1197.9</data>
+      <data key="d13">18</data>
+    </node>
+    <node id="RLUS-2053E">
+      <data key="d0">RLUS-2053E</data>
+      <data key="d10">sample</data>
+      <data key="d11">999.82</data>
+      <data key="d12">1220.0</data>
+      <data key="d13">18</data>
+    </node>
+    <node id="RLUS-2068C">
+      <data key="d0">RLUS-2068C</data>
+      <data key="d10">sample</data>
+      <data key="d11">1112.2</data>
+      <data key="d12">1161.3</data>
+      <data key="d13">18</data>
+    </node>
+    <node id="RLUS-2204C">
+      <data key="d0">RLUS-2204C</data>
+      <data key="d10">sample</data>
+      <data key="d11">1017.3</data>
+      <data key="d12">1021.7</data>
+      <data key="d13">18</data>
+    </node>
+    <edge source="4845" target="RLUS-2204C" />
+    <edge source="9619" target="RLUS-2053E" />
+    <edge source="9619" target="RLUS-2068C" />
+    <edge source="9619" target="RLUS-2193F" />
+    <edge source="9619" target="RLUS-2204C" />
+  </graph>
+</graphml>

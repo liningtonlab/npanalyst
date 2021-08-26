@@ -33,8 +33,10 @@ def add_community_as_node_attribute(
     """
     community_dict = {}
     for n, i in enumerate(community_list):
+        n += 1
         for name in i:
             community_dict[name] = n
+    print(community_dict)
     nx.set_node_attributes(graph, community_dict, community_key)
     logger.debug("Community assignment has been added to the graph meta data.")
 
@@ -85,9 +87,9 @@ def conserve_communities(
 
     Create output data for each community returning a list of Community named tuples
     """
-    community_count = max(community_df["community"])
+    community_numbers = sorted(community_df["community"].unique())
     communities = []
-    for community in range(community_count + 1):
+    for community in community_numbers:
         # Retrieve only the samples, not the basket names, from the community_df
         samples = (
             community_df["node"]
