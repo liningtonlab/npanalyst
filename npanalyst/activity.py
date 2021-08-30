@@ -23,10 +23,13 @@ def filenames2samples(filenames: str, all_samples: List) -> List:
     """
     delims = "[_.-]"
     found_samples = set()
+    # Sort samples by reverse length order so that substrings come after
+    # full sample names in the regex
+    sorted_samples = sorted(all_samples, key=lambda x: (-len(x), x))
     # Regex may start with delimeters and MUST end with either delimiters or
     # end of word/string boundary or vertical bar (non-capturing regex to avoid tuple in set)
     match = re.findall(
-        f"(?:{delims})?({'|'.join(all_samples)})(?:{delims}|\\b|$|\\|)", filenames
+        f"(?:{delims})?({'|'.join(sorted_samples)})(?:{delims}|\\b|$|\\|)", filenames
     )
     if match:
         found_samples.update(match)

@@ -10,7 +10,7 @@ def test_filenames2samples_sees_all_relevant():
     )
 
 
-def test_filenames2samples_sees_all_relevant():
+def test_filenames2samples_sees_all_relevant_nomzml():
     samples = ["Sample1", "Sample2", "Sample3"]
     filelist = "Sample1|Sample2|Sample3"
     expected = ["Sample1", "Sample2", "Sample3"]
@@ -92,3 +92,25 @@ def test_filenames2_samples_real_mzmine():
     assert (
         activity.filenames2samples(filenames=filelist1, all_samples=samples) == samples
     )
+
+
+def test_filenames2_samples_sample_is_substring():
+    samples = [
+        "20210819-ST01HEX",
+        "20210819-ST01HEX-F11",
+        "20210819-ST01HEX-F12",
+        "20210819-ST01HEX-F13",
+        "20210819-ST01HEX-F14",
+        "20210819-ST01HEX-F15",
+        "20210819-ST01HEX-F16",
+        "20210819-ST01HEX-F17",
+        "20210819-ST01HEX-F18",
+        "20210819-ST01HEX-F19",
+        "20210819-ST01HEX-F20",
+        "20210819-ST01HEX-F21",
+        "20210819-ST01HEX-F22",
+    ]
+    filelist = "20210819-ST01HEX_1.mzml|20210819-ST01HEX-F11_1.mzml|20210819-ST01HEX-F11_3.mzml|20210819-ST01HEX-F22_1.mzml|20210819-ST01HEX-F19_1.mzml|Sample2-3.mzml"
+    expected = ["20210819-ST01HEX", "20210819-ST01HEX-F11", "20210819-ST01HEX-F19", "20210819-ST01HEX-F22"]
+    output = activity.filenames2samples(filenames=filelist, all_samples=samples)
+    assert output  == expected
