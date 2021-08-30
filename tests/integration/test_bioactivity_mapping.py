@@ -114,7 +114,7 @@ def test_bioactivity_mapping():
     assert nr_communities == 19
 
     # # Go through all community folders and compare
-    for community in [str(i) for i in range(19)]:
+    for community in [str(i) for i in range(1, nr_communities + 1)]:
         print("Validate community nr:" + community)
 
         # tables
