@@ -44,7 +44,6 @@ def cli():
 )
 def get_config(output_path: Optional[Path] = None):
     """Helper function to generate a config file"""
-    """Run basketting from replicate compared input data."""
     click.echo("Generating configuration file `./config.json`")
     if output_path is None:
         conf_path = Path() / "config.json"
