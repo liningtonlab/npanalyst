@@ -33,13 +33,28 @@ def cli():
 ##      Get Config
 ############################
 @cli.command("get_config")
-def get_config():
+@click.option(
+    "--output_path",
+    "-o",
+    type=Path,
+    required=False,
+    help="Output directory",
+    default=".",
+    show_default=True,
+)
+def get_config(output_path: Optional[Path] = None):
     """Helper function to generate a config file"""
+    """Run basketting from replicate compared input data."""
     click.echo("Generating configuration file `./config.json`")
-    conf_path = Path() / "config.json"
+    if output_path is None:
+        conf_path = Path() / "config.json"
+    else:
+        conf_path = output_path / 'config.json'
     if conf_path.exists():
         click.echo("ERROR: File already exists.")
         raise click.Abort()
+    elif not output_path.exists():
+        output_path.mkdir(parents=True)
     with conf_path.open("w") as f:
         f.write(json.dumps(configuration.load_raw_config(), indent=2))
 
