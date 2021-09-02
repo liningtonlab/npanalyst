@@ -41,7 +41,7 @@ def replicate_compare_sample(
         rtree, msutils.get_hyperrectangles(df, MS1ERRORCOLS)
     )
     ndf = msutils.collapse_connected_components(
-        con_comps, df, configd, configd["MINREPS"]
+        con_comps, df, configd, configd["MINREPSREPLICATES"]
     )
     ndf.to_csv(
         outputdir.joinpath("replicated").joinpath(f"{sample}_replicated.csv"),
@@ -102,7 +102,7 @@ def basket_replicated(datadir: Path, output_dir: Path, configd: Dict) -> None:
     )
     logger.info("Generating Baskets")
     ndf = msutils.collapse_connected_components(
-        con_comps, df, configd, min_reps=1, minmax=True
+        con_comps, df, configd, min_reps=configd["MINREPSBASKETS"], minmax=True
     )
     # Sort baskets by RT then MZ
     ndf.sort_values(["RetTime", "PrecMz"], inplace=True)

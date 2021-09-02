@@ -50,10 +50,11 @@ def test_config_parameter():
     """This test shall guarantee that the loaded settings are identical to those, used to
     obtain the reference/ground truth results."""
     configd = configuration.load_config(config_path=None)
-
+    print(configd)
     assert configd["ACTIVITYTHRESHOLD"] == 2
     assert configd["CLUSTERTHRESHOLD"] == 0.3
-    assert configd["MINREPS"] == 2
+    assert configd["MINREPSREPLICATES"] == 2
+    assert configd["MINREPSBASKETS"] == 1
     assert configd["ERRORINFO"]["PrecMz"] == ("ppm", 30.0)
     assert configd["ERRORINFO"]["RetTime"] == ("window", 0.03)
     assert configd["MININTENSITY"] == 2e3
