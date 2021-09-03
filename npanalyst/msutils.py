@@ -187,11 +187,11 @@ def _average_data_rows(
 
 
 def _combine_rows(cc_df: pd.DataFrame, configd: Dict, minmax: bool = False) -> List:
-    """combine ms1 rows in conncected component dataframe
+    """combine ms1 rows in connected component dataframe
 
     Args:
-        cc_df (pd.DataFrame): conncected component dataframe
-        min_reps (int): minumum number of replicates (number of uniqe files) that must be in connected component
+        cc_df (pd.DataFrame): connected component dataframe
+        min_reps (int): minimum number of replicates (number of unique files) that must be in connected component
         minmax (bool): Whether to compute min max of configd["BASKETMINMAXCOLS"]
 
     Returns:
