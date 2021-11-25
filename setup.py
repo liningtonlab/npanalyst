@@ -13,6 +13,17 @@ setup(
     },
     install_requires=[
         "click",
+        "joblib",
+        # "matplotlib-base",
+        "networkx",
+        "numpy",
+        "pandas",
+        "pygraphviz",
+        "pymzml==2.4.5",
+        "python-louvain",
+        "rtree",
+        "scikit-learn",
+        "scipy",
     ],
-    python_requires=">=3.7",
+    python_requires=">=3.8",
 )
