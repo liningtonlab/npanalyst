@@ -125,6 +125,8 @@ def import_data(input_file: Path, output_dir: Path, mstype: str) -> None:
     elif mstype.lower() == "mzmine":
         logger.info(f"Importing MZmine features from {input_file}")
         basket_df = convert.mzmine(input_file)
+    else:
+        raise ValueError("Unsupported mstype for import")
 
     # create the basketed.csv file
     logger.info(f"Found a total of {len(basket_df)} basketed features")

@@ -111,6 +111,11 @@ def test_filenames2_samples_sample_is_substring():
         "20210819-ST01HEX-F22",
     ]
     filelist = "20210819-ST01HEX_1.mzml|20210819-ST01HEX-F11_1.mzml|20210819-ST01HEX-F11_3.mzml|20210819-ST01HEX-F22_1.mzml|20210819-ST01HEX-F19_1.mzml|Sample2-3.mzml"
-    expected = ["20210819-ST01HEX", "20210819-ST01HEX-F11", "20210819-ST01HEX-F19", "20210819-ST01HEX-F22"]
+    expected = [
+        "20210819-ST01HEX",
+        "20210819-ST01HEX-F11",
+        "20210819-ST01HEX-F19",
+        "20210819-ST01HEX-F22",
+    ]
     output = activity.filenames2samples(filenames=filelist, all_samples=samples)
-    assert output  == expected
+    assert output == expected

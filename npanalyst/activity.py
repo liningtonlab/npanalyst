@@ -1,15 +1,15 @@
 import json
+import re
 from collections import namedtuple
-from npanalyst import community_detection
 from pathlib import Path
-from typing import List, Dict
-from joblib import Parallel, delayed
+from typing import Dict, List
+
 import networkx as nx
 import numpy as np
 import pandas as pd
+from joblib import Parallel, delayed
 
-import re
-
+from npanalyst import community_detection
 from npanalyst.logging import get_logger
 
 logger = get_logger()
@@ -66,7 +66,7 @@ def cluster_score(fpd: pd.DataFrame, samples: List) -> float:
         return 0.0
     # Easy pairwise correlation in pandas
     corr = pd.DataFrame(np.transpose(fps)).corr("pearson").values
-    score = np.nansum(corr[np.triu_indices_from(corr, k=1)]) / ((j ** 2 - j) / 2.0)
+    score = np.nansum(corr[np.triu_indices_from(corr, k=1)]) / ((j**2 - j) / 2.0)
     return score
 
 
@@ -111,12 +111,12 @@ def score_basket(basket: Dict, activity_df: pd.DataFrame) -> Score:
     samples = basket["samples"]
     try:
         sfp = feature_synthetic_fp(activity_df, samples)
-    except KeyError as e:
+    except KeyError:
         logger.warning(
             f"No synthetic fingerprint available for basket - Files {basket['UniqueFiles']}"
         )
         return Score(0.0, 0.0)
-    act_score = np.sum(sfp ** 2)
+    act_score = np.sum(sfp**2)
     clust_score = cluster_score(activity_df, samples)
     return Score(act_score, clust_score)
 

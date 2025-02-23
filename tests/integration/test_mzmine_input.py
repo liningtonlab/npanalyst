@@ -1,13 +1,12 @@
+import re
+import shutil
 import tempfile
 from pathlib import Path
-import shutil
+
 import pandas as pd
-import time
-import re
+from pandas._testing import assert_frame_equal
 
 from npanalyst import cli
-
-from pandas._testing import assert_frame_equal
 
 
 # Helper function

@@ -1,15 +1,14 @@
 import os
+import shutil
 import tempfile
 from pathlib import Path
 from zipfile import ZipFile
-import shutil
-import pandas as pd
+
 import numpy as np
-import time
-
-from npanalyst import configuration, cli
-
+import pandas as pd
 from pandas._testing import assert_series_equal
+
+from npanalyst import cli, configuration
 
 
 # # Helper functions
