@@ -283,7 +283,7 @@ def save_association_network(
     """Save network output(s) to specified output directory"""
     outfile_gml = output_dir.joinpath("network.graphml").resolve()
     logger.debug(f"Saving {outfile_gml}")
-    logger.debug(nx.info(G))
+    logger.debug(str(G))
     nx.write_graphml(G, outfile_gml, prettyprint=True)
     if include_web_output:
         outfile_json = output_dir.joinpath("network.json").resolve()
