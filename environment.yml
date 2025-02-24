@@ -1,19 +1,6 @@
 name: npanalyst
-channels:
-  - conda-forge
 dependencies:
-  - python=3.8
+  - graphviz
+  - pygraphviz=1.14
+  - python=3.13
   - pip
-  - joblib
-  - numpy
-  - pandas
-  - scipy
-  - click
-  - networkx=2.6
-  - scikit-learn
-  - matplotlib-base
-  - python-louvain
-  - pygraphviz
-  - pip:
-      - rtree
-      - pymzml==2.4.5
