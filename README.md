@@ -6,10 +6,17 @@ For complete usage of the CLI [see our documentation](https://liningtonlab.githu
 
 ## Installation
 
+### Development
+
+Development is supported through the `uv` package manager for Python with a modern `pyproject.toml`.
+A `conda` build is provided for users which abstracts some of the more complex system dependency problems
+into an easy-to-use `conda install`. Further, a [`Taskfile.yaml`](https://taskfile.dev/) is provided
+for common dev tasks.
+
 ### Local
 
 Using Anaconda Python, create a virtual environment with all the necessary
-dependencies, and then install the toolchain into that environment:
+dependencies, and then install the tool-chain into that environment:
 
 ```bash
 conda env create -f environment.yml
@@ -24,7 +31,7 @@ You can use [Docker](https://www.docker.com/get-started) to run the `npanalyst` 
 To get the Docker image, you must build it.
 
 ```bash
-docker build -t npanalyst_cli .
+docker build -t npanalyst-cli .
 ```
 
 Then running the CLI works as
@@ -32,24 +39,24 @@ Then running the CLI works as
 See the CLI help command
 
 ```bash
-docker run -it npanalyst_cli 
+docker run -it npanalyst-cli 
 ```
 
 As an example of bind mounting a local volume.
 
 ```bash
-docker run -it -v PATH/TO/DATA:/data npanalyst_cli import -i /data/GNPS.graphml -o /data -t GNPS -v
+docker run -it -v PATH/TO/DATA:/data npanalyst-cli import -i /data/GNPS.graphml -o /data -t GNPS -v
 ```
 
 ## R-tree Based Basketing
 
-Using an rtree to build connected component graphs of mz features with overlapping error ranges (in all dimensions).
+Using an r-tree to build connected component graphs of m/z features with overlapping error ranges (in all dimensions).
 These are then combined (averaged) and represent a replicated or basketed feature.
 
 ## Functionality
 
 Right now things are implemented via a CLI (`npanalyst`) which will process a folder of csv files or basket a folder
-of replicated CSV's (output from replicate task).
+of replicated CSVs (output from replicate task).
 
 `npanalyst --help` should show all the features and usage.
 
@@ -59,8 +66,7 @@ produce a `./config.json` file.
 
 ## Tests
 
-Pytest has been used to implement basic unit and full pipeline (called integration here) tests.
+`pytest` has been used to implement basic unit and full pipeline (called integration here) tests.
 
 To run the tests, make sure you have pytest installed (Eg. `pip install pytest`), and simply run the `pytest` command.
 You can run the unit and integration tests separately by specifying a path to test `pytest tests/unit` or `pytest tests/integration`.
-
