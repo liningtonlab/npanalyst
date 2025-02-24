@@ -25,7 +25,7 @@ npanalyst = "npanalyst.cli:cli"
 package = true
 
 [dependency-groups]
-dev = ["pytest>=8.3.4", "ruff>=0.9.7"]
+dev = ["pre-commit>=4.1.0", "pytest>=8.3.4", "ruff>=0.9.7"]
 
 [build-system]
 requires = ["hatchling"]
