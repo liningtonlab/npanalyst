@@ -42,3 +42,10 @@ tasks:
     desc: "Build docker image"
     cmds:
       - docker build -t npanalyst-cli .
+
+  version:
+    desc: Use bump-my-version to manage package version
+    env:
+      VERSION: patch
+    cmds:
+      - uv run bump-my-version bump $VERSION {{.CLI_ARGS}}
