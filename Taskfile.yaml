@@ -4,7 +4,12 @@ tasks:
   test:
     cmds:
       - uv run pytest
+
   format:
     cmds:
       - ruff check --select I --fix
       - ruff format
+
+  build:
+    cmds:
+      - docker build -t npanalyst-cli .
