@@ -45,7 +45,7 @@ tasks:
 
   version:
     desc: Use bump-my-version to manage package version
-    env:
-      VERSION: patch
+    vars:
+      VERSION: '{{.VERSION | default "patch"}}'
     cmds:
-      - uv run bump-my-version bump $VERSION {{.CLI_ARGS}}
+      - uv run bump-my-version bump {{.VERSION}} {{.CLI_ARGS}}
