@@ -20,7 +20,7 @@ tasks:
     desc: Bootstrap dev environment
     cmds:
       - uv sync --dev
-      - pre-commit
+      - task: pre-commit
 
   test:
     desc: "Run unit and integration tests"
