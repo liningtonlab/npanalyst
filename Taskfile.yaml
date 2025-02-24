@@ -1,15 +1,44 @@
 version: "3"
 
 tasks:
+  default:
+    cmds:
+      - task -l
+    silent: true
+
+  pre-commit:
+    cmds:
+      - pre-commit install
+    sources:
+      - .git/hooks/pre-commit
+      - .pre-commit-config.yaml
+    generates:
+      - .git/hooks/pre-commit
+    method: checksum
+
+  setup:
+    desc: Bootstrap dev environment
+    cmds:
+      - uv sync --dev
+      - pre-commit
+
   test:
+    desc: "Run unit and integration tests"
     cmds:
       - uv run pytest
 
+  check:
+    desc: "Run pre-commit hooks"
+    cmds:
+      - pre-commit run -a
+
   format:
+    desc: "Run ruff formatting tools"
     cmds:
       - ruff check --select I --fix
       - ruff format
 
   build:
+    desc: "Build docker image"
     cmds:
       - docker build -t npanalyst-cli .
