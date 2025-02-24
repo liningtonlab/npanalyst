@@ -1,7 +1,7 @@
 [project]
 name = "npanalyst"
 version = "0.1.0"
-description = "Add your description here"
+description = "..."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
@@ -18,11 +18,15 @@ dependencies = [
   "scipy>=1.15.2",
 ]
 
-[tool.uv]
-package = true
-
 [project.scripts]
 npanalyst = "npanalyst.cli:cli"
 
+[tool.uv]
+package = true
+
 [dependency-groups]
 dev = ["pytest>=8.3.4", "ruff>=0.9.7"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
