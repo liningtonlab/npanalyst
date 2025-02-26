@@ -1,10 +1,9 @@
 from collections import defaultdict, namedtuple
-from typing import List, Dict
-import pandas as pd
+from typing import Dict, List
 
-import networkx as nx
 import community as louvain_modularity
-
+import networkx as nx
+import pandas as pd
 from scipy.cluster.hierarchy import leaves_list, linkage
 from scipy.spatial.distance import pdist
 from sklearn.preprocessing import StandardScaler

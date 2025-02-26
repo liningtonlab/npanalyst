@@ -279,7 +279,6 @@ def _run2df(mzrun: pymzml.run.Reader, configd: Dict) -> pd.DataFrame:
     data = []
     specl = [s for s in mzrun if s]
     for spec in specl:
-
         scantime = spec.scan_time[0]
         mslevel = spec.ms_level
         if mslevel == 1:  # MS

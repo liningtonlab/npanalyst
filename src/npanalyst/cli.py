@@ -5,8 +5,8 @@ from typing import Optional
 import click
 
 from npanalyst import __version__ as VERSION
-from npanalyst import core, configuration
-from npanalyst.logging import setup_logging, get_logger
+from npanalyst import configuration, core
+from npanalyst.logging import get_logger, setup_logging
 
 logger = get_logger()
 
@@ -48,7 +48,7 @@ def get_config(output_path: Optional[Path] = None):
     if output_path is None:
         conf_path = Path() / "config.json"
     else:
-        conf_path = output_path / 'config.json'
+        conf_path = output_path / "config.json"
     if conf_path.exists():
         click.echo("ERROR: File already exists.")
         raise click.Abort()

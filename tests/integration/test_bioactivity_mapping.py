@@ -1,14 +1,13 @@
 import os
+import shutil
 import tempfile
 from pathlib import Path
-import shutil
-import pandas as pd
+
 import networkx as nx
-import time
-
-from npanalyst import configuration, cli
-
+import pandas as pd
 from pandas._testing import assert_frame_equal
+
+from npanalyst import cli, configuration
 
 
 # # Helper functions
@@ -113,7 +112,7 @@ def test_bioactivity_mapping():
     nr_communities = len(os.listdir(Path(tmpdir, "communities")))
     assert nr_communities == 19
 
-    # # Go through all community folders and compare
+    # Go through all community folders and compare
     for community in [str(i) for i in range(1, nr_communities + 1)]:
         print("Validate community nr:" + community)
 

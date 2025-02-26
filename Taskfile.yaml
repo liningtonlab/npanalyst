@@ -1,0 +1,53 @@
+version: "3"
+
+tasks:
+  default:
+    cmds:
+      - task -l
+    silent: true
+
+  pre-commit:
+    cmds:
+      - pre-commit install
+    sources:
+      - .git/hooks/pre-commit
+      - .pre-commit-config.yaml
+    generates:
+      - .git/hooks/pre-commit
+    method: checksum
+
+  setup:
+    desc: Bootstrap dev environment
+    cmds:
+      - uv tool install pre-commit
+      - uv tool install ruff==0.9.7
+      - uv sync --dev
+      - task: pre-commit
+
+  test:
+    desc: "Run unit and integration tests"
+    cmds:
+      - uv run pytest
+
+  check:
+    desc: "Run pre-commit hooks"
+    cmds:
+      - pre-commit run -a
+
+  format:
+    desc: "Run ruff formatting tools"
+    cmds:
+      - ruff check --select I --fix
+      - ruff format
+
+  build:
+    desc: "Build docker image"
+    cmds:
+      - docker build -t npanalyst-cli .
+
+  version:
+    desc: Use bump-my-version to manage package version
+    vars:
+      VERSION: '{{.VERSION | default "patch"}}'
+    cmds:
+      - uv run bump-my-version bump {{.VERSION}} {{.CLI_ARGS}}
