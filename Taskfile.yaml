@@ -19,6 +19,8 @@ tasks:
   setup:
     desc: Bootstrap dev environment
     cmds:
+      - uv tool install pre-commit
+      - uv tool install ruff==0.9.7
       - uv sync --dev
       - task: pre-commit
 
